@@ -1,0 +1,644 @@
+{
+  "schema_version": "1.0",
+  "purpose": "Collected and annotated exemplar corpus. Each entry is a real published model email or a self-authored exemplar, annotated with move structure and politeness features. Entries with provenance 'public_model' are from university writing centres or educational sites; entries with provenance 'synthetic_verified' are self-authored and labelled as such.",
+  "collection_date": "2026-11-09",
+  "sources_consulted": [
+    {
+      "name": "Westminster College Dean of Students — Absence Notification",
+      "url": "https://www.westminster.edu/campus/services/dean-of-students/absence-notification.cfm",
+      "type": "university_institutional",
+      "exemplars_collected": 4,
+      "notes": "Best single source for absence emails. Four full templates: asking for help, upcoming absence, past absence, multiple/ongoing absence."
+    },
+    {
+      "name": "University of Cincinnati — How to Email a Professor",
+      "url": "https://www.uc.edu/blog/how-to-email-a-professor-examples.html",
+      "type": "university_blog",
+      "exemplars_collected": 1,
+      "notes": "Assignment inquiry example with clear structure."
+    },
+    {
+      "name": "BCC Research — 6 Copy-Paste Templates",
+      "url": "https://blog.bccresearch.com/how-to-write-an-email-to-your-professor-6-copy-paste-templates",
+      "type": "educational_blog",
+      "exemplars_collected": 3,
+      "notes": "Meeting request, grade improvement, extension request. Templates are generic but structurally complete."
+    },
+    {
+      "name": "Cetonia — 15 Email Professor Samples",
+      "url": "https://cetonia.edu.pl/email-professor-sample/",
+      "type": "educational_site",
+      "exemplars_collected": 2,
+      "notes": "Make-up exam request and absence notification. Short but structurally clean."
+    },
+    {
+      "name": "Zhihu — 留学辅导干货 邮件模板",
+      "url": "https://zhuanlan.zhihu.com/p/377017996",
+      "type": "educational_blog_zh",
+      "exemplars_collected": 3,
+      "notes": "Grade inquiry, class absence, exam follow-up. Adapted from Propeller Collective and Spark Mail."
+    },
+    {
+      "name": "Self-authored exemplars",
+      "url": null,
+      "type": "synthetic_verified",
+      "exemplars_collected": 5,
+      "notes": "Written by the project author to cover scenarios not well represented in public sources: post-deadline extension, grade review with prior contact, SEN support enquiry, scope-gap (TPG) enquiry, and a negative example (V01 presumptive approval). Labelled synthetic_verified throughout."
+    }
+  ],
+
+  "exemplars": [
+    {
+      "exemplar_id": "EX-001",
+      "provenance": "public_model",
+      "source_name": "Westminster College — Asking for Help with a Class",
+      "source_url": "https://www.westminster.edu/campus/services/dean-of-students/absence-notification.cfm",
+      "request_type": "meeting",
+      "timing": "before_deadline",
+      "register": "warm_respectful",
+      "policy_rules": [],
+      "text": "Subject: Checking In About Class Progress\n\nHi Professor [Last Name],\n\nI wanted to reach out and see if we could connect soon to talk about how I'm doing in your class and what I can be doing to stay on track. After the recent [test/assignment], I've been a bit concerned and want to make sure I'm using all of the resources available.\n\nWould you have time to meet during office hours or after class? I'm happy to work around your schedule.\n\nThank you,\n[Your Name]",
+      "moves": ["M1_SALUTATION", "M3_PURPOSE", "M4_CONTEXT", "M5_REQUEST", "M8_CLOSING"],
+      "missing_moves": ["M2_IDENTITY"],
+      "politeness_features": {
+        "modal_mitigation": true,
+        "hedging": false,
+        "indirect_request_form": true,
+        "formal_address": false,
+        "apology_marker": 0,
+        "gratitude_marker": 1,
+        "self_deprecation": false,
+        "imposition_acknowledgement": true
+      },
+      "accessibility_features": {
+        "sentence_count": 5,
+        "mean_sentence_length_words": 16.4,
+        "max_sentence_length_words": 28,
+        "distinct_request_count": 1,
+        "unresolved_placeholder_count": 3
+      },
+      "annotation_note": "Uses 'Hi' instead of 'Dear' — less formal but acceptable in some institutional cultures. Missing course/assignment identifier (M2) is a weakness the lint would flag (V09). Good mitigation: 'Would you have time to meet... I'm happy to work around your schedule.'"
+    },
+
+    {
+      "exemplar_id": "EX-002",
+      "provenance": "public_model",
+      "source_name": "Westminster College — Upcoming Absence (Single Class)",
+      "source_url": "https://www.westminster.edu/campus/services/dean-of-students/absence-notification.cfm",
+      "request_type": "absence",
+      "timing": "before_deadline",
+      "register": "warm_respectful",
+      "policy_rules": [],
+      "text": "Subject: Missing Class on [Day]\n\nHi Professor [Last Name],\n\nI wanted to let you know that I'll be unable to attend [Course Name] on [Day] due to [\"a personal health issue,\" \"a family situation,\" etc.]. I've already made a plan to get notes from a classmate and stay caught up, but I wanted to check in with you in case there's anything specific I'll miss.\n\nPlease let me know if you'd prefer I stop by your office hours to go over anything. I appreciate your understanding.\n\nThank you,\n[Your Name]",
+      "moves": ["M1_SALUTATION", "M3_PURPOSE", "M4_CONTEXT", "M5_REQUEST", "M6_CONSTRAINT_ACK", "M7_REMEDY", "M8_CLOSING"],
+      "missing_moves": ["M2_IDENTITY"],
+      "politeness_features": {
+        "modal_mitigation": true,
+        "hedging": false,
+        "indirect_request_form": true,
+        "formal_address": false,
+        "apology_marker": 0,
+        "gratitude_marker": 2,
+        "self_deprecation": false,
+        "imposition_acknowledgement": true
+      },
+      "accessibility_features": {
+        "sentence_count": 5,
+        "mean_sentence_length_words": 19.2,
+        "max_sentence_length_words": 32,
+        "distinct_request_count": 1,
+        "unresolved_placeholder_count": 5
+      },
+      "annotation_note": "Proactive: states a plan (notes from classmate) before asking. Good M7_REMEDY. The 'Hi' salutation and missing M2_IDENTITY are weaknesses. Uses general terms for the reason ('personal health issue') which aligns with V07 guidance against excess disclosure."
+    },
+
+    {
+      "exemplar_id": "EX-003",
+      "provenance": "public_model",
+      "source_name": "Westminster College — Past Absence (Single Class)",
+      "source_url": "https://www.westminster.edu/campus/services/dean-of-students/absence-notification.cfm",
+      "request_type": "absence",
+      "timing": "after_deadline",
+      "register": "apologetic_respectful",
+      "policy_rules": [],
+      "text": "Subject: Missed Class on [Day]\n\nI wanted to apologize for missing class on [Day]. I had hoped to email ahead of time but wasn't able to. I'll be back in our next class and plan to connect with a classmate to catch up on what I missed.\n\nIf there's anything important I should be aware of or any way I can check in with you directly, I'd be glad to do so.\n\nThanks again, and I appreciate your understanding.\n[Your Name]",
+      "moves": ["M3_PURPOSE", "M4_CONTEXT", "M5_REQUEST", "M6_CONSTRAINT_ACK", "M7_REMEDY", "M8_CLOSING"],
+      "missing_moves": ["M1_SALUTATION", "M2_IDENTITY"],
+      "politeness_features": {
+        "modal_mitigation": true,
+        "hedging": false,
+        "indirect_request_form": true,
+        "formal_address": false,
+        "apology_marker": 1,
+        "gratitude_marker": 1,
+        "self_deprecation": false,
+        "imposition_acknowledgement": true
+      },
+      "accessibility_features": {
+        "sentence_count": 5,
+        "mean_sentence_length_words": 17.8,
+        "max_sentence_length_words": 25,
+        "distinct_request_count": 1,
+        "unresolved_placeholder_count": 2
+      },
+      "annotation_note": "Missing salutation is a structural weakness. The apology is well-placed (single, at the point of the imposition). Good remediation plan. The request is soft ('I'd be glad to do so') which keeps it as an offer rather than a demand."
+    },
+
+    {
+      "exemplar_id": "EX-004",
+      "provenance": "public_model",
+      "source_name": "Westminster College — Multiple or Ongoing Absences",
+      "source_url": "https://www.westminster.edu/campus/services/dean-of-students/absence-notification.cfm",
+      "request_type": "absence",
+      "timing": "after_deadline",
+      "register": "formal",
+      "policy_rules": [],
+      "text": "Subject: Following Up on Missed Classes\n\nHi Professor [Last Name],\n\nI want to sincerely apologize for missing several classes over the past [time frame]. I know class time is valuable, and I've missed out on a lot. I've been dealing with [\"some ongoing health challenges,\" \"a difficult family situation,\" etc.], which made it difficult to fully participate.\n\nI plan to be back for our next class and would appreciate the chance to talk with you about the best path forward. If possible, I'd like to see if there's a way to make up some of the missed work, though I understand that may not be an option in every case.\n\nWould you be willing to meet briefly to talk about this?\n\nThank you,\n[Your Name]",
+      "moves": ["M1_SALUTATION", "M3_PURPOSE", "M4_CONTEXT", "M5_REQUEST", "M6_CONSTRAINT_ACK", "M7_REMEDY", "M8_CLOSING"],
+      "missing_moves": ["M2_IDENTITY"],
+      "politeness_features": {
+        "modal_mitigation": true,
+        "hedging": true,
+        "indirect_request_form": true,
+        "formal_address": false,
+        "apology_marker": 1,
+        "gratitude_marker": 1,
+        "self_deprecation": false,
+        "imposition_acknowledgement": true
+      },
+      "accessibility_features": {
+        "sentence_count": 7,
+        "mean_sentence_length_words": 18.1,
+        "max_sentence_length_words": 31,
+        "distinct_request_count": 1,
+        "unresolved_placeholder_count": 4
+      },
+      "annotation_note": "Strongest exemplar from Westminster. The hedging ('if possible', 'though I understand') shows awareness of the imposition. Good constraint acknowledgement. The general reason ('ongoing health challenges') avoids excess disclosure (V07)."
+    },
+
+    {
+      "exemplar_id": "EX-005",
+      "provenance": "public_model",
+      "source_name": "University of Cincinnati — Assignment Inquiry",
+      "source_url": "https://www.uc.edu/blog/how-to-email-a-professor-examples.html",
+      "request_type": "meeting",
+      "timing": "before_deadline",
+      "register": "formal",
+      "policy_rules": [],
+      "text": "Dear Professor Lee,\n\nMy name is Alex Rivers, and I'm in your POLS 1010 class on Mondays and Wednesdays. I'm writing to ask a quick question about the format for our first paper.\n\nCould you please clarify whether we should use APA or MLA citation style? I want to make sure I follow the correct guidelines.\n\nThank you for your time and help.\n\nBest,\nAlex Rivers",
+      "moves": ["M1_SALUTATION", "M2_IDENTITY", "M3_PURPOSE", "M5_REQUEST", "M8_CLOSING"],
+      "missing_moves": [],
+      "politeness_features": {
+        "modal_mitigation": true,
+        "hedging": false,
+        "indirect_request_form": true,
+        "formal_address": true,
+        "apology_marker": 0,
+        "gratitude_marker": 1,
+        "self_deprecation": false,
+        "imposition_acknowledgement": false
+      },
+      "accessibility_features": {
+        "sentence_count": 5,
+        "mean_sentence_length_words": 12.8,
+        "max_sentence_length_words": 20,
+        "distinct_request_count": 1,
+        "unresolved_placeholder_count": 0
+      },
+      "annotation_note": "Clean, complete, concise. All required moves present. Good M2_IDENTITY (course code, schedule, name). The request is specific and actionable. This is a good 'minimal viable email' — nothing wasted."
+    },
+
+    {
+      "exemplar_id": "EX-006",
+      "provenance": "public_model",
+      "source_name": "BCC Research — Meeting Request",
+      "source_url": "https://blog.bccresearch.com/how-to-write-an-email-to-your-professor-6-copy-paste-templates",
+      "request_type": "meeting",
+      "timing": "before_deadline",
+      "register": "warm_respectful",
+      "policy_rules": [],
+      "text": "Subject: Meeting About _____\n\nDear Professor _____,\n\nI hope all is well. I started working on my assignment for _____ and I just had a couple of questions to make sure that I am on the right track. I also wanted to ask a question about yesterday's lesson on _____, as I was a little confused and I want to ensure that I fully understand the content for the test next week. I know on the syllabus you mentioned that you have available office hours at _____ but I am not able to make it. Will you be at your desk at _____ or _____.\n\nThank you,\n_____",
+      "moves": ["M1_SALUTATION", "M3_PURPOSE", "M4_CONTEXT", "M5_REQUEST", "M6_CONSTRAINT_ACK", "M8_CLOSING"],
+      "missing_moves": ["M2_IDENTITY"],
+      "politeness_features": {
+        "modal_mitigation": false,
+        "hedging": true,
+        "indirect_request_form": false,
+        "formal_address": true,
+        "apology_marker": 0,
+        "gratitude_marker": 1,
+        "self_deprecation": false,
+        "imposition_acknowledgement": true
+      },
+      "accessibility_features": {
+        "sentence_count": 6,
+        "mean_sentence_length_words": 21.5,
+        "max_sentence_length_words": 38,
+        "distinct_request_count": 2,
+        "unresolved_placeholder_count": 7
+      },
+      "annotation_note": "Two requests in one email (V08 risk): assignment questions AND lesson questions. The 'Will you be at your desk' is a direct question, not a modal-mitigated request (V05 risk). Sentences are long. But the constraint acknowledgement (referencing syllabus office hours) is good practice."
+    },
+
+    {
+      "exemplar_id": "EX-007",
+      "provenance": "public_model",
+      "source_name": "BCC Research — Grade Improvement",
+      "source_url": "https://blog.bccresearch.com/how-to-write-an-email-to-your-professor-6-copy-paste-templates",
+      "request_type": "grade",
+      "timing": "after_result",
+      "register": "warm_respectful",
+      "policy_rules": ["EDUHK-GAR-9.2.1"],
+      "text": "Subject: Extra Support on _____\n\nDear Professor _____,\n\nI hope all is well and that you enjoyed your weekend. I saw that you posted the grades for our last reports. I was a little surprised and discouraged by my grade.\n\nI was wondering if you offer any extra credit opportunities, revisions or if you have any advice for me on how to improve on a future assignment. Are you available to meet _____ or _____ to discuss my report and a plan? Let me know what works for you.\n\nI look forward to hearing from you,\n\nBest,\n_____",
+      "moves": ["M1_SALUTATION", "M3_PURPOSE", "M4_CONTEXT", "M5_REQUEST", "M8_CLOSING"],
+      "missing_moves": ["M2_IDENTITY"],
+      "politeness_features": {
+        "modal_mitigation": true,
+        "hedging": true,
+        "indirect_request_form": true,
+        "formal_address": true,
+        "apology_marker": 0,
+        "gratitude_marker": 0,
+        "self_deprecation": false,
+        "imposition_acknowledgement": false
+      },
+      "accessibility_features": {
+        "sentence_count": 6,
+        "mean_sentence_length_words": 16.3,
+        "max_sentence_length_words": 27,
+        "distinct_request_count": 2,
+        "unresolved_placeholder_count": 4
+      },
+      "annotation_note": "Maps to GAR 9.2.1 (approach course lecturer after result). Good hedging ('I was wondering if'). Two requests: extra credit AND meeting — V08 risk. Missing gratitude marker before the closing is unusual. The emotional disclosure ('surprised and discouraged') is borderline but not excessive (V07 does not fire)."
+    },
+
+    {
+      "exemplar_id": "EX-008",
+      "provenance": "public_model",
+      "source_name": "BCC Research — Extension Request",
+      "source_url": "https://blog.bccresearch.com/how-to-write-an-email-to-your-professor-6-copy-paste-templates",
+      "request_type": "extension",
+      "timing": "before_deadline",
+      "register": "warm_respectful",
+      "policy_rules": ["EDUHK-GAR-9.6.1", "EDUHK-GAR-9.6.2"],
+      "text": "Subject: Extension on _____\n\nDear Professor _____,\n\nI hope all is well. I have been extremely busy and stressed with assignments in other classes and with _____ (sports practice, on-campus job, other commitment, health condition, etc.). I do not think that I will be able to submit my best work to you with all of the other tasks on my agenda. I was wondering if you would consider granting me an extension on our upcoming project/paper and submit it by ______?\n\nThank you,\n_____",
+      "moves": ["M1_SALUTATION", "M3_PURPOSE", "M4_CONTEXT", "M5_REQUEST", "M8_CLOSING"],
+      "missing_moves": ["M2_IDENTITY", "M6_CONSTRAINT_ACK"],
+      "politeness_features": {
+        "modal_mitigation": true,
+        "hedging": true,
+        "indirect_request_form": true,
+        "formal_address": true,
+        "apology_marker": 0,
+        "gratitude_marker": 1,
+        "self_deprecation": false,
+        "imposition_acknowledgement": false
+      },
+      "accessibility_features": {
+        "sentence_count": 5,
+        "mean_sentence_length_words": 20.4,
+        "max_sentence_length_words": 35,
+        "distinct_request_count": 1,
+        "unresolved_placeholder_count": 5
+      },
+      "annotation_note": "Maps to GAR 9.6.1 (pre-deadline permission). Missing M6_CONSTRAINT_ACK — does not acknowledge that a penalty may apply (9.6.2). The reason is vague ('busy and stressed') which a lecturer may not accept. No mention of supporting documentation. Sentences are long. This is a mediocre exemplar — useful as a baseline to show what 'barely acceptable' looks like."
+    },
+
+    {
+      "exemplar_id": "EX-009",
+      "provenance": "public_model",
+      "source_name": "Cetonia — Make-Up Exam Request",
+      "source_url": "https://cetonia.edu.pl/email-professor-sample/",
+      "request_type": "exam",
+      "timing": "after_deadline",
+      "register": "formal",
+      "policy_rules": [],
+      "text": "Dear Professor [Last Name],\n\nI hope you are doing well. I am writing to kindly request a make-up for the exam that I missed on [specific date] due to [reason].\n\nI appreciate your consideration of this matter.\n\nBest,\n[Your Name]\n[Your Course]",
+      "moves": ["M1_SALUTATION", "M3_PURPOSE", "M5_REQUEST", "M8_CLOSING"],
+      "missing_moves": ["M2_IDENTITY", "M4_CONTEXT", "M6_CONSTRAINT_ACK", "M7_REMEDY"],
+      "politeness_features": {
+        "modal_mitigation": true,
+        "hedging": false,
+        "indirect_request_form": true,
+        "formal_address": true,
+        "apology_marker": 0,
+        "gratitude_marker": 1,
+        "self_deprecation": false,
+        "imposition_acknowledgement": false
+      },
+      "accessibility_features": {
+        "sentence_count": 4,
+        "mean_sentence_length_words": 13.5,
+        "max_sentence_length_words": 22,
+        "distinct_request_count": 1,
+        "unresolved_placeholder_count": 4
+      },
+      "annotation_note": "Very short. Missing context (M4) and remedy (M7) — the student does not explain what happened or offer evidence. This would likely generate a clarification round. Maps to the exam-absence gap in EdUHK: no central rule, course-specific. The email is polite but structurally thin."
+    },
+
+    {
+      "exemplar_id": "EX-010",
+      "provenance": "public_model",
+      "source_name": "Cetonia — Absence Notification",
+      "source_url": "https://cetonia.edu.pl/email-professor-sample/",
+      "request_type": "absence",
+      "timing": "before_deadline",
+      "register": "formal",
+      "policy_rules": [],
+      "text": "Dear Professor [Last Name],\n\nI hope you're doing well. I am writing to inform you that I will be unable to attend class on [date] due to [reason].\n\nI assure you I will keep up with the coursework and gather notes from my classmates.\n\nThank you for your understanding.\n[Your Name]",
+      "moves": ["M1_SALUTATION", "M3_PURPOSE", "M4_CONTEXT", "M5_REQUEST", "M7_REMEDY", "M8_CLOSING"],
+      "missing_moves": ["M2_IDENTITY"],
+      "politeness_features": {
+        "modal_mitigation": false,
+        "hedging": false,
+        "indirect_request_form": false,
+        "formal_address": true,
+        "apology_marker": 0,
+        "gratitude_marker": 1,
+        "self_deprecation": false,
+        "imposition_acknowledgement": false
+      },
+      "accessibility_features": {
+        "sentence_count": 5,
+        "mean_sentence_length_words": 12.6,
+        "max_sentence_length_words": 18,
+        "distinct_request_count": 1,
+        "unresolved_placeholder_count": 3
+      },
+      "annotation_note": "Concise and clean. Good M7_REMEDY (coursework + notes). The request is phrased as information ('I am writing to inform you') rather than asking permission — appropriate for a notification. Missing M2_IDENTITY. No modal mitigation because the email is informational, not a request for action."
+    },
+
+    {
+      "exemplar_id": "EX-011",
+      "provenance": "public_model",
+      "source_name": "Zhihu — Grade Inquiry (adapted from Propeller Collective)",
+      "source_url": "https://zhuanlan.zhihu.com/p/377017996",
+      "request_type": "grade",
+      "timing": "after_result",
+      "register": "formal",
+      "policy_rules": ["EDUHK-GAR-9.2.1"],
+      "text": "Subject: History 1B: Inquiring about my grade\n\nDear Professor Smith,\n\nMy name is Lexie Brown, from History 1B, Section 1. I was wondering if we could set up an appointment to discuss my grade on [Assignment name].\n\nI have checked that your office hours are scheduled on Wednesdays from 2 to 5 PM. If this is correct, please let me know if I can come.\n\nI look forward to your reply.\n\nKind regards,\nLexie Brown",
+      "moves": ["M1_SALUTATION", "M2_IDENTITY", "M3_PURPOSE", "M5_REQUEST", "M6_CONSTRAINT_ACK", "M8_CLOSING"],
+      "missing_moves": [],
+      "politeness_features": {
+        "modal_mitigation": true,
+        "hedging": true,
+        "indirect_request_form": true,
+        "formal_address": true,
+        "apology_marker": 0,
+        "gratitude_marker": 0,
+        "self_deprecation": false,
+        "imposition_acknowledgement": true
+      },
+      "accessibility_features": {
+        "sentence_count": 5,
+        "mean_sentence_length_words": 14.2,
+        "max_sentence_length_words": 21,
+        "distinct_request_count": 1,
+        "unresolved_placeholder_count": 1
+      },
+      "annotation_note": "Excellent exemplar. All required moves present. Strong M2_IDENTITY (name, course, section). Good M6_CONSTRAINT_ACK (checked office hours first). Maps cleanly to GAR 9.2.1 (approach lecturer after result). The request is for a meeting, not a grade change — keeps it at the informal first step."
+    },
+
+    {
+      "exemplar_id": "EX-012",
+      "provenance": "public_model",
+      "source_name": "Zhihu — Class Absence (adapted from Propeller Collective)",
+      "source_url": "https://zhuanlan.zhihu.com/p/377017996",
+      "request_type": "absence",
+      "timing": "before_deadline",
+      "register": "formal",
+      "policy_rules": [],
+      "text": "Subject: History 1B: Class attendance\n\nDear Professor Smith,\n\nThis is Lexie Brown, from History 1B, Section 1. I am writing to inform you that I won't be able to attend your class on Thursday, as I have a doctor's appointment at 11 AM.\n\nPlease find attached my assignment we are supposed to submit by Thursday. I will also do my best to look through the materials you provided for this class and ask my classmates to share their notes.\n\nThank you.\n\nBest regards,\nLexie Brown",
+      "moves": ["M1_SALUTATION", "M2_IDENTITY", "M3_PURPOSE", "M4_CONTEXT", "M5_REQUEST", "M7_REMEDY", "M8_CLOSING"],
+      "missing_moves": [],
+      "politeness_features": {
+        "modal_mitigation": false,
+        "hedging": false,
+        "indirect_request_form": false,
+        "formal_address": true,
+        "apology_marker": 0,
+        "gratitude_marker": 1,
+        "self_deprecation": false,
+        "imposition_acknowledgement": false
+      },
+      "accessibility_features": {
+        "sentence_count": 5,
+        "mean_sentence_length_words": 17.4,
+        "max_sentence_length_words": 27,
+        "distinct_request_count": 1,
+        "unresolved_placeholder_count": 0
+      },
+      "annotation_note": "All required moves present. Good M2_IDENTITY. Excellent M7_REMEDY: submits the assignment early and plans to catch up. The reason is specific (doctor's appointment) without being a clinical disclosure. No modal mitigation because the email is a notification with an attached submission, not a request for action."
+    },
+
+    {
+      "exemplar_id": "EX-013",
+      "provenance": "public_model",
+      "source_name": "Zhihu — Exam Follow-Up (adapted from Propeller Collective)",
+      "source_url": "https://zhuanlan.zhihu.com/p/377017996",
+      "request_type": "grade",
+      "timing": "after_result",
+      "register": "formal",
+      "policy_rules": ["EDUHK-GAR-9.2.1"],
+      "text": "Subject: POL101 / Section 1: Follow up on the exam\n\nDear Professor Fiji:\n\nI am a student in your Introduction to Political Science class (POL101).\n\nAfter getting the results of last week's exam, I realized that I am struggling with more than one topic in the course. I want to do my best in this class, and would like to review my exam with you. Is there a time we could meet later this week to talk further?\n\nI look forward to your reply.\n\nBest regards,\nSoo Kim\nPre-Med, Class of 20xx",
+      "moves": ["M1_SALUTATION", "M2_IDENTITY", "M3_PURPOSE", "M4_CONTEXT", "M5_REQUEST", "M8_CLOSING"],
+      "missing_moves": [],
+      "politeness_features": {
+        "modal_mitigation": true,
+        "hedging": true,
+        "indirect_request_form": true,
+        "formal_address": true,
+        "apology_marker": 0,
+        "gratitude_marker": 0,
+        "self_deprecation": true,
+        "imposition_acknowledgement": false
+      },
+      "accessibility_features": {
+        "sentence_count": 6,
+        "mean_sentence_length_words": 15.8,
+        "max_sentence_length_words": 24,
+        "distinct_request_count": 1,
+        "unresolved_placeholder_count": 0
+      },
+      "annotation_note": "Good self-awareness ('I realized that I am struggling'). The request is for a review meeting, not a grade change — maps to 9.2.1. The self-deprecation ('I want to do my best') is mild and motivational rather than anxious. Clean structure."
+    },
+
+    {
+      "exemplar_id": "EX-014",
+      "provenance": "synthetic_verified",
+      "source_name": "Self-authored — Post-deadline extension (EdUHK context)",
+      "source_url": null,
+      "request_type": "extension",
+      "timing": "after_deadline",
+      "register": "formal",
+      "policy_rules": ["EDUHK-DERIVED-AFTER-DEADLINE"],
+      "text": "Subject: Essay 2, LIN4049 — submission after the deadline\n\nDear Dr Chan,\n\nI am writing about Essay 2 for LIN4049, which was due on Friday 6 November.\n\nI was not able to submit it on time. A health condition affected my ability to work for about two weeks before the deadline. I am not asking for permission in advance, as I understand that the deadline has already passed. I would like to ask what options are available to me at this point.\n\nI can provide supporting documentation if that would be helpful.\n\nThank you for your time.\n\nKind regards,\nLI Leer\nStudent ID: 11601718",
+      "moves": ["M1_SALUTATION", "M2_IDENTITY", "M3_PURPOSE", "M4_CONTEXT", "M5_REQUEST", "M6_CONSTRAINT_ACK", "M7_REMEDY", "M8_CLOSING"],
+      "missing_moves": [],
+      "politeness_features": {
+        "modal_mitigation": true,
+        "hedging": true,
+        "indirect_request_form": true,
+        "formal_address": true,
+        "apology_marker": 0,
+        "gratitude_marker": 1,
+        "self_deprecation": false,
+        "imposition_acknowledgement": true
+      },
+      "accessibility_features": {
+        "sentence_count": 7,
+        "mean_sentence_length_words": 14.7,
+        "max_sentence_length_words": 24,
+        "distinct_request_count": 1,
+        "unresolved_placeholder_count": 0
+      },
+      "annotation_note": "SYNTHETIC. Written to demonstrate the post-deadline state: the student does NOT ask for 'permission in advance' (which is what 9.6.1 requires and is no longer possible). Instead asks 'what options are available'. Good M6_CONSTRAINT_ACK: explicitly acknowledges the route is closed. Maps to EDUHK-DERIVED-AFTER-DEADLINE."
+    },
+
+    {
+      "exemplar_id": "EX-015",
+      "provenance": "synthetic_verified",
+      "source_name": "Self-authored — Grade review with prior contact (EdUHK context)",
+      "source_url": null,
+      "request_type": "grade",
+      "timing": "after_result",
+      "register": "formal",
+      "policy_rules": ["EDUHK-GAR-9.2.1", "EDUHK-GAR-9.2.2", "EDUHK-GAR-9.2.3"],
+      "text": "Subject: Formal review request — Essay 1, LIN4049\n\nDear Dr Chan,\n\nFollowing our conversation on 20 October about my grade for Essay 1 in LIN4049, I would like to request a formal review.\n\nI believe there may be a material error in the marking of the referencing section. The feedback I received did not appear to address the citation format specified in the assessment scheme, which I followed as instructed.\n\nI understand that a formal review must be submitted to the Faculty Dean within 14 working days of the results being announced, and that the grade may be upgraded, downgraded, or left unchanged.\n\nCould you let me know the correct procedure for submitting this to the Faculty Dean?\n\nThank you for your time.\n\nKind regards,\nLI Leer\nStudent ID: 11601718",
+      "moves": ["M1_SALUTATION", "M2_IDENTITY", "M3_PURPOSE", "M4_CONTEXT", "M5_REQUEST", "M6_CONSTRAINT_ACK", "M8_CLOSING"],
+      "missing_moves": [],
+      "politeness_features": {
+        "modal_mitigation": true,
+        "hedging": true,
+        "indirect_request_form": true,
+        "formal_address": true,
+        "apology_marker": 0,
+        "gratitude_marker": 1,
+        "self_deprecation": false,
+        "imposition_acknowledgement": true
+      },
+      "accessibility_features": {
+        "sentence_count": 8,
+        "mean_sentence_length_words": 17.1,
+        "max_sentence_length_words": 28,
+        "distinct_request_count": 1,
+        "unresolved_placeholder_count": 0
+      },
+      "annotation_note": "SYNTHETIC. Written to demonstrate the formal review route after the informal first step (9.2.1) has been taken. Prior contact is stated explicitly ('Following our conversation'). Names the review ground (9.2.2(i) material error). Acknowledges the 14-working-day deadline (9.2.3) and the downside risk (9.2.6). Does not threaten or escalate."
+    },
+
+    {
+      "exemplar_id": "EX-016",
+      "provenance": "synthetic_verified",
+      "source_name": "Self-authored — SEN support enquiry (EdUHK context)",
+      "source_url": null,
+      "request_type": "extension",
+      "timing": "after_deadline",
+      "register": "formal",
+      "policy_rules": ["EDUHK-DERIVED-AFTER-DEADLINE"],
+      "text": "Subject: Enquiry about academic accommodation — LIN4049\n\nDear SEN Support Services,\n\nI am an undergraduate student at EdUHK. I have a special educational need that has affected my ability to meet a recent coursework deadline.\n\nI understand that your office provides academic accommodation, which may include extensions to assignment deadlines. I am writing to ask how to request an accommodation, and what documentation I would need to provide.\n\nI have not yet spoken to my course lecturer about this deadline. I wanted to ask your office first so that I understand the process.\n\nThank you for your time.\n\nKind regards,\nLI Leer\nStudent ID: 11601718",
+      "moves": ["M1_SALUTATION", "M2_IDENTITY", "M3_PURPOSE", "M4_CONTEXT", "M5_REQUEST", "M6_CONSTRAINT_ACK", "M8_CLOSING"],
+      "missing_moves": [],
+      "politeness_features": {
+        "modal_mitigation": true,
+        "hedging": true,
+        "indirect_request_form": true,
+        "formal_address": true,
+        "apology_marker": 0,
+        "gratitude_marker": 1,
+        "self_deprecation": false,
+        "imposition_acknowledgement": true
+      },
+      "accessibility_features": {
+        "sentence_count": 7,
+        "mean_sentence_length_words": 15.3,
+        "max_sentence_length_words": 24,
+        "distinct_request_count": 1,
+        "unresolved_placeholder_count": 0
+      },
+      "annotation_note": "SYNTHETIC. Written to demonstrate the SEN support route discovered via the SAO web page (EDUHK-SAO-SEN-WEB-2026). The student does not disclose the specific SEN (V07 compliance). The email asks about the process, not for a specific outcome. Maps to the resolved finding: assignment deadline extensions ARE a listed accommodation."
+    },
+
+    {
+      "exemplar_id": "EX-017",
+      "provenance": "synthetic_verified",
+      "source_name": "Self-authored — Scope gap enquiry (TPG student, EdUHK context)",
+      "source_url": null,
+      "request_type": "extension",
+      "timing": "before_deadline",
+      "register": "formal",
+      "policy_rules": [],
+      "text": "Subject: Extension enquiry — Essay 2, MA in TESOL\n\nDear Dr Chan,\n\nI am a taught postgraduate student in the MA in TESOL programme. I am writing about Essay 2, which is due on Friday 6 November.\n\nI would like to ask whether an extension is possible, as I have been unwell for the past week. However, I am aware that my programme may be governed by different regulations from the undergraduate handbook, and I do not want to assume that the same procedure applies.\n\nCould you tell me what the procedure is for requesting an extension under the taught postgraduate regulations, or direct me to the relevant document?\n\nThank you for your time.\n\nKind regards,\n[Student name]\n[Student ID]",
+      "moves": ["M1_SALUTATION", "M2_IDENTITY", "M3_PURPOSE", "M4_CONTEXT", "M5_REQUEST", "M6_CONSTRAINT_ACK", "M8_CLOSING"],
+      "missing_moves": [],
+      "politeness_features": {
+        "modal_mitigation": true,
+        "hedging": true,
+        "indirect_request_form": true,
+        "formal_address": true,
+        "apology_marker": 0,
+        "gratitude_marker": 1,
+        "self_deprecation": false,
+        "imposition_acknowledgement": true
+      },
+      "accessibility_features": {
+        "sentence_count": 7,
+        "mean_sentence_length_words": 16.5,
+        "max_sentence_length_words": 28,
+        "distinct_request_count": 1,
+        "unresolved_placeholder_count": 2
+      },
+      "annotation_note": "SYNTHETIC. Written to demonstrate the scope-gap state: a TPG student who knows their programme has separate regulations but does not have them. The email does NOT quote an undergraduate clause (which would be a scope violation). Instead it asks the lecturer to direct them to the correct procedure. Maps to GAP-PROGRAMME-SCOPE."
+    },
+
+    {
+      "exemplar_id": "EX-018",
+      "provenance": "synthetic_verified",
+      "source_name": "Self-authored — Negative example: presumptive approval (V01)",
+      "source_url": null,
+      "request_type": "extension",
+      "timing": "before_deadline",
+      "register": "overfamiliar",
+      "policy_rules": ["EDUHK-GAR-9.6.1"],
+      "text": "Subject: Thanks for the extension!\n\nHey Dr Chan,\n\nThanks so much for granting me an extension until 12 November! I really appreciate it.\n\nI'll have the essay submitted by then for sure.\n\nCheers,\n[Student name]",
+      "moves": ["M1_SALUTATION", "M3_PURPOSE", "M8_CLOSING"],
+      "missing_moves": ["M2_IDENTITY", "M4_CONTEXT", "M5_REQUEST", "M6_CONSTRAINT_ACK", "M7_REMEDY"],
+      "politeness_features": {
+        "modal_mitigation": false,
+        "hedging": false,
+        "indirect_request_form": false,
+        "formal_address": false,
+        "apology_marker": 0,
+        "gratitude_marker": 1,
+        "self_deprecation": false,
+        "imposition_acknowledgement": false
+      },
+      "accessibility_features": {
+        "sentence_count": 4,
+        "mean_sentence_length_words": 8.5,
+        "max_sentence_length_words": 12,
+        "distinct_request_count": 0,
+        "unresolved_placeholder_count": 1
+      },
+      "annotation_note": "SYNTHETIC. NEGATIVE EXAMPLE — do not use as a model. Triggers V01 (presumptive approval: 'thanks for granting me an extension'), V05 (no modal mitigation), V09 (no course code), V10 ('Hey' and 'Cheers'). No request at all because the student assumes the extension is already granted. This exemplar exists to demonstrate what the lint catches and why the V01 check matters."
+    }
+  ],
+
+  "status": {
+    "exemplars_collected": 18,
+    "public_model": 13,
+    "synthetic_verified": 5,
+    "exemplars_annotated": 18,
+    "double_coded": 0,
+    "by_request_type": {
+      "extension": 4,
+      "grade": 3,
+      "absence": 5,
+      "exam": 1,
+      "meeting": 4,
+      "negative_example": 1
+    },
+    "note": "18 exemplars collected and annotated in a first pass. Single-coded by the author. Double coding (for kappa) requires a second coder and is planned for the evaluation phase. The negative example (EX-018) is labelled as such and excluded from any reported 'good exemplar' count."
+  }
+}

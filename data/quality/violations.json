@@ -1,0 +1,355 @@
+{
+  "schema_version": "1.0",
+  "purpose": "Negative-example corpus turned into a machine-checkable violation taxonomy. This file is the single most important design decision in the project: negative examples are NOT fed to the language model as 'avoid this' text, because LLMs handle prohibitions unreliably. Each negative example is converted into either a deterministic check or an explicit rubric, which is auditable and testable.",
+  "design_note": "Three detection tiers. Tier 1 lexical/structural checks are deterministic and run in the browser with no model call. Tier 2 needs a model judge with a fixed rubric and must be scored against human annotations. Tier 3 is a policy cross-check that requires the selected policy rules as input. A violation may have checks in more than one tier.",
+  "severity_levels": {
+    "block": "Must be fixed before the draft can be copied. Corresponds to a factual or policy error that could harm the student.",
+    "warn": "Should be fixed. Corresponds to a pragmatic or clarity problem.",
+    "info": "Style suggestion. Does not affect correctness."
+  },
+  "violations": [
+    {
+      "violation_id": "V01_PRESUMPTIVE_APPROVAL",
+      "name": "Presumptive approval",
+      "severity": "block",
+      "definition": "The draft states or implies that permission, an extension, or a favourable decision has already been granted, when no such decision exists.",
+      "why_it_fails": "It is factually false at the moment of writing, and it misrepresents the student to the recipient. It is also the failure mode most likely to be produced by a generative model that has absorbed 'successful request' emails as training exemplars.",
+      "detect": [
+        {
+          "tier": 1,
+          "type": "lexical",
+          "patterns": [
+            "thank(?:s| you) for (?:granting|approving|accepting|allowing)",
+            "(?:my|the) (?:extension|request|application) (?:has been|was|is) (?:approved|granted|accepted)",
+            "as (?:you|we) (?:approved|agreed|confirmed)",
+            "following your approval",
+            "per your approval",
+            "since you (?:have )?(?:approved|agreed)"
+          ],
+          "flags": "i"
+        }
+      ],
+      "repair": "Replace the assertion with a request form: 'I would like to ask whether ... would be possible.'",
+      "policy_rules": [],
+      "bad_example": "Thank you for granting me an extension until 12 November.",
+      "good_example": "I would like to ask whether an extension until 12 November would be possible.",
+      "corpus_refs": []
+    },
+    {
+      "violation_id": "V02_UNSUPPORTED_EVIDENCE",
+      "name": "Unsupported evidence claim",
+      "severity": "block",
+      "definition": "The draft refers to an attached document, certificate, or record that the student has not confirmed they possess or attach.",
+      "why_it_fails": "A promise of evidence that does not arrive damages credibility more than offering no evidence. It also creates a factual mismatch the recipient will notice immediately.",
+      "detect": [
+        {
+          "tier": 1,
+          "type": "lexical",
+          "patterns": [
+            "(?:please find|i have attached|attached (?:is|are)|enclosed (?:is|are))",
+            "(?:medical certificate|doctor'?s note|sick leave certificate|counsellor'?s letter|supporting document)",
+            "as (?:shown|stated) in the attached"
+          ],
+          "flags": "i"
+        },
+        {
+          "tier": 3,
+          "type": "confirmation_gate",
+          "requires": "A yes/no confirmation from the student that the document exists and is ready to attach. If unconfirmed, the sentence must be removed, not merely flagged."
+        }
+      ],
+      "repair": "Either confirm the document exists and is attached, or delete the reference and offer to provide evidence if required: 'I can provide supporting documentation if that would be helpful.'",
+      "policy_rules": [],
+      "bad_example": "Please find my medical certificate attached.",
+      "good_example": "I can provide supporting documentation if that would be helpful.",
+      "corpus_refs": []
+    },
+    {
+      "violation_id": "V03_MISROUTED_REQUEST",
+      "name": "Request routed to the wrong mechanism",
+      "severity": "block",
+      "definition": "The draft asks for something the named recipient cannot grant, or uses a mechanism whose conditions are not met.",
+      "why_it_fails": "The most consequential failure in this domain. Under EDUHK-GAR-9.6.1, permission for late submission must be obtained in advance; a student writing after the deadline who asks for 'permission in advance' is asking for something that no longer exists in that form. The email is polite, clear, and structurally useless.",
+      "detect": [
+        {
+          "tier": 3,
+          "type": "policy_crosscheck",
+          "logic": "If the selected rule has ui_assertion_level 'withhold' or the closed-route rule EDUHK-DERIVED-AFTER-DEADLINE applies, the draft must not contain a request form that the rule forbids.",
+          "example_check": "timing == after_deadline AND draft contains 'extension' as a request => V03"
+        }
+      ],
+      "repair": "Change the ask, not the tone. Ask what options remain rather than for a specific outcome that the rule does not provide.",
+      "policy_rules": [
+        "EDUHK-GAR-9.6.1",
+        "EDUHK-DERIVED-AFTER-DEADLINE",
+        "EDUHK-GAR-9.2.2",
+        "EDUHK-PROC-4.5"
+      ],
+      "bad_example": "I am writing to request an extension for the essay due last Friday.",
+      "good_example": "I am writing about the essay that was due on Friday. I was not able to submit it on time and would like to ask what options are available to me.",
+      "corpus_refs": []
+    },
+    {
+      "violation_id": "V04_OVER_APOLOGY",
+      "name": "Over-apologetic register",
+      "severity": "warn",
+      "definition": "Apology and deference markers accumulate beyond what the face-threat of the request requires, to the point of obscuring the request itself.",
+      "why_it_fails": "Documented in the e-politeness literature as a characteristic of L2 and novice student email: excessive mitigation shifts the email from respectful to anxious, and in the recipient's reading it can signal either a trivial request or an attempt to pre-empt blame. It also increases reading load, which works against the accessibility goal.",
+      "detect": [
+        {
+          "tier": 1,
+          "type": "structural",
+          "metric": "apology_marker_density",
+          "count_patterns": [
+            "\\bsorry\\b",
+            "\\bapolog(?:y|ies|ise|ize|ising|izing)\\b",
+            "\\bforgive\\b",
+            "\\bexcuse me\\b",
+            "\\bI hope you (?:do not|don't) mind\\b",
+            "\\bI am afraid\\b"
+          ],
+          "threshold": "More than 2 apology markers in an email under 200 words, or more than 3 in any email.",
+          "note": "Threshold must be calibrated against the annotated corpus, not chosen arbitrarily. Report the calibration."
+        },
+        {
+          "tier": 2,
+          "type": "rubric_judge",
+          "rubric": "Does the level of apology match the size of the imposition? Rate 1 (under-mitigated) to 5 (excessively apologetic). Flag 1 and 5."
+        }
+      ],
+      "repair": "Keep one apology at the point of the imposition and delete the rest. Replace self-deprecation with a factual statement of the situation.",
+      "policy_rules": [],
+      "bad_example": "I am so sorry to bother you, I know you are extremely busy, and I really apologise for taking up your time, and I am sorry if this is an inconvenience...",
+      "good_example": "I am sorry to write at short notice about the deadline for the essay.",
+      "corpus_refs": []
+    },
+    {
+      "violation_id": "V05_UNDER_MITIGATED",
+      "name": "Under-mitigated or demanding register",
+      "severity": "warn",
+      "definition": "The request is issued as a bare imperative or a demand, without the mitigation expected in a student-to-faculty exchange.",
+      "why_it_fails": "Reads as an entitlement claim rather than a request, and in a hierarchical institutional relationship it invites refusal on relational rather than substantive grounds.",
+      "detect": [
+        {
+          "tier": 1,
+          "type": "lexical",
+          "patterns": [
+            "^(?:give|send|extend|change|fix|approve|grant) me\\b",
+            "\\byou (?:must|need to|have to|should)\\b",
+            "\\bi (?:need|want) you to\\b",
+            "\\bimmediately\\b",
+            "\\basap\\b"
+          ],
+          "flags": "im"
+        },
+        {
+          "tier": 1,
+          "type": "structural",
+          "metric": "modal_mitigation_present",
+          "check": "Request sentence must contain at least one of: could / would / may / might / I would be grateful if / would it be possible."
+        }
+      ],
+      "repair": "Convert the imperative into an interrogative with a modal: 'Could you please ...' / 'Would it be possible to ...'.",
+      "policy_rules": [],
+      "bad_example": "I need you to extend my deadline to next Friday.",
+      "good_example": "Would it be possible to extend the deadline to next Friday?",
+      "corpus_refs": []
+    },
+    {
+      "violation_id": "V06_VAGUE_REQUEST",
+      "name": "Request without a determinate action",
+      "severity": "warn",
+      "definition": "The email does not state what the recipient is being asked to do, or states it only in abstract terms.",
+      "why_it_fails": "Produces a reply that asks for clarification, which costs the student another round of anxiety and delay. This is the failure mode that the guided interface is specifically designed to prevent, so a vague output is a direct contradiction of the product's premise.",
+      "detect": [
+        {
+          "tier": 1,
+          "type": "structural",
+          "metric": "request_specificity",
+          "check": "Draft must contain a request sentence with (a) a modal or interrogative, (b) a concrete object (deadline / meeting / clarification / procedure), and (c) if a date is involved, an explicit date or a placeholder for one."
+        },
+        {
+          "tier": 2,
+          "type": "rubric_judge",
+          "rubric": "Could a reasonable recipient act on this email without asking a follow-up question? Yes / No."
+        }
+      ],
+      "repair": "Name the action, the object, and the timeframe.",
+      "policy_rules": [],
+      "bad_example": "I would like to discuss my situation regarding the course.",
+      "good_example": "Could we meet for 15 minutes next week to discuss the essay deadline?",
+      "corpus_refs": []
+    },
+    {
+      "violation_id": "V07_EXCESS_DISCLOSURE",
+      "name": "Unnecessary sensitive disclosure",
+      "severity": "warn",
+      "definition": "The draft discloses medical, psychological, or personal detail beyond what is needed to establish the academic impact.",
+      "why_it_fails": "Disclosure is irreversible. The student cannot un-send a diagnosis. It also shifts the recipient's role from assessor to confidant, which is not what the regulation requires: GAR 9.6.1 and 9.2.2 turn on the impact on the work and on special circumstances, not on a clinical account.",
+      "detect": [
+        {
+          "tier": 1,
+          "type": "lexical",
+          "patterns": [
+            "\\b(?:diagnos(?:ed|is)|disorder|syndrome|depress(?:ion|ed)|anxiety disorder|ADHD|OCD|bipolar|PTSD)\\b",
+            "\\b(?:hospitali[sz]ed|medication|prescription|therapy|therapist|psychiatr\\w+)\\b",
+            "\\b(?:my doctor|my psychiatrist|my counsellor) (?:said|told|wrote)\\b"
+          ],
+          "flags": "i"
+        },
+        {
+          "tier": 2,
+          "type": "rubric_judge",
+          "rubric": "Does each disclosed detail serve to explain the academic impact? Delete any detail that does not."
+        }
+      ],
+      "repair": "Convert clinical detail into functional impact: 'a health condition that affected my ability to work for about two weeks'.",
+      "policy_rules": [
+        "EDUHK-GAR-9.2.2"
+      ],
+      "bad_example": "I have been diagnosed with generalised anxiety disorder and my psychiatrist increased my medication, which made me drowsy.",
+      "good_example": "A health condition affected my ability to work for about two weeks before the deadline.",
+      "corpus_refs": []
+    },
+    {
+      "violation_id": "V08_MULTIPLE_REQUESTS",
+      "name": "Competing requests in one message",
+      "severity": "warn",
+      "definition": "The email asks for more than one distinct action, or mixes a request with a complaint or a procedural challenge.",
+      "why_it_fails": "Recipients answer the easiest question and defer the rest. Mixing a request for an extension with a challenge to a mark also creates a record that can complicate a later formal review.",
+      "detect": [
+        {
+          "tier": 1,
+          "type": "structural",
+          "metric": "distinct_request_count",
+          "check": "Count sentences containing a request marker (could / would / would it be possible / may I / I would like to ask / please) or that are a direct yes/no question to the recipient. More than one => flag for review, not for repair.",
+          "implementation_note": "The definition above is about distinct actions; the implementation counts request sentences. These are not the same thing. An email that states a request generally and then specifies it ('I would like to ask whether an extension is possible ... Would an extension of three days be possible?') has two request sentences and one action. The check therefore reports a question for the writer, not a defect: the writer decides whether the sentences are one action stated twice or two actions that belong in separate emails. Improving it would need request objects, not sentence counts, and the limitation is stated in the report rather than tuned away."
+        }
+      ],
+      "repair": "Send one email per action, or state explicitly which request is primary and which is conditional on the first.",
+      "policy_rules": [],
+      "bad_example": "Could I have an extension, and also could you explain why I lost marks for referencing?",
+      "good_example": "Could I ask about the deadline for this essay? I have a separate question about the referencing feedback and will write about that separately.",
+      "corpus_refs": []
+    },
+    {
+      "violation_id": "V09_MISSING_IDENTIFIERS",
+      "name": "Missing course or assignment identifiers",
+      "severity": "warn",
+      "definition": "The draft does not identify the course, the assignment, or the student in a way that lets the recipient locate the record.",
+      "why_it_fails": "A lecturer teaching several courses cannot act on an unidentified request, so the email generates a clarification round. Placeholders left unfilled are the same failure at the point of sending.",
+      "detect": [
+        {
+          "tier": 1,
+          "type": "structural",
+          "metric": "identifier_completeness",
+          "check": "Draft must contain course code, assignment or assessment name, and student name. Any unresolved [placeholder] in these slots => flag."
+        }
+      ],
+      "repair": "Fill the slots before copying. The app should show a checklist of unresolved placeholders at the point of copying.",
+      "policy_rules": [],
+      "bad_example": "Dear Professor, I am writing about my assignment.",
+      "good_example": "Dear Dr Chan, I am writing about the essay 'Language and Identity' for LIN4049.",
+      "corpus_refs": []
+    },
+    {
+      "violation_id": "V10_REGISTER_MISMATCH",
+      "name": "Register or address mismatch",
+      "severity": "warn",
+      "definition": "The salutation, sign-off, or overall register does not match the institutional relationship, or is internally inconsistent.",
+      "why_it_fails": "An inconsistent register (for example a formal body with an informal opening, or 'Hey' to a Dean) reads as carelessness even when the content is correct.",
+      "detect": [
+        {
+          "tier": 1,
+          "type": "lexical",
+          "patterns": [
+            "^(?:hey|hi|hello there|yo)\\b",
+            "\\bcheers\\b",
+            "\\bthanks a lot\\b",
+            "\\b(?:dude|mate)\\b",
+            "(?:^|\\n)[ \\t]*regards[,]?[ \\t]*(?=\\n|$)"
+          ],
+          "flags": "im"
+        },
+        {
+          "tier": 1,
+          "type": "structural",
+          "metric": "salutation_consistency",
+          "check": "Salutation must use a title and surname, or a defined role. 'Dear Sir/Madam' is acceptable only when the recipient is genuinely unknown."
+        }
+      ],
+      "repair": "Use title + surname where known, and a closing consistent with the opening.",
+      "policy_rules": [],
+      "bad_example": "Hey! Quick question about my grade.",
+      "good_example": "Dear Dr Chan, I am writing to ask about my grade for the mid-term essay.",
+      "corpus_refs": []
+    },
+    {
+      "violation_id": "V11_PREMATURE_ESCALATION",
+      "name": "Premature escalation",
+      "severity": "block",
+      "definition": "The draft invokes a formal mechanism, a deadline, or a consequence before the informal first step has been taken.",
+      "why_it_fails": "GAR 9.2.2 makes a formal review conditional on the student having first approached the lecturer under 9.2.1. Threatening escalation in the first email both misstates the procedure and removes the lecturer's incentive to resolve the matter informally.",
+      "detect": [
+        {
+          "tier": 1,
+          "type": "lexical",
+          "patterns": [
+            "\\b(?:formal (?:complaint|appeal|review)|appeal to|escalate|further action|legal advice|ombudsman)\\b",
+            "\\bif (?:i do not|i don't) (?:hear|receive)\\b",
+            "\\bwithin \\d+ (?:working )?days? or\\b"
+          ],
+          "flags": "i"
+        },
+        {
+          "tier": 3,
+          "type": "policy_crosscheck",
+          "logic": "If the draft invokes 9.2.2 or 4.5 while the user's answers indicate no prior contact (situation == new), flag."
+        }
+      ],
+      "repair": "Remove the threat and the formal citation. Ask for the outcome first; escalate only after a response or a missed response.",
+      "policy_rules": [
+        "EDUHK-GAR-9.2.1",
+        "EDUHK-GAR-9.2.2"
+      ],
+      "bad_example": "If I do not receive a reply within 7 days I will lodge a formal appeal with the Faculty Dean.",
+      "good_example": "I would be grateful for your guidance on what I should do next.",
+      "corpus_refs": []
+    },
+    {
+      "violation_id": "V12_DEADLINE_BLIND",
+      "name": "Missing or wrong date reference",
+      "severity": "warn",
+      "definition": "The draft refers to a deadline, a date, or a period without stating it, or states a date that contradicts the student's answers.",
+      "why_it_fails": "Every route in this domain is date-gated: 9.6.1 requires action before the due date, 9.2.3 sets 14 working days, 13.1 sets a 7-day threshold. A date-blind email cannot be evaluated by the recipient against any of them.",
+      "detect": [
+        {
+          "tier": 1,
+          "type": "structural",
+          "metric": "date_presence",
+          "check": "If the request type is extension, absence, or grade, the draft must contain at least one explicit date or a dated placeholder."
+        },
+        {
+          "tier": 3,
+          "type": "consistency",
+          "logic": "Dates in the draft must match the dates the student entered. Do not let the model supply a date."
+        }
+      ],
+      "repair": "Insert the date the student actually entered. Never let the generator infer a date.",
+      "policy_rules": [
+        "EDUHK-GAR-9.6.1",
+        "EDUHK-GAR-9.2.3",
+        "EDUHK-GAR-13.1"
+      ],
+      "bad_example": "I missed the deadline last week.",
+      "good_example": "The essay was due on Friday 6 November.",
+      "corpus_refs": []
+    }
+  ],
+  "annotation_protocol": {
+    "unit": "One email = one record. A single email may carry several violations; code each independently.",
+    "coder": "Two coders minimum for the evaluation subset. Report Cohen's kappa per violation category. A category with kappa below 0.6 must be redefined or dropped, not silently kept.",
+    "blind": "Coders must not know whether the email was written by a human, by the template, or by the model.",
+    "tier2_validation": "Any rubric_judge check must be scored against human labels on at least 50 items before it is reported as reliable."
+  }
+}

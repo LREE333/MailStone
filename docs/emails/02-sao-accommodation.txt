@@ -1,0 +1,35 @@
+To: saosen@eduhk.hk
+Subject: Question about Academic Accommodation — SEN Support Services
+
+Dear SEN Support Services team,
+
+I am an undergraduate student at EdUHK, and I am developing a tool to help
+students write clearer academic emails as part of my capstone project
+(LIN4049). I am writing to ask about the scope of the Academic Accommodation
+service listed on the SEN Support Services leaflet.
+
+I have read the leaflet which lists Academic Accommodation among the services
+your office provides, alongside Special Examination Arrangements, Counselling
+Service, and others. The leaflet does not describe what Academic Accommodation
+covers, so I would like to ask:
+
+1. Does Academic Accommodation cover adjustments to coursework deadlines
+   (for example, an extended submission date for an assignment), or is it
+   limited to examination arrangements?
+
+2. Are taught postgraduate and research postgraduate students eligible for
+   Academic Accommodation, or is the service for undergraduate and sub-degree
+   students only?
+
+3. If a student is not yet registered with your office, can they still make
+   an enquiry about what accommodation might be available?
+
+I am not asking you to confirm an outcome for any particular case. I am asking
+about the scope of the service so that the tool I am building can direct
+students to the right office and describe it accurately.
+
+Thank you for your time.
+
+Kind regards,
+LI Leer
+Student ID: 11601718

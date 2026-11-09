@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>MailStone — A clearer academic message</title>
+
+  <meta
+    name="description"
+    content="MailStone helps students navigate academic communication through guided questions, policy checkpoints and safe email templates."
+  >
+
+  <link rel="stylesheet" href="./css/styles.css">
+  <script src="./js/gatekeeper.js" defer></script>
+  <script src="./js/lint.js" defer></script>
+  <script src="./js/app.js" defer></script>
+</head>
+
+<body>
+  <a class="skip-link" href="#main">Skip to main content</a>
+
+  <div class="clay-decoration clay-sun" aria-hidden="true"></div>
+  <div class="clay-decoration clay-cloud" aria-hidden="true"></div>
+
+  <header class="site-header">
+    <a class="brand" href="./index.html" aria-label="MailStone home">
+      <span class="brand-mark" aria-hidden="true">m.</span>
+      <span>MailStone</span>
+    </a>
+
+    <div class="header-right">
+      <span class="prototype-badge">Early prototype</span>
+
+      <nav class="top-nav" aria-label="Website navigation">
+        <button id="journey-button" class="nav-button" type="button">
+          Journey
+        </button>
+
+        <button id="privacy-button" class="nav-button" type="button">
+          Privacy
+        </button>
+
+        <button id="help-button" class="nav-button" type="button">
+          Help
+        </button>
+      </nav>
+    </div>
+  </header>
+
+  <div id="utility-panel" class="utility-panel" hidden>
+    <div class="utility-panel-inner">
+      <div>
+        <strong id="utility-title">Privacy</strong>
+        <p id="utility-content"></p>
+      </div>
+
+      <button id="close-utility" class="close-button" type="button">
+        ×
+      </button>
+    </div>
+  </div>
+
+  <main id="main" class="shell">
+    <section class="intro" aria-labelledby="page-title">
+      <p class="eyebrow">A LITTLE HELP FINDING THE NEXT STEP</p>
+
+      <h1 id="page-title">
+        One small step.<br>
+        <em>A clearer message.</em>
+      </h1>
+
+      <p class="intro-copy">
+        Academic communication can feel difficult to start.
+        MailStone helps you understand what to do and prepare a clear message.
+      </p>
+    </section>
+
+    <section class="journey" aria-label="Academic communication journey">
+      <nav class="step-nav" aria-label="Drafting steps">
+        <div class="step-item active" data-step-indicator="0">
+          <span class="step-number">1</span>
+          <span class="step-label">Understand</span>
+        </div>
+
+        <span class="step-line"></span>
+
+        <div class="step-item" data-step-indicator="1">
+          <span class="step-number">2</span>
+          <span class="step-label">Details</span>
+        </div>
+
+        <span class="step-line"></span>
+
+        <div class="step-item" data-step-indicator="2">
+          <span class="step-number">3</span>
+          <span class="step-label">Review</span>
+        </div>
+      </nav>
+
+      <div class="progress-heading">
+        <span id="progress-step-text">Step 1 of 3</span>
+        <span id="progress-caption">Let’s begin</span>
+      </div>
+
+      <progress
+        id="journey-progress"
+        max="100"
+        value="0"
+        aria-label="Communication journey progress"
+      >
+        0%
+      </progress>
+
+      <section id="question-card" class="card">
+        <div class="card-topline">
+          <span id="question-tag" class="small-tag">
+            REQUEST NAVIGATION
+          </span>
+
+          <span class="decorative-spark" aria-hidden="true">✧</span>
+        </div>
+
+        <form id="step-form">
+          <fieldset>
+            <legend id="question-title" tabindex="-1"></legend>
+
+            <p id="question-hint" class="question-hint"></p>
+
+            <div id="choices" class="choices"></div>
+
+            <div
+              id="inline-policy-checkpoint"
+              class="inline-policy-checkpoint"
+              hidden
+              role="status"
+            >
+              <div class="checkpoint-icon" aria-hidden="true">!</div>
+
+              <div>
+                <strong id="inline-policy-title">
+                  You may need to check something
+                </strong>
+
+                <p id="inline-policy-text"></p>
+              </div>
+            </div>
+          </fieldset>
+
+          <div class="card-actions">
+            <button
+              id="back-button"
+              class="text-button"
+              type="button"
+              disabled
+            >
+              ← Back
+            </button>
+
+            <button
+              id="next-button"
+              class="primary-button"
+              type="submit"
+              disabled
+            >
+              Continue →
+            </button>
+          </div>
+        </form>
+
+        <p class="gentle-note">
+          No perfect answers are needed. You can go back and change your choices.
+        </p>
+      </section>
+
+      <section
+        id="result-card"
+        class="card result-card"
+        hidden
+        aria-labelledby="result-title"
+      >
+        <div class="result-heading">
+          <span class="small-tag">READY TO REVIEW</span>
+
+          <h2 id="result-title" tabindex="-1">
+            Your first draft is ready.
+          </h2>
+
+          <p class="question-hint">
+            Check the highlighted details before copying.
+          </p>
+        </div>
+
+        <div class="draft-notice">
+          Template-based draft · Nothing is sent automatically
+        </div>
+
+        <!-- Suggested next step tab -->
+        <section class="route-tab-wrapper">
+          <button
+            id="route-tab"
+            class="route-tab"
+            type="button"
+            aria-expanded="false"
+            aria-controls="route-details"
+          >
+            <span class="route-tab-icon" aria-hidden="true">→</span>
+
+            <span class="route-tab-copy">
+              <strong>Suggested next step</strong>
+              <small id="route-tab-subtitle">
+                Click to see your route
+              </small>
+            </span>
+
+            <span class="route-tab-arrow" aria-hidden="true">＋</span>
+          </button>
+
+          <div id="route-details" class="route-details" hidden>
+            <dl class="route-list">
+              <div>
+                <dt>Suggested contact</dt>
+                <dd id="route-contact"></dd>
+              </div>
+
+              <div>
+                <dt>Email purpose</dt>
+                <dd id="route-purpose"></dd>
+              </div>
+
+              <div>
+                <dt>Separate application</dt>
+                <dd id="route-application"></dd>
+              </div>
+
+              <div>
+                <dt>Official source</dt>
+                <dd id="route-source"></dd>
+              </div>
+            </dl>
+
+            <p class="route-note">
+              MailStone does not guess personal email addresses.
+              Confirm the correct contact through an official university page.
+            </p>
+          </div>
+        </section>
+
+        <!-- Policy checkpoint on result page -->
+        <section
+          id="result-policy"
+          class="result-policy"
+          hidden
+          aria-labelledby="result-policy-title"
+        >
+          <div class="result-policy-icon" aria-hidden="true">!</div>
+
+          <div>
+            <h3 id="result-policy-title">Policy checkpoint</h3>
+            <p id="result-policy-text"></p>
+
+            <button
+              id="show-policy-source"
+              class="inline-link-button"
+              type="button"
+            >
+              Show source information
+            </button>
+
+            <div id="result-policy-source" class="policy-source" hidden></div>
+          </div>
+        </section>
+
+        <!-- Support route (services, not regulations) -->
+        <section
+          id="result-support"
+          class="result-support"
+          hidden
+          aria-labelledby="result-support-title"
+        >
+          <div class="result-support-icon" aria-hidden="true">+</div>
+
+          <div>
+            <h3 id="result-support-title">A separate office for support</h3>
+            <p id="result-support-text"></p>
+
+            <dl id="result-support-route" class="support-route"></dl>
+
+            <p class="policy-source-note" id="result-support-note"></p>
+          </div>
+        </section>
+
+        <!-- Email workspace -->
+        <section class="email-workspace" aria-labelledby="email-workspace-title">
+          <div class="workspace-toolbar">
+            <div>
+              <span class="workspace-kicker">EMAIL FOR THE RECIPIENT</span>
+              <h3 id="email-workspace-title">Your editable draft</h3>
+            </div>
+
+            <button
+              id="toggle-review"
+              class="secondary-button"
+              type="button"
+              aria-pressed="false"
+            >
+              Check this draft
+            </button>
+          </div>
+
+          <textarea
+            id="email-draft"
+            spellcheck="true"
+            aria-describedby="draft-help"
+          ></textarea>
+
+          <div
+            id="draft-preview"
+            class="draft-preview"
+            hidden
+            aria-label="Draft review preview"
+          ></div>
+
+          <p id="draft-help" class="field-help">
+            Replace the bracketed placeholders and check the details before
+            sending.
+          </p>
+
+          <div id="review-legend" class="review-legend" hidden>
+            <span class="legend-item">
+              <i class="legend-colour placeholder-colour"></i>
+              Replace this
+            </span>
+
+            <span class="legend-item">
+              <i class="legend-colour warning-colour"></i>
+              Must fix before sending
+            </span>
+
+            <span class="legend-item">
+              <i class="legend-colour caution-colour"></i>
+              Check this
+            </span>
+          </div>
+        </section>
+
+        <!-- Draft compliance check -->
+        <section
+          id="lint-panel"
+          class="lint-panel"
+          aria-labelledby="lint-title"
+        >
+          <div class="lint-header">
+            <div>
+              <span class="workspace-kicker">DRAFT CHECK</span>
+              <h3 id="lint-title">What this draft gets wrong</h3>
+            </div>
+
+            <span id="lint-summary" class="lint-summary">Running checks</span>
+          </div>
+
+          <div id="lint-list" class="lint-list"></div>
+
+          <p class="lint-note">
+            These checks are compiled from documented student-email failure
+            modes, not from a language model's opinion. A clean result means no
+            listed pattern matched, not that the email is perfect.
+          </p>
+        </section>
+
+        <!-- Fact console -->
+        <details class="tool-details">
+          <summary>
+            <span class="summary-icon fact-summary-icon">🔒</span>
+            <span>
+              <strong>Fact Lock</strong>
+              <small>Keep confirmed facts unchanged</small>
+            </span>
+          </summary>
+
+          <section class="fact-console" aria-labelledby="fact-title">
+            <div class="fact-console-header">
+              <div>
+                <span class="fact-lock-icon" aria-hidden="true">✓</span>
+                <h3 id="fact-title">Protected facts</h3>
+              </div>
+
+              <span class="fact-console-status">Fact Lock active</span>
+            </div>
+
+            <div class="fact-group confirmed-facts">
+              <h4>
+                <span>✓</span>
+                Confirmed or fixed
+              </h4>
+
+              <div id="confirmed-facts"></div>
+            </div>
+
+            <div class="fact-group request-facts">
+              <h4>
+                <span>→</span>
+                Your request
+              </h4>
+
+              <div id="request-facts"></div>
+            </div>
+
+            <div class="fact-group unknown-facts">
+              <h4>
+                <span>?</span>
+                Not yet confirmed
+              </h4>
+
+              <div id="unknown-facts"></div>
+            </div>
+          </section>
+        </details>
+
+        <!-- Sending checklist -->
+        <details class="tool-details">
+          <summary>
+            <span class="summary-icon checklist-summary-icon">✓</span>
+            <span>
+              <strong>Before sending</strong>
+              <small>Quick self-check</small>
+            </span>
+          </summary>
+
+          <section class="checklist-content">
+            <label class="check-item">
+              <input type="checkbox">
+              <span>I checked the recipient or department.</span>
+            </label>
+
+            <label class="check-item">
+              <input type="checkbox">
+              <span>I filled in the course code and assignment name.</span>
+            </label>
+
+            <label class="check-item">
+              <input type="checkbox">
+              <span>I checked the original date or deadline.</span>
+            </label>
+
+            <label class="check-item">
+              <input type="checkbox">
+              <span>I made one clear request.</span>
+            </label>
+
+            <label class="check-item">
+              <input type="checkbox">
+              <span>I checked whether a form or document is required.</span>
+            </label>
+
+            <label class="check-item">
+              <input type="checkbox">
+              <span>I checked that every mentioned attachment is ready.</span>
+            </label>
+          </section>
+        </details>
+
+        <!-- Writing education -->
+        <details class="tool-details">
+          <summary>
+            <span class="summary-icon writing-summary-icon">✦</span>
+            <span>
+              <strong>Why is this email organised this way?</strong>
+              <small>A short writing explanation</small>
+            </span>
+          </summary>
+
+          <div class="learning-content">
+            <ul id="learning-tips"></ul>
+          </div>
+        </details>
+
+        <div class="result-actions">
+          <button id="edit-answers" class="text-button" type="button">
+            ← Review choices
+          </button>
+
+          <button id="copy-button" class="primary-button" type="button">
+            Copy draft
+          </button>
+        </div>
+
+        <p id="copy-status" class="copy-status" role="status"></p>
+      </section>
+
+      <p class="privacy-note">
+        No sign-in. No automatic sending.<br>
+        Your answers stay on this page and are not saved by the app.
+        Use fictional details while testing.
+      </p>
+
+      <noscript>
+        Please enable JavaScript to use the step-by-step questions.
+      </noscript>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <span>Made for the moments before you press send.</span>
+    <span>MailStone is not an official university service.</span>
+  </footer>
+</body>
+</html>

@@ -1,0 +1,415 @@
+{
+  "schema_version": "1.1",
+  "purpose": "Registry of authoritative source documents. Every rule in rules.*.json must point to a source_id here. Nothing may be asserted to a student unless its source is listed, its verification_status is not 'unverified', and the student's programme level falls inside the source's declared scope.",
+  "institution": "The Education University of Hong Kong (EdUHK)",
+  "snapshot_policy": "Sources are captured as immutable snapshots. If the University revises a page, add a NEW source entry with a new version and retrieved_date. Never edit an old snapshot in place.",
+
+  "scope_model": {
+    "why": "EdUHK does not publish one set of academic regulations. It publishes separate documents for different programme types, and at least one of them is split by intake year. A clause that governs a BEd student may not govern a taught master's student, and the clause numbers may not even line up. Scope is therefore a required field, not metadata: applying a clause outside its scope is a correctness failure even when the wording is quoted perfectly.",
+    "programme_levels": {
+      "sub_degree": "Associate degree / higher diploma",
+      "ug": "Bachelor's degree (BEd, BA, BSc, BSocSc)",
+      "pgde": "Postgraduate Diploma in Education",
+      "tpg": "Taught postgraduate master's degree",
+      "rpg": "Research postgraduate (MPhil, PhD) and professional doctorate (EdD)"
+    },
+    "scope_fields": {
+      "programme_levels": "Which programme levels this document governs. Empty array means the scope is not yet established.",
+      "cohort_from": "First intake year the document applies to, e.g. '2014/15'. null means no lower bound is stated.",
+      "cohort_to": "Last intake year, e.g. '2013/14'. null means the document is current.",
+      "scope_basis": "verbatim = the document states its own scope. inferred_from_structure = the author deduced the scope from the existence of sibling documents. needs_confirmation = not established; may not be asserted."
+    },
+    "inheritance": "A rule inherits the scope of its source document. A rule may override with its own 'scope' object only when the source document states the narrower scope explicitly."
+  },
+
+  "sources": [
+    {
+      "source_id": "EDUHK-SH-2026-GAR",
+      "title": "Student Handbook 2026/27 — General Academic Regulations",
+      "publisher": "EdUHK Registry",
+      "doc_type": "regulation",
+      "language": "en",
+      "edition": "2026/27",
+      "url": "https://www.eduhk.hk/re/student_handbook/en/Rules-And-Regulations/General-Academic-Regulations.html",
+      "retrieved_date": "2026-10-31",
+      "retrieval_method": "live web page",
+      "verification_status": "verified_primary",
+      "scope": {
+        "programme_levels": ["sub_degree", "ug", "pgde"],
+        "cohort_from": null,
+        "cohort_to": null,
+        "scope_basis": "needs_confirmation",
+        "scope_note": "The handbook does not print an explicit applicability statement on the regulation page. This scope is inferred from the fact that the Graduate School publishes a separate General Academic Regulations for Taught Postgraduate Programmes, which would be redundant if this document already covered TPG students. Confirm with Registry before the report claims it."
+      },
+      "notes": "Chapter numbering as rendered on the live page. Re-check against the downloadable PDF version before submission; chapter numbers differ between HTML and PDF renderings on some Registry pages.",
+      "used_for": ["extension", "grade", "absence", "review"]
+    },
+    {
+      "source_id": "EDUHK-SH-2026-PROC",
+      "title": "Student Handbook 2026/27 — Procedures (Chapter 4.5)",
+      "publisher": "EdUHK Registry",
+      "doc_type": "procedure",
+      "language": "en",
+      "edition": "2026/27",
+      "url": "https://www.eduhk.hk/re/student_handbook/en/Rules-And-Regulations/Procedures.html",
+      "retrieved_date": "2026-10-31",
+      "retrieval_method": "live web page",
+      "verification_status": "verified_primary",
+      "scope": {
+        "programme_levels": ["sub_degree", "ug", "pgde"],
+        "cohort_from": null,
+        "cohort_to": null,
+        "scope_basis": "needs_confirmation",
+        "scope_note": "Same inference as EDUHK-SH-2026-GAR: the Students' Appeal Committee procedure sits in the same handbook, so it shares that handbook's programme scope until Registry says otherwise."
+      },
+      "notes": "Covers appeals against Board of Examiners, disciplinary decisions, and EOCC decisions. Note: this is NOT the grade review route — that is GAR 9.2.",
+      "used_for": ["review", "exam"]
+    },
+    {
+      "source_id": "EDUHK-TPG-GAR",
+      "title": "General Academic Regulations (for Taught Postgraduate Programmes)",
+      "publisher": "EdUHK Graduate School",
+      "doc_type": "regulation",
+      "language": "en",
+      "edition": "two cohort versions: students admitted in 2013/14 and before; students admitted in 2014/15 and thereafter",
+      "url": null,
+      "locator": "https://www.eduhk.hk/ssps/zh-hans/student-alumni/student-learning-resources",
+      "retrieved_date": null,
+      "retrieval_method": "referenced from the Faculty of Social Sciences programme page; Graduate School site (gs.eduhk.hk) returned a TLS error on 2026-10-31 and could not be read",
+      "verification_status": "identified_not_retrieved",
+      "scope": {
+        "programme_levels": ["tpg"],
+        "cohort_from": "2014/15",
+        "cohort_to": null,
+        "scope_basis": "verbatim",
+        "scope_note": "The existence of two cohort versions is stated on the Faculty page: 'For students admitted in 2013/14 and before' and 'For students admitted in 2014/15 and thereafter'. Which version governs a given student therefore depends on intake year, not on the current calendar year."
+      },
+      "notes": "NOT YET IN THE CORPUS. No clause from this document may be quoted or paraphrased until it is retrieved and registered. The Gatekeeper must withhold for TPG students until then.",
+      "used_for": ["extension", "grade", "absence", "review"]
+    },
+    {
+      "source_id": "EDUHK-RPG-GAR",
+      "title": "General Academic Regulations (for Research Component)",
+      "publisher": "EdUHK Graduate School",
+      "doc_type": "regulation",
+      "language": "en",
+      "edition": "applies to Research Postgraduate and Professional Doctorate programmes only",
+      "url": null,
+      "locator": "https://www.eduhk.hk/ssps/zh-hans/student-alumni/student-learning-resources",
+      "retrieved_date": null,
+      "retrieval_method": "referenced from the Faculty of Social Sciences programme page",
+      "verification_status": "identified_not_retrieved",
+      "scope": {
+        "programme_levels": ["rpg"],
+        "cohort_from": null,
+        "cohort_to": null,
+        "scope_basis": "verbatim",
+        "scope_note": "Stated on the Faculty page: 'For Research Postgraduate and Professional Doctorate Programmes only'."
+      },
+      "notes": "NOT YET IN THE CORPUS. Registered so that the scope gap is visible in the data rather than silently absent.",
+      "used_for": ["extension", "grade", "absence", "review"]
+    },
+    {
+      "source_id": "EDUHK-SAO-SEN-LEAFLET",
+      "title": "SEN Support Services — Student Affairs Office (service leaflet)",
+      "publisher": "EdUHK Student Affairs Office",
+      "doc_type": "service_information",
+      "language": "en",
+      "edition": "current as retrieved",
+      "url": "https://eduhk.hk/sao/upload/custompage/674/self/689e9836edc41.pdf",
+      "locator": "https://www.eduhk.hk/sao/en/info/counselling_services/sen/",
+      "retrieved_date": "2026-11-01",
+      "retrieval_method": "PDF download from the SAO SEN Support Services page (image-only PDF; read by rendering to PNG, no text layer)",
+      "verification_status": "verified_primary",
+      "scope": {
+        "programme_levels": ["sub_degree", "ug", "pgde", "tpg", "rpg"],
+        "cohort_from": null,
+        "cohort_to": null,
+        "scope_basis": "needs_confirmation",
+        "scope_note": "The leaflet addresses 'students with SEN' at the University and does not restrict by programme type, so it is treated as University-wide. The narrower scope recorded on EDUHK-EDB-SEN-CONTACT (degree / sub-degree / certificate) reflects the purpose of that government directory — transition from secondary school — rather than a limitation stated by the office. Confirm with SAO before the report asserts coverage for postgraduate students."
+      },
+      "extract": {
+        "office": "SEN Support Services, Student Affairs Office",
+        "stated_aim": "dedicated to creating an inclusive learning environment where students with SEN can excel academically and integrate into the University life smoothly",
+        "services_listed": [
+          "Academic Accommodation",
+          "Special Examination Arrangements",
+          "Counselling Service",
+          "Modified Campus Facilities",
+          "Peer Support",
+          "Study Skills Training",
+          "Career Guidance",
+          "Bursaries and Scholarships"
+        ],
+        "email": "saosen@eduhk.hk",
+        "phone": "2948-6251",
+        "office_address": "01S, 1/F, Cho Kwai Chee Foundation Building, EdUHK (A-1/F-01S)",
+        "service_page": "https://eduhk.hk/sao/info/sen"
+      },
+      "notes": "PRIMARY evidence for establishing (a) which office, (b) that an 'Academic Accommodation' service exists, and (c) that 'Special Examination Arrangements' is a separate listed service. The leaflet does NOT state what Academic Accommodation covers, who is eligible, whether registration is required, or whether it can be applied retrospectively. As of 2026-11-09, the web page EDUHK-SAO-SEN-WEB-2026 resolves the first two of those four questions: it lists assignment deadline extensions as a possible accommodation, and it states that requests require 'sufficient information (including but not limited to medical reports)'. The leaflet remains the source the UI cites for the service listing; the web page is cited for the service scope.",
+      "used_for": ["accessibility_claim", "exam", "extension"]
+    },
+    {
+      "source_id": "EDUHK-LTTC-LLM-STUDIO",
+      "title": "LTTC LLM Studio and MaaS Platform — student-facing LLM service",
+      "publisher": "EdUHK Learning, Teaching and Technology Centre (LTTC)",
+      "doc_type": "service_information",
+      "language": "en",
+      "edition": "current as confirmed",
+      "url": null,
+      "locator": "https://www.eduhk.hk/lttc/",
+      "retrieved_date": "2026-11-08",
+      "retrieval_method": "oral confirmation from project supervisor (Bibi Leung), 2026-11-08, reporting information from EdUHK LTTC",
+      "verification_status": "confirmed_oral",
+      "scope": {
+        "programme_levels": ["sub_degree", "ug", "pgde", "tpg", "rpg"],
+        "cohort_from": null,
+        "cohort_to": null,
+        "scope_basis": "needs_confirmation",
+        "scope_note": "The LTTC serves the University generally. The specific access model — workshops and credit-bearing courses rather than a public no-registration chat interface — was described by the supervisor. Confirm the current workshop schedule and course listings on the LTTC page before the report asserts the exact access paths."
+      },
+      "extract": {
+        "service_name": "LLM Studio (front-end) backed by a MaaS (Model-as-a-Service) platform",
+        "access_model": "Students access the LLM service primarily through (a) workshops explicitly aimed at students and (b) credit-bearing courses that incorporate the tool. It is not a public, no-registration chat interface.",
+        "provider": "Learning, Teaching and Technology Centre (LTTC), EdUHK"
+      },
+      "notes": "This source records the answer to a question that was previously open: whether EdUHK provides an approved LLM service that students may use without purchasing an external API subscription. The answer is yes, but the access model is structured (workshops / courses), not open-ended. This means the project's model-integration plan must account for the access mechanism, not just the endpoint. The supervisor confirmed this on 2026-11-08.",
+      "used_for": ["ai_tool_procedure"]
+    },
+    {
+      "source_id": "EDUHK-REIMBURSEMENT-2026",
+      "title": "Guideline for Student Reimbursement (9 Sep 2026) and Revised Application for Student Reimbursement (16 Jan 2026)",
+      "publisher": "EdUHK (department to be confirmed — likely Faculty of Humanities or Registry)",
+      "doc_type": "procedure",
+      "language": "en",
+      "edition": "Guideline dated 9 Sep 2026; Application form revised 16 Jan 2026",
+      "url": null,
+      "locator": null,
+      "retrieved_date": "2026-11-08",
+      "retrieval_method": "provided by project supervisor (Bibi Leung) via email attachment",
+      "verification_status": "verified_primary",
+      "scope": {
+        "programme_levels": ["ug"],
+        "cohort_from": null,
+        "cohort_to": null,
+        "scope_basis": "verbatim",
+        "scope_note": "The guideline applies to LIN4049 and LIN4050 (capstone project courses). It is not University-wide; it covers the capstone project reimbursement scheme specifically. Students in other programmes or courses are outside this procedure."
+      },
+      "extract": {
+        "reimbursement_cap": "HK$5,000",
+        "applicable_courses": ["LIN4049", "LIN4050"],
+        "pre_approval_deadline": "30 Nov 2026",
+        "approval_authority": "project supervisor",
+        "supervisor_note_on_eligibility": "approved only if they are not available from LTTC or the course-offering department",
+        "scope_of_approval": "The supervisor's pre-approval under this reimbursement scheme framework constitutes the complete procedural requirement for using AI tools in the capstone project. No separate LTTC application or external-API approval process is required beyond this pre-approval."
+      },
+      "notes": "PRIMARY evidence for the AI-tool procedure question. This document resolves what was previously an open question in the project plan: whether a separate 'established procedure' for AI tool use existed. The reimbursement scheme IS that procedure. The supervisor's pre-approval covers the full workflow. The supervisor note ('approved only if not available from LTTC') also answers the account-funding question: LTTC is checked first, and the reimbursement covers tools not available from LTTC. Confirmed by the supervisor on 2026-11-08.",
+      "used_for": ["ai_tool_procedure"]
+    },
+    {
+      "source_id": "EDUHK-SAO-SEN-WEB-2026",
+      "title": "SEN Support Services — Support Service (web page)",
+      "publisher": "EdUHK Student Affairs Office",
+      "doc_type": "service_information",
+      "language": "en",
+      "edition": "current as retrieved",
+      "url": "https://www.eduhk.hk/sao/en/info/counselling_services/sen/support_service",
+      "locator": null,
+      "retrieved_date": "2026-11-09",
+      "retrieval_method": "live web page, retrieved after SAO reply email redirected to this URL",
+      "verification_status": "verified_primary",
+      "scope": {
+        "programme_levels": ["sub_degree", "ug", "pgde", "tpg", "rpg"],
+        "cohort_from": null,
+        "cohort_to": null,
+        "scope_basis": "needs_confirmation",
+        "scope_note": "The page addresses 'students with Disabilities or SEN' at the University and does not restrict by programme type. It is treated as University-wide, consistent with the leaflet (EDUHK-SAO-SEN-LEAFLET). The page does not state programme-level restrictions."
+      },
+      "extract": {
+        "office": "SEN Support Services, Student Affairs Office",
+        "governing_principle": "Guided by the principles of equal opportunities, we are dedicated to providing reasonable accommodations/adjustments to students with Disabilities or Special Educational Needs (SEN).",
+        "accommodation_trigger": "Upon requests and provision of sufficient information (including but not limited to medical reports and records if necessary) by individual students, and upon considering the facts and circumstances of individual cases, the University may provide reasonable and appropriate accommodations/adjustments.",
+        "lecture_assignment_arrangements": [
+          "Provision of lecture materials in advance",
+          "Use of assistive aids, devices, or software to support learning",
+          "Peer note-taking arrangements",
+          "Instructional support to facilitate participation",
+          "Preferential seating arrangements",
+          "Extension of assignment deadlines",
+          "Alternative formats for assignments",
+          "Flexible group work arrangements"
+        ],
+        "special_examination_arrangements": [
+          "Special seating arrangements or a separate examination venue",
+          "Extra time allowance",
+          "Modifications to response formats",
+          "Adaptations to question paper formats",
+          "Use of assistive devices (e.g., screen readers, magnifiers, speech-to-text software, hearing aids)",
+          "Supervised breaks during examinations"
+        ],
+        "other_support": [
+          "Diversity & Inclusion Student Ambassador Scheme",
+          "Counselling services",
+          "Career services",
+          "Bursaries, Scholarships, and Awards",
+          "Student Hall special accommodations",
+          "Campus facilities (Estate Office, Library)"
+        ]
+      },
+      "notes": "This page resolves the most important open question in the project: 'Academic Accommodation' on the leaflet was a label without content. This page lists 'Extension of assignment deadlines' explicitly under 'Lecture/Assignment Arrangements'. The page also establishes the access pathway: students must make a request and provide sufficient information (including medical reports if necessary). The page does NOT state whether an accommodation can be arranged retrospectively (after a deadline has passed) — that question remains open. Retrieved 2026-11-09 after SAO replied to the project's enquiry email with a redirect to this URL.",
+      "used_for": ["accessibility_claim", "exam", "extension"]
+    },
+    {
+      "source_id": "EDUHK-SAO-REPLY-2026-11-09",
+      "title": "SAO reply email — redirect to support service web page",
+      "publisher": "EdUHK Student Affairs Office — SEN Support Services",
+      "doc_type": "correspondence",
+      "language": "en",
+      "edition": null,
+      "url": null,
+      "locator": null,
+      "retrieved_date": "2026-11-09",
+      "retrieval_method": "email reply from saosen@eduhk.hk to the project's enquiry about Academic Accommodation scope",
+      "verification_status": "verified_primary",
+      "scope": {
+        "programme_levels": ["sub_degree", "ug", "pgde", "tpg", "rpg"],
+        "cohort_from": null,
+        "cohort_to": null,
+        "scope_basis": "needs_confirmation",
+        "scope_note": "The reply was sent by SAO SEN Support Services without programme restriction."
+      },
+      "extract": {
+        "body": "Thank you for your enquiry. For more details of our services scope, please refer to our website below. https://www.eduhk.hk/sao/en/info/counselling_services/sen/support_service",
+        "signature": "Student Affairs Office - SEN Support Services. Email: saosen@eduhk.hk. Telephone: 2948 6251. Website: https://www.eduhk.hk/sao/info/sen/about_sen/"
+      },
+      "notes": "SAO did not answer the three specific questions in the enquiry email. Instead, they redirected to the support service web page. The web page (EDUHK-SAO-SEN-WEB-2026) was then retrieved and found to contain the answers to two of the three questions. The reply itself is registered as the trigger for that retrieval, not as a source of policy content. The reply confirms the contact details (email, phone) that were already registered from the leaflet.",
+      "used_for": ["corroboration"]
+    },
+    {
+      "source_id": "EDUHK-EDB-SEN-CONTACT",
+      "title": "Transfer of SEN information from secondary schools to local post-secondary institutions — institutional contact list",
+      "publisher": "Education Bureau, HKSAR Government (sense.edb.gov.hk)",
+      "doc_type": "government_directory",
+      "language": "zh-Hant",
+      "edition": "current as retrieved",
+      "url": "https://sense.edb.gov.hk/uploads/page/integrated_education/Transition_through_Different_Learning_Stages/Secondary_to_post-secondary_education/ps_contact_tc.pdf",
+      "retrieved_date": "2026-10-31",
+      "retrieval_method": "PDF download",
+      "verification_status": "verified_secondary",
+      "scope": {
+        "programme_levels": ["sub_degree", "ug", "pgde"],
+        "cohort_from": null,
+        "cohort_to": null,
+        "scope_basis": "verbatim",
+        "scope_note": "The EdUHK entry states the covered programmes as 學位 / 副學位 / 證書 (degree / sub-degree / certificate). Taught postgraduate and research postgraduate students are not listed in this entry."
+      },
+      "extract": {
+        "contact_role": "Student Development Manager (SEN), Student Affairs Office — 學生發展經理 (SEN)",
+        "named_contact": "馬寳琪女士 (Ms Ma Po-kei)",
+        "email": "saosen@eduhk.hk",
+        "phone": "2948 6251",
+        "fax": "2948 6771",
+        "office": "Room 01S, 1/F, Cho Kwai Chee Foundation Building, Student Affairs Office, 10 Lo Ping Road, Tai Po, N.T.",
+        "service_page": "https://www.eduhk.hk/sao/en/info/sen/about_sen/",
+        "services_listed": [
+          "學習支援 — 預先派發講義、放大印刷資料、容許使用視聽支援器材及軟件 (learning support: advance handouts, enlarged print, assistive audio-visual equipment and software)",
+          "特殊考試安排 — 加長考試時間、容許使用輔助器材、放大試卷 (special examination arrangements: extended time, assistive equipment, enlarged papers)",
+          "校園設施 — 特殊學習需要自修室、暢通易達洗手間、觸覺引路帶 (campus facilities)",
+          "輔導及就業諮詢 (counselling and career consultation)",
+          "助學金及獎學金 (bursaries and scholarships)"
+        ]
+      },
+      "notes": "SECONDARY evidence, retained for corroboration only. The EdUHK leaflet (EDUHK-SAO-SEN-LEAFLET) was retrieved on 2026-11-01 and confirms the same contact details and a comparable service list, so this entry is no longer the source the UI cites. Its narrower programme scope is a property of the government directory's purpose, not a statement by the University.",
+      "used_for": ["corroboration"]
+    }
+  ],
+
+  "programme_coverage": [
+    {
+      "programme_level": "sub_degree",
+      "label": "Sub-degree / Associate degree",
+      "covered": true,
+      "governing_document": "EDUHK-SH-2026-GAR"
+    },
+    {
+      "programme_level": "ug",
+      "label": "Bachelor's degree",
+      "covered": true,
+      "governing_document": "EDUHK-SH-2026-GAR"
+    },
+    {
+      "programme_level": "pgde",
+      "label": "PGDE",
+      "covered": true,
+      "governing_document": "EDUHK-SH-2026-GAR"
+    },
+    {
+      "programme_level": "tpg",
+      "label": "Taught postgraduate master's",
+      "covered": false,
+      "governing_document": "EDUHK-TPG-GAR",
+      "gap_reason": "Separate regulations, published in two intake-year versions. Not retrieved, so not quoted."
+    },
+    {
+      "programme_level": "rpg",
+      "label": "Research postgraduate / professional doctorate",
+      "covered": false,
+      "governing_document": "EDUHK-RPG-GAR",
+      "gap_reason": "Separate regulations for the research component. Not retrieved, so not quoted."
+    }
+  ],
+
+  "known_gaps": [
+    {
+      "gap_id": "GAP-NO-TOPIC-IDENTIFIED",
+      "status": "by_design",
+      "surfaces_as": "empty_state",
+      "request_types": ["unsure"],
+      "student_facing_summary": "You have not yet said what the email is for, so no clause can be selected. The regulations are organised by topic — deadlines, grades, absence, review — and a clause cannot be applied to a request that has not been described. The draft asks which procedure applies, and names none.",
+      "consequence_for_product": "This is an empty state by design, not a corpus gap. It must not be reported as a finding about the University.",
+      "action_required": "None. If a student reaches this state often, that is a signal about the question flow, not about the policy base."
+    },
+    {
+      "gap_id": "GAP-PROGRAMME-SCOPE",
+      "status": "confirmed_in_document_structure",
+      "description": "The corpus covers one of at least three regulation families. EdUHK publishes (a) General Academic Regulations in the Student Handbook, (b) General Academic Regulations for Taught Postgraduate Programmes in two intake-year versions (2013/14 and before; 2014/15 and thereafter), and (c) General Academic Regulations for the Research Component for RPg and professional doctorate programmes. The 2026/27 handbook preface also directs students to consult their programme handbook and programme materials, which may add requirements the central regulations do not contain.",
+      "consequence_for_product": "A single-policy-base design would silently apply undergraduate clauses to postgraduate students. Scope is therefore modelled as a required field on every source and every rule, and the Gatekeeper withholds rather than substitutes when the student's programme is outside the collected corpus.",
+      "action_required": "Retrieve the TPG regulations (both cohort versions) and the research-component regulations, then register them as new sources. Until then, TPG and RPg students must receive the scope-gap state, not a borrowed clause."
+    },
+    {
+      "gap_id": "GAP-EXAM-ABSENCE",
+      "status": "confirmed_in_document_structure",
+      "surfaces_as": "empty_state",
+      "request_types": ["exam"],
+      "student_facing_summary": "The central academic regulations do not set out a procedure for missing an examination. They set out what happens to a grade when an absence is not approved (GAR 13.2), and how to apply for leave (GAR 13.1), but the examination-absence procedure itself sits in course and programme documents.",
+      "description": "The General Academic Regulations do not contain a standalone 'absence from examination' clause. Absence is handled through GAR 13.1 (leave of absence), 13.2 (unapproved absence => grade F) and course-level assessment schemes (13.3).",
+      "consequence_for_product": "An 'exam' request cannot be answered from the central handbook alone. The Gatekeeper must route the student to the course/programme assessment scheme and state that the rule is course-specific rather than inventing a University-wide procedure.",
+      "action_required": "Collect at least two programme/course assessment schemes to see how they specify exam absence.",
+      "partial_mitigation": "For students registered with the Student Affairs Office, 'Special Examination Arrangements' (extended time, assistive equipment, enlarged papers, supervised breaks, modified response formats) are listed as an SEN support service — see EDUHK-SAO-SEN-WEB-2026 for the full list. Additionally, 'Extension of assignment deadlines' is explicitly listed under Lecture/Assignment Arrangements on the same page. These are accommodation routes, not absence procedures, and the two must not be conflated in the UI. The remaining open question is whether any accommodation can be arranged retrospectively (after a deadline or exam has passed)."
+    },
+    {
+      "gap_id": "GAP-EXTENUATING-CIRCUMSTANCES",
+      "status": "confirmed_with_supervisor",
+      "description": "No standalone 'extenuating circumstances' or 'special consideration' policy was found in the central regulations. Special circumstances appear only as a ground for formal grade review (GAR 9.2.2(iii)) and as leave of absence (GAR 13.1). The supervisor has confirmed that EdUHK has no faculty-level special consideration mechanism outside the handbook.",
+      "consequence_for_product": "This is a genuine finding, not a defect in the search. State it explicitly in the report: the student-facing consequence is that after a deadline has passed, there is no clean 'ask for an extension' route in the central regulations. However, the SAO SEN Support Services web page (EDUHK-SAO-SEN-WEB-2026, retrieved 2026-11-09) explicitly lists 'Extension of assignment deadlines' as a possible reasonable accommodation for students with SEN. This means the route through the lecturer is closed, but a SEN support route for assignment deadline extensions IS available for eligible students.",
+      "action_required": "None outstanding. Report this as a confirmed institutional finding: no central regulation, but a SEN support service explicitly covers the gap.",
+      "confirmed_by": "project supervisor",
+      "confirmed_date": "2026-10-31",
+      "supplementary_finding": {
+        "source_id": "EDUHK-SAO-SEN-WEB-2026",
+        "retrieved_date": "2026-11-09",
+        "finding": "The SAO support service page lists 'Extension of assignment deadlines' under Lecture/Assignment Arrangements as a possible reasonable accommodation."
+      }
+    },
+    {
+      "gap_id": "GAP-AI-TOOL-PROCEDURE",
+      "status": "resolved",
+      "description": "Previously an open question: whether EdUHK has an established procedure for using AI tools in the capstone project, and whether an approved LLM service is available without purchasing an external API. Both questions are now answered.",
+      "resolution": "The reimbursement scheme (EDUHK-REIMBURSEMENT-2026) IS the established procedure. Under its framework, the project supervisor's pre-approval constitutes the complete procedural requirement for AI tool use in the capstone project. No separate LTTC application is needed. LTTC does provide an approved LLM service (LLM Studio / MaaS platform), but access is structured through workshops and credit-bearing courses, not a public no-registration chat interface.",
+      "resolution_date": "2026-11-08",
+      "resolved_by": "project supervisor (Bibi Leung)",
+      "consequence_for_product": "The project may proceed with AI integration under the supervisor's pre-approval. If the model uses LTTC's LLM Studio, the access model (workshops/courses) must be accounted for. If the model uses an external API, the reimbursement scheme covers it up to HK$5,000, but only if the tool is not available from LTTC. The template-based baseline remains the zero-hallucination control condition regardless of which model path is chosen.",
+      "action_required": "None. Record in the report as a resolved decision point."
+    }
+  ]
+}

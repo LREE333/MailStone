@@ -1,0 +1,428 @@
+{
+  "schema_version": "1.1",
+  "purpose": "Structured policy rules derived from sources.json. This is the Gatekeeper's ground truth. Every rule must be traceable to a verbatim quote. 'plain' is the student-facing paraphrase and may NOT add any obligation that the quote does not contain.",
+  "institution": "The Education University of Hong Kong",
+  "snapshot_date": "2026-10-31",
+  "field_contract": {
+    "rule_id": "Stable identifier. Never reuse.",
+    "topic": "Machine label used for retrieval filtering.",
+    "request_types": "Which of the app's request types this rule can speak to.",
+    "applies_when": "Declarative conditions evaluated against the user's answers. ALL must hold. Empty array = always relevant.",
+    "applies_when_ops": [
+      "equals",
+      "not_equals",
+      "in",
+      "not_in",
+      "is_true",
+      "is_false"
+    ],
+    "authority": "Where the rule comes from. quote must be verbatim; use '...' for elisions and set quote_is_trimmed.",
+    "plain": "Plain-English restatement for the UI. Max 2 sentences.",
+    "required_action": "What the student must actually DO. This is what the app is allowed to tell them.",
+    "route": "Who to contact and via what channel. Must not invent an email address.",
+    "consequence": "What happens if the rule is not followed. Omit if the source is silent.",
+    "derivation": "verbatim | inferred_from_clauses. 'inferred' rules are the author's reasoning and MUST be flagged as such in the report and in the UI.",
+    "ui_assertion_level": "assert | suggest | withhold. 'withhold' means the app may mention that a rule exists but must not state its content.",
+    "verification": "Who checked it and when.",
+    "scope": "OPTIONAL. A rule inherits the scope of its source document. Override only when the document states a narrower scope itself. The Gatekeeper refuses to apply a rule outside its scope, however well the wording matches."
+  },
+  "scope_rule": "Applicability is checked BEFORE relevance. A rule is usable only if (a) its request_types include the request, (b) its applies_when conditions all hold, and (c) the student's programme level falls inside the rule's resolved scope. Failing (c) is not a soft miss: the app must say that a regulation exists but belongs to a different programme, and must not paraphrase it.",
+  "rules": [
+    {
+      "rule_id": "EDUHK-GAR-9.6.1",
+      "topic": "late_submission_permission",
+      "request_types": [
+        "extension"
+      ],
+      "applies_when": [],
+      "authority": {
+        "source_id": "EDUHK-SH-2026-GAR",
+        "section": "9.6.1",
+        "quote": "Students who wish to submit an assignment later than the due date should obtain permission in advance from the course lecturer; otherwise, this will be treated as failure to submit the assignment as required.",
+        "quote_is_trimmed": false
+      },
+      "plain": "If you want to hand in after the due date, you need your course lecturer's permission BEFORE the deadline. Without it, the assignment counts as not submitted.",
+      "required_action": "Ask the course lecturer for permission before the due date.",
+      "route": {
+        "contact_role": "Course lecturer (the person teaching the course)",
+        "channel": "University email or the channel the course outline specifies",
+        "lookup_instruction": "Find the lecturer's address on the course outline or the programme's staff page. Do not guess it.",
+        "recipient_level": "course"
+      },
+      "consequence": "Without prior permission the assignment is treated as a failure to submit.",
+      "derivation": "verbatim",
+      "ui_assertion_level": "assert",
+      "verification": {
+        "checked_by": "author",
+        "checked_date": "2026-10-31",
+        "status": "verified_primary"
+      }
+    },
+    {
+      "rule_id": "EDUHK-GAR-9.6.2",
+      "topic": "late_submission_penalty",
+      "request_types": [
+        "extension"
+      ],
+      "applies_when": [],
+      "authority": {
+        "source_id": "EDUHK-SH-2026-GAR",
+        "section": "9.6.2",
+        "quote": "The grade of all assignments submitted late with the approval of course lecturers may be lowered, on a case-by-case basis, by up to one full grade.",
+        "quote_is_trimmed": false
+      },
+      "plain": "Even if permission is granted, the grade for that assignment may be reduced by up to one full grade.",
+      "required_action": "Do not assume that an approved late submission is penalty-free.",
+      "route": null,
+      "consequence": "Grade may be lowered by up to one full grade.",
+      "derivation": "verbatim",
+      "ui_assertion_level": "assert",
+      "verification": {
+        "checked_by": "author",
+        "checked_date": "2026-10-31",
+        "status": "verified_primary"
+      }
+    },
+    {
+      "rule_id": "EDUHK-GAR-9.6.3",
+      "topic": "late_submission_no_permission",
+      "request_types": [
+        "extension"
+      ],
+      "applies_when": [],
+      "authority": {
+        "source_id": "EDUHK-SH-2026-GAR",
+        "section": "9.6.3",
+        "quote": "Students who fail to obtain prior approval will be given a 'fail' grade (grade F) for late submission or non-submission of assignments.",
+        "quote_is_trimmed": false
+      },
+      "plain": "Without prior approval, late submission or non-submission receives a grade F for that assignment.",
+      "required_action": "Treat the pre-deadline request as the only safe route.",
+      "route": null,
+      "consequence": "Grade F for the assignment.",
+      "derivation": "verbatim",
+      "ui_assertion_level": "assert",
+      "verification": {
+        "checked_by": "author",
+        "checked_date": "2026-10-31",
+        "status": "verified_primary"
+      }
+    },
+    {
+      "rule_id": "EDUHK-DERIVED-AFTER-DEADLINE",
+      "topic": "closed_route_after_deadline",
+      "request_types": [
+        "extension"
+      ],
+      "applies_when": [
+        {
+          "field": "timing",
+          "op": "equals",
+          "value": "after_deadline"
+        }
+      ],
+      "authority": {
+        "source_id": "EDUHK-SH-2026-GAR",
+        "section": "9.6.1 + 9.2.2(iii)",
+        "quote": "obtain permission in advance from the course lecturer ... there are special circumstances which the student has not been able to present to the relevant Head of the course-offering unit / Chairperson of the Academy Assessment Panel prior to the decision being made under 9.2.1.",
+        "quote_is_trimmed": true
+      },
+      "plain": "Once the deadline has passed, the 'ask in advance' route in 9.6.1 is no longer available. What remains is to explain the circumstances to the lecturer and, if a grade has already been recorded, to consider the formal grade review grounds in 9.2.2.",
+      "required_action": "Do NOT write an email that asks for permission in advance. Write an email that (a) explains the situation, (b) asks the lecturer what options remain, and (c) does not assert that an extension is available.",
+      "route": {
+        "contact_role": "Course lecturer first; Faculty Dean only for a formal grade review under 9.2.3",
+        "channel": "University email",
+        "lookup_instruction": "Lecturer address from the course outline. Faculty Dean address from the Faculty's official page.",
+        "recipient_level": "course"
+      },
+      "consequence": null,
+      "derivation": "inferred_from_clauses",
+      "derivation_note": "This rule is the author's inference from the interaction of 9.6.1 (permission must be obtained in advance) and 9.2.2(iii) (special circumstances as a review ground). It is not stated as a single clause in the handbook. Flag it as an inference in the report and confirm with the supervisor.",
+      "ui_assertion_level": "suggest",
+      "verification": {
+        "checked_by": "author",
+        "checked_date": "2026-10-31",
+        "status": "needs_supervisor_confirmation"
+      }
+    },
+    {
+      "rule_id": "EDUHK-GAR-9.2.1",
+      "topic": "grade_disagreement_first_step",
+      "request_types": [
+        "grade"
+      ],
+      "applies_when": [],
+      "authority": {
+        "source_id": "EDUHK-SH-2026-GAR",
+        "section": "9.2.1",
+        "quote": "A student who disagrees with a course grade should approach the course lecturer or Field Experience Supervisor concerned immediately after the announcement of the assessment results approved by the Head of the course-offering unit / Chairperson of the Academy Assessment Panel ... The course lecturer or Field Experience Supervisor may recommend a grade adjustment if he/she finds any technical errors (such as wrong score entries, or calculation errors when totaling marks) or after hearing the student's representation.",
+        "quote_is_trimmed": true
+      },
+      "plain": "Start with the course lecturer, as soon as results are announced. A grade can be adjusted for a technical error (wrong entry, miscalculated total) or after the lecturer hears your explanation.",
+      "required_action": "Write to the course lecturer first. Do not open with a formal review or an accusation.",
+      "route": {
+        "contact_role": "Course lecturer",
+        "channel": "University email",
+        "lookup_instruction": "Address from the course outline or programme staff page.",
+        "recipient_level": "course"
+      },
+      "consequence": null,
+      "derivation": "verbatim",
+      "ui_assertion_level": "assert",
+      "verification": {
+        "checked_by": "author",
+        "checked_date": "2026-10-31",
+        "status": "verified_primary"
+      }
+    },
+    {
+      "rule_id": "EDUHK-GAR-9.2.2",
+      "topic": "formal_review_grounds",
+      "request_types": [
+        "grade",
+        "review"
+      ],
+      "applies_when": [],
+      "authority": {
+        "source_id": "EDUHK-SH-2026-GAR",
+        "section": "9.2.2",
+        "quote": "he/she may request for a formal review of his/her course grade(s), for one or more of the following reasons: (i) the assessment result has been caused by a material error or irregularity in marking; (ii) the assessment was not conducted in accordance with the General Academic Regulations and the assessment scheme for the programme concerned; and (iii) there are special circumstances which the student has not been able to present to the relevant Head of the course-offering unit / Chairperson of the Academy Assessment Panel prior to the decision being made under 9.2.1.",
+        "quote_is_trimmed": true
+      },
+      "plain": "A formal review needs one of three grounds: a material marking error, assessment not run according to the regulations or the programme's assessment scheme, or special circumstances you could not present earlier.",
+      "required_action": "Only request a formal review if you can name which of the three grounds applies. Otherwise ask for clarification first.",
+      "route": {
+        "contact_role": "Faculty Dean / Academy Executive Co-Director (formal review only)",
+        "channel": "In writing",
+        "lookup_instruction": "Faculty Dean contact from the Faculty's official page.",
+        "recipient_level": "faculty"
+      },
+      "consequence": "A request without a recognised ground is unlikely to proceed.",
+      "derivation": "verbatim",
+      "ui_assertion_level": "assert",
+      "verification": {
+        "checked_by": "author",
+        "checked_date": "2026-10-31",
+        "status": "verified_primary"
+      }
+    },
+    {
+      "rule_id": "EDUHK-GAR-9.2.3",
+      "topic": "formal_review_deadline",
+      "request_types": [
+        "grade",
+        "review"
+      ],
+      "applies_when": [],
+      "authority": {
+        "source_id": "EDUHK-SH-2026-GAR",
+        "section": "9.2.3",
+        "quote": "The formal request for a grade review should be made by the student to the respective Faculty Dean / Academy Executive Co-Director(s) (for courses offered by Academies) in writing within 14 working days after the announcement of the assessment results approved by the Head of the course-offering unit / Chairperson of the Academy Assessment Panel.",
+        "quote_is_trimmed": false
+      },
+      "plain": "A formal grade review must be requested in writing to your Faculty Dean within 14 working days of the results being announced.",
+      "required_action": "Check the announcement date and count working days before drafting anything.",
+      "route": {
+        "contact_role": "Faculty Dean / Academy Executive Co-Director",
+        "channel": "In writing",
+        "lookup_instruction": "Faculty Dean contact from the Faculty's official page.",
+        "recipient_level": "faculty"
+      },
+      "consequence": "After 14 working days the formal review window has passed.",
+      "derivation": "verbatim",
+      "ui_assertion_level": "assert",
+      "verification": {
+        "checked_by": "author",
+        "checked_date": "2026-10-31",
+        "status": "verified_primary"
+      }
+    },
+    {
+      "rule_id": "EDUHK-GAR-9.2.6",
+      "topic": "review_outcome",
+      "request_types": [
+        "grade",
+        "review"
+      ],
+      "applies_when": [],
+      "authority": {
+        "source_id": "EDUHK-SH-2026-GAR",
+        "section": "9.2.6",
+        "quote": "will inform the student of the result normally within one month of the student's request for review. Grades after review may be upgraded, downgraded or left unchanged. The decision of the Head / Academy Executive Co-Director of the course-offering unit is final.",
+        "quote_is_trimmed": true
+      },
+      "plain": "A review normally takes up to one month. The grade may go up, go down, or stay the same, and the decision is final.",
+      "required_action": "Tell the student the downside risk before they request a review. This is a disclosure obligation, not a discouragement.",
+      "route": null,
+      "consequence": "Grade may be downgraded. Decision is final.",
+      "derivation": "verbatim",
+      "ui_assertion_level": "assert",
+      "verification": {
+        "checked_by": "author",
+        "checked_date": "2026-10-31",
+        "status": "verified_primary"
+      }
+    },
+    {
+      "rule_id": "EDUHK-GAR-13.1",
+      "topic": "leave_of_absence",
+      "request_types": [
+        "absence"
+      ],
+      "applies_when": [],
+      "authority": {
+        "source_id": "EDUHK-SH-2026-GAR",
+        "section": "13.1",
+        "quote": "Where special circumstances require students to take a leave of absence exceeding 7 days but less than one semester, students must seek approval from the Programme Leader/Coordinator by submitting a leave application form.",
+        "quote_is_trimmed": false
+      },
+      "plain": "For an absence longer than 7 days but less than a semester, you need approval from your Programme Leader/Coordinator using a leave application form.",
+      "required_action": "Use the leave application form. An email alone is not the procedure.",
+      "route": {
+        "contact_role": "Programme Leader / Coordinator",
+        "channel": "Leave application form",
+        "lookup_instruction": "Form location to be confirmed with the programme office.",
+        "recipient_level": "programme"
+      },
+      "consequence": null,
+      "derivation": "verbatim",
+      "ui_assertion_level": "assert",
+      "verification": {
+        "checked_by": "author",
+        "checked_date": "2026-10-31",
+        "status": "verified_primary"
+      }
+    },
+    {
+      "rule_id": "EDUHK-GAR-13.2",
+      "topic": "unapproved_absence",
+      "request_types": [
+        "absence"
+      ],
+      "applies_when": [],
+      "authority": {
+        "source_id": "EDUHK-SH-2026-GAR",
+        "section": "13.2",
+        "quote": "Students who are absent for a prolonged period in a course without prior permission (as stipulated in 13.1) will be given a grade F (Fail) by their course lecturers. The grade F will be recorded on the students' transcripts.",
+        "quote_is_trimmed": false
+      },
+      "plain": "Prolonged absence without prior permission results in a grade F, recorded on your transcript.",
+      "required_action": "Apply for approval before or as soon as the absence begins.",
+      "route": null,
+      "consequence": "Grade F recorded on transcript.",
+      "derivation": "verbatim",
+      "ui_assertion_level": "assert",
+      "verification": {
+        "checked_by": "author",
+        "checked_date": "2026-10-31",
+        "status": "verified_primary"
+      }
+    },
+    {
+      "rule_id": "EDUHK-PROC-4.5",
+      "topic": "appeal_after_decision",
+      "request_types": [
+        "review"
+      ],
+      "applies_when": [],
+      "authority": {
+        "source_id": "EDUHK-SH-2026-PROC",
+        "section": "4.5 para 1",
+        "quote": "the appellant should write to the Secretary of the Students' Appeal Committee (SAppC) giving one or more of the following grounds and providing relevant evidence within 14 working days of being notified of the decision: 1.1 Significant procedural irregularity ... 1.2 New evidence or special circumstances",
+        "quote_is_trimmed": true
+      },
+      "plain": "An appeal against a Board of Examiners or disciplinary decision goes to the Secretary of the Students' Appeal Committee, within 14 working days, on the grounds of significant procedural irregularity or new evidence/special circumstances.",
+      "required_action": "Confirm that the decision being appealed is a Board of Examiners or disciplinary decision. A course grade is not appealed here; it goes through 9.2.",
+      "route": {
+        "contact_role": "Secretary, Students' Appeal Committee (SAppC)",
+        "channel": "In writing, with evidence",
+        "lookup_instruction": "Contact from the Registry page.",
+        "recipient_level": "central"
+      },
+      "consequence": "Late appeals will not be considered.",
+      "derivation": "verbatim",
+      "ui_assertion_level": "assert",
+      "verification": {
+        "checked_by": "author",
+        "checked_date": "2026-10-31",
+        "status": "verified_primary"
+      }
+    }
+  ],
+  "support_services": [
+    {
+      "service_id": "EDUHK-SEN-ROUTE",
+      "topic": "sen_support_route",
+      "request_types": [
+        "extension",
+        "grade",
+        "exam",
+        "absence",
+        "review",
+        "unsure"
+      ],
+      "applies_when": [],
+      "authority": {
+        "source_id": "EDUHK-SAO-SEN-LEAFLET",
+        "section": "SEN Support Services — listed services",
+        "quote": "Academic Accommodation · Special Examination Arrangements · Counselling Service · Modified Campus Facilities · Peer Support · Study Skills Training · Career Guidance · Bursaries and Scholarships",
+        "quote_is_trimmed": true
+      },
+      "secondary_authority": {
+        "source_id": "EDUHK-SAO-SEN-WEB-2026",
+        "section": "Lecture/Assignment Arrangements",
+        "quote": "Extension of assignment deadlines",
+        "quote_is_trimmed": false,
+        "context": "Listed under 'Possible reasonable accommodations/adjustments may include: Lecture/Assignment Arrangements'"
+      },
+      "plain": "If you have a special educational need, the Student Affairs Office runs a support team whose listed services include Academic Accommodation and Special Examination Arrangements. Their web page confirms that Academic Accommodation can include extending assignment deadlines, providing lecture materials in advance, and arranging alternative formats. That team is separate from the lecturer who sets your deadline and from the office that records your grade.",
+      "required_action": "Contact them directly. You will need to provide sufficient information, which may include medical reports. You do not have to explain your situation to your lecturer first.",
+      "route": {
+        "contact_role": "SEN Support Services, Student Affairs Office",
+        "channel": "Email or telephone",
+        "contact_detail": "saosen@eduhk.hk · 2948 6251 · Room 01S, 1/F, Cho Kwai Chee Foundation Building",
+        "lookup_instruction": "Confirm the current contact details on the SAO SEN Support Services page before writing; staff and room numbers change.",
+        "service_page": "https://www.eduhk.hk/sao/en/info/counselling_services/sen/support_service"
+      },
+      "open_questions": [
+        {
+          "question": "Whether an accommodation can be arranged after a deadline has passed, or only before.",
+          "status": "still_open",
+          "note": "The SAO web page lists 'Extension of assignment deadlines' as a possible accommodation but does not state whether it can be requested retrospectively. The enquiry email asked this as an optional third question; SAO redirected to the web page without answering it."
+        }
+      ],
+      "resolved_questions": [
+        {
+          "question": "What 'Academic Accommodation' covers.",
+          "status": "resolved",
+          "resolution": "The SAO support service web page (EDUHK-SAO-SEN-WEB-2026) lists specific accommodations under 'Lecture/Assignment Arrangements', including: provision of lecture materials in advance, use of assistive aids, peer note-taking, instructional support, preferential seating, extension of assignment deadlines, alternative formats for assignments, and flexible group work arrangements.",
+          "resolved_by_source": "EDUHK-SAO-SEN-WEB-2026",
+          "resolved_date": "2026-11-09"
+        },
+        {
+          "question": "Whether you must register with the office before requesting anything.",
+          "status": "resolved",
+          "resolution": "The web page states that accommodations are provided 'Upon requests and provision of sufficient information (including but not limited to medical reports and records if necessary) by individual students'. This means a formal request with supporting documentation is the pathway — not a casual enquiry. However, the third question in the original email (can an unregistered student still make an enquiry) was not directly answered.",
+          "resolved_by_source": "EDUHK-SAO-SEN-WEB-2026",
+          "resolved_date": "2026-11-09"
+        }
+      ],
+      "derivation": "service_listing",
+      "derivation_note": "A service listing, not a regulation. The leaflet (EDUHK-SAO-SEN-LEAFLET) establishes WHO to contact and THAT two relevant services are listed. The web page (EDUHK-SAO-SEN-WEB-2026) establishes WHAT the services cover. Together they establish: the office, the service, the scope (including assignment deadline extensions), and the access pathway (formal request with documentation). One question remains open: whether the accommodation can be arranged retrospectively, after a deadline has passed. That question must stay visible in the interface.",
+      "ui_assertion_level": "suggest",
+      "verification": {
+        "checked_by": "author",
+        "checked_date": "2026-11-09",
+        "status": "verified_primary"
+      }
+    }
+  ],
+  "routing_conflicts": [
+    {
+      "conflict_id": "GRADE-VS-APPEAL",
+      "description": "Students commonly say 'I want to appeal my grade'. GAR 9.2 (grade review) and Procedures 4.5 (SAppC appeal) are different mechanisms with different addressees, grounds and deadlines.",
+      "resolution": "If the object is a course grade, route to 9.2.1 then 9.2.2/9.2.3. Only route to 4.5 if the object is a Board of Examiners decision on discontinuation or a disciplinary decision.",
+      "product_requirement": "The app must ask what decision is being disputed before choosing a route. This cannot be inferred from the word 'appeal'."
+    }
+  ]
+}
