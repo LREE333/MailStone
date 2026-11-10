@@ -4,35 +4,35 @@
 **日期：** 2026年11月15日
 **课程：** LIN4049 毕业设计
 **提交方式：** GitHub 链接 + 困难文档（`docs/CHALLENGES.md`）
+**仓库地址：** https://github.com/LREE333/MailStone
 
 ---
 
 ## 一、提交方式
 
-老师要求：提交 GitHub 仓库链接即可。
+老师要求：提交 GitHub 仓库链接即可。✅ 已完成推送。
 
-### 推送步骤（在本地终端执行）
+### 提交给老师的链接
+
+```
+https://github.com/LREE333/MailStone
+```
+
+### 推送步骤（已完成，存档用）
 
 ```bash
-# 1. 在 GitHub 网站上创建一个新仓库（不要勾选 README/gitignore/license）
-#    仓库名建议：mailstone
-
-# 2. 关联远程仓库（替换 YOUR-USERNAME）
 cd ~/Desktop/capstone/mailstone
-git remote add origin https://github.com/YOUR-USERNAME/mailstone.git
+git remote add origin https://github.com/LREE333/MailStone.git
 git push -u origin main
 ```
 
-### 提交给老师的就是这个链接
-
-```
-https://github.com/YOUR-USERNAME/mailstone
-```
+仓库已包含 21 个文件，1 个 commit，`65 passed, 0 failed`。
 
 老师打开链接后看到的顺序：
 1. **README.md** — 项目概述、演示方法、文件结构、关键发现
 2. **docs/CHALLENGES.md** — 困难与解决文档（老师要求的那份）
 3. **docs/PLAN-2026-11-15.md** — 详细项目计划
+4. **docs/DELIVERABLE-2026-11-15.md** — 本文件
 
 ---
 

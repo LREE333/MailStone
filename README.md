@@ -7,6 +7,18 @@ MailStone helps students understand which academic regulation applies to their s
 **Student:** LI Leer (11601718)
 **Course:** LIN4049 Capstone Project
 **Supervisor:** Bibi Leung (bkyleung@eduhk.hk)
+**Repository:** https://github.com/LREE333/MailStone
+
+---
+
+## Documents
+
+| Document | What it is |
+|---|---|
+| [`docs/CHALLENGES.md`](docs/CHALLENGES.md) | Every difficulty encountered, how it was resolved, and what remains open |
+| [`docs/PLAN-2026-11-15.md`](docs/PLAN-2026-11-15.md) | Project plan, day-by-day schedule, decisions log, risk table |
+| [`docs/DELIVERABLE-2026-11-15.md`](docs/DELIVERABLE-2026-11-15.md) | What is submitted on 15 November and how to demonstrate it |
+| [`docs/emails/README.md`](docs/emails/README.md) | Log of all institutional correspondence, with question-and-answer records |
 
 ---
 

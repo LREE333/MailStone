@@ -3,6 +3,7 @@
 **Student:** LI Leer (11601718)
 **Course:** LIN4049, EdUHK
 **Date:** 9 November 2026
+**Repository:** https://github.com/LREE333/MailStone
 
 ---
 
