@@ -159,7 +159,7 @@
       "url": null,
       "locator": "https://www.eduhk.hk/lttc/",
       "retrieved_date": "2026-11-08",
-      "retrieval_method": "oral confirmation from project supervisor (Bibi Leung), 2026-11-08, reporting information from EdUHK LTTC",
+      "retrieval_method": "oral confirmation from project supervisor (LAU Chaak Ming), 2026-11-08, reporting information from EdUHK LTTC",
       "verification_status": "confirmed_oral",
       "scope": {
         "programme_levels": ["sub_degree", "ug", "pgde", "tpg", "rpg"],
@@ -186,7 +186,7 @@
       "url": null,
       "locator": null,
       "retrieved_date": "2026-11-08",
-      "retrieval_method": "provided by project supervisor (Bibi Leung) via email attachment",
+      "retrieval_method": "provided by project supervisor (LAU Chaak Ming) via email attachment",
       "verification_status": "verified_primary",
       "scope": {
         "programme_levels": ["ug"],
@@ -437,7 +437,7 @@
       "description": "Previously an open question: whether EdUHK has an established procedure for using AI tools in the capstone project, and whether an approved LLM service is available without purchasing an external API. Both questions are now answered.",
       "resolution": "The reimbursement scheme (EDUHK-REIMBURSEMENT-2026) IS the established procedure. Under its framework, the project supervisor's pre-approval constitutes the complete procedural requirement for AI tool use in the capstone project. No separate LTTC application is needed. LTTC does provide an approved LLM service (LLM Studio / MaaS platform), but access is structured through workshops and credit-bearing courses, not a public no-registration chat interface.",
       "resolution_date": "2026-11-08",
-      "resolved_by": "project supervisor (Bibi Leung)",
+      "resolved_by": "project supervisor (LAU Chaak Ming)",
       "consequence_for_product": "The project may proceed with AI integration under the supervisor's pre-approval. If the model uses LTTC's LLM Studio, the access model (workshops/courses) must be accounted for. If the model uses an external API, the reimbursement scheme covers it up to HK$5,000, but only if the tool is not available from LTTC. The template-based baseline remains the zero-hallucination control condition regardless of which model path is chosen.",
       "action_required": "None. Record in the report as a resolved decision point."
     }

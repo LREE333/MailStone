@@ -1,7 +1,7 @@
-# Bibi AI-procedure questions — ANSWERED (2026-11-08)
+# Supervisor AI-procedure questions — ANSWERED (2026-11-08)
 
 This file records the three questions that were prepared for the supervisor
-(Bibi Leung, bkyleung@eduhk.hk) about the AI-tool procedure, and the answers
+(LAU Chaak Ming, lchaakming@eduhk.hk) about the AI-tool procedure, and the answers
 received. The email was not sent because the supervisor provided the answers
 directly in conversation.
 

@@ -4,12 +4,13 @@
 
 Two communications were planned:
 
-1. **To Bibi (bkyleung@eduhk.hk)** — asking three questions about the AI-tool procedure
+1. **To the supervisor (lchaakming@eduhk.hk)** — asking three questions about the AI-tool procedure
 2. **To SAO (saosen@eduhk.hk)** — asking whether Academic Accommodation covers coursework deadlines and TPG students
 
-## 1. Bibi — AI procedure questions: ANSWERED
+## 1. Supervisor — AI procedure questions: ANSWERED
 
 **Status:** All three questions answered on 2026-11-08. No email needs to be sent.
+**Supervisor:** LAU Chaak Ming (lchaakming@eduhk.hk)
 
 The supervisor provided the following answers:
 
@@ -37,7 +38,7 @@ It is not a public, no-registration chat interface. This is now registered as so
 
 ### What was NOT asked
 
-The user did not need to send the Bibi email because the supervisor provided all three answers directly in conversation. The email draft that was prepared is no longer needed.
+The user did not need to send the supervisor email because the supervisor provided all three answers directly in conversation. The email draft that was prepared is no longer needed.
 
 ---
 

@@ -46,7 +46,7 @@
     "target": "40 to 60 exemplars. Quality of annotation matters more than volume; 40 well-coded exemplars support a credible evaluation, 200 unannotated ones do not.",
     "supervisor_confirmation": {
       "date": "2026-11-08",
-      "confirmed_by": "project supervisor (Bibi Leung)",
+      "confirmed_by": "project supervisor (LAU Chaak Ming)",
       "statement": "The supervisor confirmed that corpus exemplars may be self-authored/synthetic or real cases. Both are acceptable. This explicitly endorses synthetic_verified as a valid primary source class, not merely a fallback when consented_real or public_model exemplars cannot be obtained.",
       "implication": "The collection plan may proceed with a mix of synthetic and real exemplars without requiring all-real data. The provenance separation rule below still applies: synthetic data may serve as input scenarios and as annotated exemplars, but must be labelled wherever it is used."
     },

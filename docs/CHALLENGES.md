@@ -109,7 +109,7 @@ The 12 checks are in `data/quality/violations.json` and are tested in `tools/tes
 
 ### B3. The lint tool's own output had three defects
 
-**Difficulty.** When I ran the lint tool on two real emails (the SAO enquiry and the Bibi enquiry), it produced three false results:
+**Difficulty.** When I ran the lint tool on two real emails (the SAO enquiry and the supervisor enquiry), it produced three false results:
 - **V06** missed direct questions ("Does this cover coursework deadlines?") — it only matched politeness formulas like "could you please."
 - **V09** warned about missing course codes in every email sent to a faculty member or central office, even when a course code is irrelevant (e.g., writing to the Faculty Dean about a formal review).
 - **V08** counted request sentences rather than distinct actions — an email with three numbered sub-questions was indistinguishable from an email with three competing requests.
@@ -174,7 +174,7 @@ Each state has different UI copy and different writing tips. The states are driv
 
 **Difficulty.** The supervisor's timeline email referred to "the established procedure (attached)" for AI tool use. The attachment was a reimbursement form, not an AI procedure document. I initially could not find a separate AI-procedure document anywhere.
 
-**How I resolved it.** I asked the supervisor directly. She confirmed that under the reimbursement scheme framework, her pre-approval constitutes the *complete* procedural requirement for AI tool use in the capstone project. No separate LTTC application or external-API approval process is required. The reimbursement scheme IS the procedure.
+**How I resolved it.** I asked the supervisor directly. The supervisor confirmed that under the reimbursement scheme framework, this pre-approval constitutes the *complete* procedural requirement for AI tool use in the capstone project. No separate LTTC application or external-API approval process is required. The reimbursement scheme IS the procedure.
 
 **Status:** Resolved (8 Nov 2026).
 
