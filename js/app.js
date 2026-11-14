@@ -29,6 +29,7 @@ const SEQUENCES = {
     "reason",
     "disclosure",
     "time",
+    "courseCode",
     "tone"
   ],
   absence: [
@@ -39,6 +40,7 @@ const SEQUENCES = {
     "situation",
     "reason",
     "disclosure",
+    "courseCode",
     "tone"
   ],
   exam: [
@@ -49,11 +51,28 @@ const SEQUENCES = {
     "situation",
     "reason",
     "disclosure",
+    "courseCode",
     "tone"
   ],
-  grade: ["programme", "requestType", "timing", "goal", "situation", "tone"],
-  review: ["programme", "requestType", "timing", "goal", "situation", "tone"],
-  unsure: ["programme", "requestType", "goal", "situation", "tone"]
+  grade: [
+    "programme",
+    "requestType",
+    "timing",
+    "goal",
+    "situation",
+    "courseCode",
+    "tone"
+  ],
+  review: [
+    "programme",
+    "requestType",
+    "timing",
+    "goal",
+    "situation",
+    "courseCode",
+    "tone"
+  ],
+  unsure: ["programme", "requestType", "goal", "situation", "courseCode", "tone"]
 };
 
 const CAPTIONS = {
@@ -65,6 +84,7 @@ const CAPTIONS = {
   reason: "Choosing what to share",
   disclosure: "Choosing disclosure",
   time: "Planning the request",
+  courseCode: "Adding the course code",
   tone: "Choosing a tone"
 };
 
@@ -398,6 +418,29 @@ const STEP_DEFS = {
     ]
   },
 
+  /*
+    Course code is collected as a text answer rather than a radio option:
+    it is an identifier, not a category. The student may choose "not known
+    yet", in which case the draft keeps an unfilled [Course code] blank. V09
+    deliberately treats a bracketed course placeholder as "present", so it
+    does not warn here; instead the blank is highlighted by the review
+    preview (.preview-placeholder), counted in the copy prompt and covered by
+    the sending checklist. Deleting the token entirely would hide the one
+    thing most likely to be forgotten before the email is sent.
+  */
+  courseCode: {
+    id: "courseCode",
+    type: "text",
+    tag: "COURSE IDENTIFIER",
+    title: "What is the course code?",
+    hint:
+      "For example LIN4049. If you do not know it yet, choose \"Not known yet\" and the draft will leave a blank for you to fill in.",
+    placeholder: "e.g. LIN4049",
+    unknownLabel: "Not known yet — leave it blank",
+    unknownDetail: "I will look it up later. The draft keeps an unfilled blank.",
+    validationMessage: "Enter the course code, or choose \"Not known yet\"."
+  },
+
   tone: {
     id: "tone",
     tag: "FINAL DETAIL",
@@ -482,10 +525,18 @@ let data = {
   sources: {},
   programmeCoverage: [],
   knownGaps: [],
-  violations: []
+  violations: [],
+  contacts: null
 };
 let gate = null;
 let lint = { findings: [], placeholders: [], blocking: false };
+
+/*
+  Recipient confirmations are per-session UI state. They are not answers and
+  are not persisted: toggling a box only decides what appears in the To: line
+  on this page. Nothing is sent and no address is written into the draft body.
+*/
+const confirmedRecipients = new Set();
 
 const form = document.querySelector("#step-form");
 const questionCard = document.querySelector("#question-card");
@@ -574,7 +625,9 @@ function updateStepNavigation(total) {
     indicator.classList.toggle("completed", stage < activeStage - 1);
   });
 
-  progressStepText.textContent = `Step ${activeStage} of 3`;
+  progressStepText.textContent = window.MailStoneI18n
+    .t("Step {n} of 3")
+    .replace("{n}", activeStage);
 }
 
 /* ---------- Inline checkpoint ---------- */
@@ -587,12 +640,117 @@ function updateInlinePolicyCheckpoint() {
     return;
   }
 
-  inlinePolicyTitle.textContent = preview.title;
-  inlinePolicyText.textContent = preview.text;
+  const i18n = window.MailStoneI18n;
+
+  inlinePolicyTitle.textContent = i18n.t(preview.title);
+  inlinePolicyText.textContent = i18n.t(preview.text);
   inlinePolicy.hidden = false;
 }
 
 /* ---------- Question rendering ---------- */
+
+/*
+  A text step collects an identifier the draft can insert verbatim. The
+  "not known yet" radio is an explicit answer, not a skipped question: it
+  stores the literal string "unknown", which buildDraft() reads to decide
+  whether to substitute a real code or leave the blank in place.
+
+  Leaving the blank rather than deleting it is deliberate. An empty gap in a
+  subject line is easy to overlook; a highlighted [Course code] placeholder
+  is shown in the review preview, counted in the copy prompt and covered by
+  the sending checklist. V09 only warns when there is no identifier AND no
+  placeholder at all, so the visible token is the safer failure mode.
+*/
+function renderTextStep(step) {
+  const wrap = document.createElement("div");
+  wrap.className = "text-step";
+
+  const label = document.createElement("label");
+  label.className = "text-step-label";
+  label.htmlFor = "course-code-input";
+  label.textContent = "Course code";
+
+  const input = document.createElement("input");
+  input.id = "course-code-input";
+  input.className = "text-step-input";
+  input.type = "text";
+  input.autocomplete = "off";
+  input.spellcheck = false;
+  /* Placeholders are attributes, not text nodes, so the sweep cannot reach them. */
+  input.placeholder = window.MailStoneI18n.t(step.placeholder);
+  input.maxLength = 24;
+
+  const validation = document.createElement("p");
+  validation.className = "text-step-validation";
+  validation.textContent = step.validationMessage;
+
+  const unknownChoice = document.createElement("label");
+  unknownChoice.className = "choice text-step-unknown";
+
+  const unknownRadio = document.createElement("input");
+  unknownRadio.type = "radio";
+  unknownRadio.name = step.id;
+  unknownRadio.value = "unknown";
+
+  const unknownCopy = document.createElement("span");
+  unknownCopy.className = "choice-copy";
+
+  const unknownTitle = document.createElement("span");
+  unknownTitle.className = "choice-title";
+  unknownTitle.textContent = step.unknownLabel;
+
+  const unknownDetail = document.createElement("span");
+  unknownDetail.className = "choice-detail";
+  unknownDetail.textContent = step.unknownDetail;
+
+  unknownRadio.setAttribute("aria-labelledby", "course-code-unknown-title");
+  unknownTitle.id = "course-code-unknown-title";
+
+  const isUnknown = answers[step.id] === "unknown";
+  const hasCode = Boolean(answers[step.id]) && !isUnknown;
+
+  input.value = hasCode ? answers[step.id] : "";
+  input.disabled = isUnknown;
+  unknownRadio.checked = isUnknown;
+  unknownChoice.classList.toggle("selected", isUnknown);
+  validation.hidden = Boolean(answers[step.id]);
+
+  function setAnswer(value) {
+    if (answers[step.id] !== value) {
+      savedDraft = null;
+    }
+
+    answers[step.id] = value;
+    validation.hidden = Boolean(value);
+    nextButton.disabled = !value;
+  }
+
+  input.addEventListener("input", () => {
+    const value = input.value.trim();
+
+    if (unknownRadio.checked) {
+      unknownRadio.checked = false;
+      unknownChoice.classList.remove("selected");
+      input.disabled = false;
+    }
+
+    setAnswer(value);
+  });
+
+  unknownRadio.addEventListener("change", () => {
+    unknownChoice.classList.add("selected");
+    input.disabled = true;
+    input.value = "";
+    setAnswer("unknown");
+  });
+
+  unknownCopy.append(unknownTitle, unknownDetail);
+  unknownChoice.append(unknownRadio, unknownCopy);
+  wrap.append(label, input, validation, unknownChoice);
+  choices.append(wrap);
+
+  /* i18n sweep runs at the end of renderStep(), after the DOM is built. */
+}
 
 function renderStep(moveFocus = true) {
   questionCard.hidden = false;
@@ -611,7 +769,15 @@ function renderStep(moveFocus = true) {
   questionHint.textContent = step.hint;
   choices.replaceChildren();
 
-  step.options.forEach((option, index) => {
+  /*
+    Text steps (currently only courseCode) are identifiers rather than
+    categories, so they render an input plus a "not known yet" escape instead
+    of a radio list. The rest of the step machinery is shared.
+  */
+  if (step.type === "text") {
+    renderTextStep(step);
+  } else {
+    step.options.forEach((option, index) => {
     const label = document.createElement("label");
     label.className = "choice";
 
@@ -661,6 +827,9 @@ function renderStep(moveFocus = true) {
             delete answers[key];
           }
         });
+
+        /* The routed contact changes with the request, so old ticks are stale. */
+        confirmedRecipients.clear();
       }
 
       choices.querySelectorAll(".choice").forEach(item => {
@@ -677,7 +846,8 @@ function renderStep(moveFocus = true) {
     copy.append(optionTitle, detail);
     label.append(input, copy);
     choices.append(label);
-  });
+    });
+  }
 
   backButton.disabled = currentStep === 0;
   nextButton.disabled = !answers[step.id];
@@ -693,6 +863,8 @@ function renderStep(moveFocus = true) {
   updateStepNavigation(steps.length);
   updateInlinePolicyCheckpoint();
   animateCard(questionCard);
+
+  window.MailStoneI18n.sweep();
 
   if (moveFocus) {
     questionTitle.focus();
@@ -935,6 +1107,21 @@ function buildGeneralDraft() {
   return paragraphs.filter(Boolean).join("\n\n");
 }
 
+/*
+  A course code is an identifier the student supplied, not a value the tool
+  inferred. It is substituted into every [Course code] slot at the last step
+  so all three draft builders stay identical. "unknown" keeps the blank.
+*/
+function applyCourseCode(text) {
+  const code = answers.courseCode;
+
+  if (!code || code === "unknown") {
+    return text;
+  }
+
+  return text.replaceAll("[Course code]", code);
+}
+
 function buildDraft() {
   /*
     When the Gatekeeper cannot place this student inside the collected
@@ -943,15 +1130,17 @@ function buildDraft() {
     a clause that may not govern this programme. Fall back to the neutral
     enquiry, which asks which procedure applies instead of assuming one.
   */
+  let draft;
+
   if (gate && gate.draftMode === "scope_gap") {
-    return buildGeneralDraft();
+    draft = buildGeneralDraft();
+  } else if (answers.requestType === "extension") {
+    draft = buildExtensionDraft();
+  } else {
+    draft = buildGeneralDraft();
   }
 
-  if (answers.requestType === "extension") {
-    return buildExtensionDraft();
-  }
-
-  return buildGeneralDraft();
+  return applyCourseCode(draft);
 }
 
 /* ---------- Result panels ---------- */
@@ -1107,8 +1296,8 @@ function renderResultPolicy() {
   const rule = gate.primary;
 
   title.textContent = gate.closedRoute
-    ? "The usual route may already be closed"
-    : `Policy checkpoint — ${rule.authority.section}`;
+    ? window.MailStoneI18n.t("The usual route may already be closed")
+    : `${window.MailStoneI18n.t("Policy checkpoint")} — ${rule.authority.section}`;
 
   text.textContent = rule.plain;
 
@@ -1132,7 +1321,7 @@ function renderResultPolicy() {
 
   source.innerHTML = `
     <p><strong>Clause:</strong> ${rule.authority.section} (${rule.rule_id})</p>
-    <p><strong>Original wording:</strong> “${rule.authority.quote}”</p>
+    <p><strong>Original wording:</strong> <span data-verbatim>“${rule.authority.quote}”</span></p>
     <p><strong>Source:</strong> ${sourceDoc.title || rule.authority.source_id} ·
       <a href="${sourceUrl}" target="_blank" rel="noopener">open source</a></p>
     <p><strong>Retrieved:</strong> ${sourceDoc.retrieved_date || "not recorded"}</p>
@@ -1233,7 +1422,9 @@ function renderSupport() {
     const dd = document.createElement("dd");
 
     dt.textContent = "Confirmed";
-    dd.textContent = `${entry.question} — ${entry.resolution}`;
+    dd.textContent = `${window.MailStoneI18n.t(
+      entry.question
+    )} — ${window.MailStoneI18n.t(entry.resolution)}`;
 
     wrap.append(dt, dd);
     list.append(wrap);
@@ -1244,6 +1435,222 @@ function renderSupport() {
       ? "This is a support service, not a regulation, and it is not the route you were already on. The web page confirms that assignment deadline extensions are among the accommodations they can consider. Whether this can be arranged after a deadline has passed is the one question still open — ask, do not assume."
       : "This is a support service, not a regulation. It tells you who to ask, not what you will be given. The web page lists the accommodations they can consider.";
 
+  panel.hidden = false;
+}
+
+/* ---------- Recipient confirmation ---------- */
+
+/*
+  Contact rows are built from data/policy/contacts.json. Two rules matter:
+
+  1. An address is only ever shown when the registry carries a published one.
+     For course lecturers, Faculty Deans, Programme Leaders and the SAppC
+     secretary the regulations name a ROLE but print no address, so the row
+     says "not published" and points the student to an official page. Guessing
+     a personal address is exactly the failure mode this project exists to
+     prevent.
+
+  2. A listed address is a lead, not a verified destination. MailStone cannot
+     check that the same person still holds the role today. Each row therefore
+     has a checkbox that the student must tick; only confirmed addresses with
+     a published email appear in the To: line.
+*/
+/* Raw level codes are not student-facing words; give them a translatable label. */
+const RECIPIENT_LEVEL_LABELS = {
+  course: "Course-level contact",
+  programme: "Programme-level contact",
+  faculty: "Faculty-level contact",
+  central: "Central office"
+};
+
+function buildRecipientRow(contact, why) {
+  const row = document.createElement("div");
+  row.className = contact.email
+    ? "recipient-row"
+    : "recipient-row recipient-row--unpublished";
+
+  const top = document.createElement("div");
+  top.className = "recipient-row-top";
+
+  const role = document.createElement("strong");
+  role.className = "recipient-role";
+  role.textContent = contact.role;
+
+  const badge = document.createElement("span");
+  badge.className = "recipient-badge";
+  badge.textContent = contact.email
+    ? RECIPIENT_LEVEL_LABELS[contact.level] || contact.level
+    : "Not published — find it yourself";
+
+  top.append(role, badge);
+
+  const whyLine = document.createElement("p");
+  whyLine.className = "recipient-why";
+  whyLine.textContent = why;
+
+  row.append(top, whyLine);
+
+  if (contact.email) {
+    const address = document.createElement("div");
+    address.className = "recipient-address";
+
+    const link = document.createElement("a");
+    link.href = `mailto:${contact.email}`;
+    link.textContent = contact.email;
+    link.className = "recipient-email";
+
+    address.append(link);
+
+    if (contact.phone) {
+      const phone = document.createElement("span");
+      phone.className = "recipient-phone";
+      phone.textContent = contact.phone;
+      address.append(phone);
+    }
+
+    row.append(address);
+  } else {
+    const lookup = document.createElement("p");
+    lookup.className = "recipient-lookup";
+    lookup.textContent = contact.lookup_note || "";
+
+    const link = document.createElement("a");
+    link.className = "recipient-lookup-link";
+    link.href = contact.lookup_url || contact.source_url || "#";
+    link.target = "_blank";
+    link.rel = "noopener";
+    link.textContent = "Where to look";
+
+    row.append(lookup, link);
+  }
+
+  const source = document.createElement("p");
+  source.className = "recipient-source";
+
+  const sourceLabel = document.createElement("span");
+  sourceLabel.textContent = "Source: ";
+
+  const sourceLink = document.createElement("a");
+  sourceLink.href = contact.source_url || "#";
+  sourceLink.target = "_blank";
+  sourceLink.rel = "noopener";
+  sourceLink.textContent = (contact.source_ids || []).join(", ");
+
+  const retrieved = document.createElement("span");
+  const i18n = window.MailStoneI18n;
+  const dateLabel = contact.retrieved_date || i18n.t("not recorded");
+
+  /* Composite strings with a date cannot be dictionary keys, so translate here. */
+  retrieved.textContent = ` · ${i18n.t("Retrieved")} ${dateLabel}`;
+
+  source.append(sourceLabel, sourceLink, retrieved);
+  row.append(source);
+
+  const confirm = document.createElement("label");
+  confirm.className = "recipient-confirm";
+
+  const box = document.createElement("input");
+  box.type = "checkbox";
+  box.checked = confirmedRecipients.has(contact.contact_id);
+
+  const confirmText = document.createElement("span");
+  confirmText.textContent = contact.email
+    ? "I have checked this address on the official page"
+    : "I have found and checked the address myself";
+
+  box.addEventListener("change", () => {
+    if (box.checked) {
+      confirmedRecipients.add(contact.contact_id);
+    } else {
+      confirmedRecipients.delete(contact.contact_id);
+    }
+
+    renderRecipientTo();
+  });
+
+  confirm.append(box, confirmText);
+  row.append(confirm);
+
+  return row;
+}
+
+function renderRecipientTo() {
+  const state = document.querySelector("#recipient-state");
+  const toWrap = document.querySelector("#recipient-to");
+  const toValue = document.querySelector("#recipient-to-value");
+  const registry = data.contacts;
+
+  const emails = [...confirmedRecipients]
+    .map(id => registry && registry.contacts[id] && registry.contacts[id].email)
+    .filter(Boolean);
+
+  if (emails.length) {
+    toValue.textContent = emails.join(", ");
+    toWrap.hidden = false;
+    state.textContent = window.MailStoneI18n.t("Confirmed by you");
+    state.dataset.confirmed = "true";
+  } else {
+    toWrap.hidden = true;
+    state.textContent = window.MailStoneI18n.t("No recipient confirmed yet.");
+    state.dataset.confirmed = "false";
+  }
+
+  const checklistBox = document.querySelector("#check-recipient");
+
+  if (checklistBox) {
+    checklistBox.checked = confirmedRecipients.size > 0;
+  }
+}
+
+function renderRecipientPanel() {
+  const panel = document.querySelector("#result-recipient");
+  const list = document.querySelector("#recipient-list");
+  const registry = data.contacts;
+
+  if (!registry || !registry.contacts || !registry.route_bindings) {
+    panel.hidden = true;
+    return;
+  }
+
+  const level =
+    gate && gate.primary && gate.primary.route
+      ? gate.primary.route.recipient_level
+      : null;
+
+  const bindingKey = level || "fallback";
+  const groups = [];
+
+  if (registry.route_bindings[bindingKey]) {
+    groups.push(registry.route_bindings[bindingKey]);
+  }
+
+  if (gate && gate.services && gate.services.length && registry.route_bindings.support) {
+    groups.push(registry.route_bindings.support);
+  }
+
+  list.replaceChildren();
+
+  const seen = new Set();
+
+  groups.forEach(group => {
+    (group.contacts || []).forEach(id => {
+      const contact = registry.contacts[id];
+
+      if (!contact || seen.has(id)) {
+        return;
+      }
+
+      seen.add(id);
+
+      /* A fallback office needs its own reason, not the named contact's. */
+      const why =
+        (group.contact_whys && group.contact_whys[id]) || group.why;
+
+      list.append(buildRecipientRow(contact, why));
+    });
+  });
+
+  renderRecipientTo();
   panel.hidden = false;
 }
 
@@ -1434,10 +1841,13 @@ function renderLint() {
   const warnCount = lint.findings.filter(f => f.severity === "warn").length;
 
   if (lint.findings.length === 0) {
-    summary.textContent = "No checks triggered.";
+    summary.textContent = window.MailStoneI18n.t("No checks triggered.");
     panel.dataset.state = "clear";
   } else {
-    summary.textContent = `${blockCount} to fix · ${warnCount} to check`;
+    summary.textContent = window.MailStoneI18n
+      .t("{a} to fix · {b} to check")
+      .replace("{a}", blockCount)
+      .replace("{b}", warnCount);
     panel.dataset.state = blockCount > 0 ? "blocked" : "check";
   }
 
@@ -1479,6 +1889,9 @@ function renderLint() {
 
     list.append(row);
   });
+
+  /* Lint rows can be rebuilt on every keystroke, so translate after each. */
+  window.MailStoneI18n.sweep(panel);
 }
 
 /* ---------- Review preview ---------- */
@@ -1538,7 +1951,9 @@ function updateReviewMode() {
   isReviewMode = !isReviewMode;
 
   toggleReview.setAttribute("aria-pressed", String(isReviewMode));
-  toggleReview.textContent = isReviewMode ? "Back to editing" : "Check this draft";
+  toggleReview.textContent = isReviewMode
+    ? window.MailStoneI18n.t("Back to editing")
+    : window.MailStoneI18n.t("Check this draft");
 
   draftEditor.hidden = isReviewMode;
   draftPreview.hidden = !isReviewMode;
@@ -1573,9 +1988,13 @@ function validateFactLock() {
   const blocking = lint.findings.filter(item => item.severity === "block");
 
   if (blocking.length) {
+    const i18n = window.MailStoneI18n;
+
     return {
       valid: false,
-      message: `Fix before copying: ${blocking[0].name}. ${blocking[0].message}`
+      message: `${i18n.t("Fix before copying:")} ${i18n.t(
+        blocking[0].name
+      )}. ${i18n.t(blocking[0].message)}`
     };
   }
 
@@ -1586,7 +2005,7 @@ function getPlaceholders(text) {
   return text.match(/\[[^\]]+\]/g) || [];
 }
 
-function showResult() {
+function showResult(skipFocus = false) {
   questionCard.hidden = true;
   resultCard.hidden = false;
 
@@ -1601,6 +2020,7 @@ function showResult() {
   renderRoute();
   renderResultPolicy();
   renderSupport();
+  renderRecipientPanel();
   renderFacts();
   renderLearningTips();
 
@@ -1612,7 +2032,28 @@ function showResult() {
   updateStepNavigation(getSteps().length);
   animateCard(resultCard);
 
-  document.querySelector("#result-title").focus();
+  /* The interface language is applied after every render, never before. */
+  window.MailStoneI18n.sweep();
+
+  if (!skipFocus) {
+    document.querySelector("#result-title").focus();
+  }
+}
+
+/*
+  Re-render the current view after a language change. Answers and any manual
+  edits to the draft are preserved: savedDraft is updated on every input, so
+  showResult() restores it, and renderStep() rebuilds inputs from answers.
+*/
+function refreshUi() {
+  if (resultCard.hidden === false) {
+    showResult(true);
+  } else {
+    renderStep(false);
+  }
+
+  copyStatus.textContent = "";
+  window.MailStoneI18n.sweep();
 }
 
 function openUtility(type) {
@@ -1637,9 +2078,50 @@ function openUtility(type) {
   utilityContent.textContent = utilityText[type];
 
   utilityPanel.hidden = false;
+  window.MailStoneI18n.sweep(utilityPanel);
 }
 
 /* ---------- Events ---------- */
+
+/* Language switcher — interface only; the draft and quotes stay English. */
+const languageSwitcher = document.querySelector("#language-switcher");
+
+function markActiveLanguage(lang) {
+  languageSwitcher.querySelectorAll(".language-button").forEach(button => {
+    const active = button.dataset.lang === lang;
+
+    button.classList.toggle("is-active", active);
+    button.setAttribute("aria-pressed", String(active));
+  });
+}
+
+languageSwitcher.addEventListener("click", event => {
+  const button = event.target.closest(".language-button");
+
+  if (!button) {
+    return;
+  }
+
+  window.MailStoneI18n.setLanguage(button.dataset.lang);
+});
+
+window.MailStoneI18n.onChange(lang => {
+  markActiveLanguage(lang);
+  languageSwitcher.setAttribute(
+    "aria-label",
+    window.MailStoneI18n.t("Interface language")
+  );
+  refreshUi();
+});
+
+/* A demo can pin the interface language with ?lang=zh-Hant. No storage. */
+const initialLang = new URLSearchParams(window.location.search).get("lang");
+
+if (initialLang) {
+  window.MailStoneI18n.setLanguage(initialLang, true);
+}
+
+markActiveLanguage(window.MailStoneI18n.getLanguage());
 
 form.addEventListener("submit", event => {
   event.preventDefault();
@@ -1695,8 +2177,8 @@ document
 
     source.hidden = !isHidden;
     button.textContent = isHidden
-      ? "Hide source information"
-      : "Show source information";
+      ? window.MailStoneI18n.t("Hide source information")
+      : window.MailStoneI18n.t("Show source information");
   });
 
 toggleReview.addEventListener("click", updateReviewMode);
@@ -1706,7 +2188,9 @@ document.querySelector("#edit-answers").addEventListener("click", () => {
 
   if (hasManualEdits) {
     const proceed = window.confirm(
-      "Changing your choices may replace your edited draft with a new template. Copy your edits first if you want to keep them. Continue?"
+      window.MailStoneI18n.t(
+        "Changing your choices may replace your edited draft with a new template. Copy your edits first if you want to keep them. Continue?"
+      )
     );
 
     if (!proceed) {
@@ -1734,23 +2218,28 @@ document.querySelector("#copy-button").addEventListener("click", async () => {
     draftPreview.hidden = true;
     reviewLegend.hidden = true;
     isReviewMode = false;
-    toggleReview.textContent = "Check this draft";
+    toggleReview.textContent = window.MailStoneI18n.t("Check this draft");
     draftEditor.focus();
     return;
   }
 
   const placeholders = getPlaceholders(draftText);
+  const i18n = window.MailStoneI18n;
 
-  let message = "Draft copied.";
+  let message = i18n.t("Draft copied.");
 
   if (placeholders.length > 0) {
-    message += ` ${placeholders.length} placeholders still to replace.`;
+    message += ` ${i18n
+      .t("{n} placeholders still to replace.")
+      .replace("{n}", placeholders.length)}`;
   }
 
   try {
     await navigator.clipboard.writeText(draftText);
 
-    copyStatus.textContent = `${message} Remember to check every detail before sending.`;
+    copyStatus.textContent = `${message} ${i18n.t(
+      "Remember to check every detail before sending."
+    )}`;
   } catch {
     draftEditor.hidden = false;
     draftPreview.hidden = true;
@@ -1759,8 +2248,9 @@ document.querySelector("#copy-button").addEventListener("click", async () => {
     draftEditor.focus();
     draftEditor.select();
 
-    copyStatus.textContent =
-      "Automatic copying is unavailable. The draft is selected; press Command+C on Mac or Ctrl+C on Windows.";
+    copyStatus.textContent = i18n.t(
+      "Automatic copying is unavailable. The draft is selected; press Command+C on Mac or Ctrl+C on Windows."
+    );
   }
 });
 
@@ -1794,19 +2284,27 @@ document.addEventListener("keydown", event => {
 /* ---------- Start ---------- */
 
 async function loadData() {
-  const [policyResponse, sourceResponse, qualityResponse] = await Promise.all([
-    fetch("./data/policy/rules.eduhk.json"),
-    fetch("./data/policy/sources.json"),
-    fetch("./data/quality/violations.json")
-  ]);
+  const [policyResponse, sourceResponse, qualityResponse, contactsResponse] =
+    await Promise.all([
+      fetch("./data/policy/rules.eduhk.json"),
+      fetch("./data/policy/sources.json"),
+      fetch("./data/quality/violations.json"),
+      fetch("./data/policy/contacts.json")
+    ]);
 
-  if (!policyResponse.ok || !sourceResponse.ok || !qualityResponse.ok) {
+  if (
+    !policyResponse.ok ||
+    !sourceResponse.ok ||
+    !qualityResponse.ok ||
+    !contactsResponse.ok
+  ) {
     throw new Error("Policy data could not be loaded.");
   }
 
   const policy = await policyResponse.json();
   const sources = await sourceResponse.json();
   const quality = await qualityResponse.json();
+  const contacts = await contactsResponse.json();
 
   const sourceById = {};
 
@@ -1820,7 +2318,8 @@ async function loadData() {
     sources: sourceById,
     programmeCoverage: sources.programme_coverage || [],
     knownGaps: sources.known_gaps || [],
-    violations: quality.violations
+    violations: quality.violations,
+    contacts: contacts
   };
 }
 
@@ -1832,6 +2331,7 @@ function showDataError() {
   nextButton.disabled = true;
   backButton.disabled = true;
   inlinePolicy.hidden = true;
+  window.MailStoneI18n.sweep();
 }
 
 loadData()
@@ -1854,6 +2354,7 @@ loadData()
         reason: "health",
         disclosure: "brief",
         time: "3",
+        courseCode: "LIN4049",
         tone: "warm"
       },
       "extension-post": {
@@ -1865,6 +2366,7 @@ loadData()
         reason: "health",
         disclosure: "impact",
         time: "7",
+        courseCode: "LIN4049",
         tone: "warm"
       },
       "extension-tpg": {
@@ -1876,6 +2378,7 @@ loadData()
         reason: "personal",
         disclosure: "brief",
         time: "7",
+        courseCode: "LIN4049",
         tone: "formal"
       },
       "exam-ug": {
@@ -1886,6 +2389,7 @@ loadData()
         situation: "new",
         reason: "health",
         disclosure: "brief",
+        courseCode: "LIN4049",
         tone: "formal"
       },
       grade: {
@@ -1894,7 +2398,20 @@ loadData()
         timing: "before_deadline",
         goal: "understand",
         situation: "new",
+        courseCode: "LIN4049",
         tone: "formal"
+      },
+      "extension-no-code": {
+        programme: "ug",
+        requestType: "extension",
+        timing: "before_deadline",
+        goal: "request",
+        situation: "new",
+        reason: "health",
+        disclosure: "brief",
+        time: "3",
+        courseCode: "unknown",
+        tone: "warm"
       },
       unsure: {
         programme: "ug",
@@ -1903,6 +2420,7 @@ loadData()
         situation: "new",
         reason: "omit",
         disclosure: "brief",
+        courseCode: "LIN4049",
         tone: "warm"
       }
     };
@@ -1924,7 +2442,8 @@ loadData()
       Object.assign(answers, {
         programme: "ug",
         requestType: "extension",
-        timing: "before_deadline"
+        timing: "before_deadline",
+        courseCode: "LIN4049"
       });
 
       currentStep = Math.min(step, getSteps().length - 1);

@@ -3,6 +3,7 @@
 **Student:** LI Leer (11601718)
 **Course:** LIN4049, EdUHK
 **Date:** 9 November 2026
+**Last updated:** 15 November 2026 (second-iteration features A6, B5–B7, D5 added)
 **Repository:** https://github.com/LREE333/MailStone
 
 ---
@@ -65,6 +66,16 @@ This document records the difficulties I encountered while building MailStone, h
 
 ---
 
+### A6. Official pages publish office addresses, but not personal ones
+
+**Difficulty.** After testing the prototype I wanted the result page to show the correct office or department email address so the student would not have to hunt for it. The obvious failure mode is the one this whole project exists to prevent: guessing a personal address. The General Academic Regulations name roles — course lecturer, Faculty Dean, Programme Leader, Secretary of the Students' Appeal Committee — but print no address for any of them. A plausible-looking `firstname.lastname@eduhk.hk` would be a hallucination with real consequences.
+
+**How I resolved it.** I separated a **contact directory** from a **policy source**. `data/policy/contacts.json` is explicitly not a source of rules: it says WHERE to send, never WHAT the rules say. It may only contain addresses printed on an official EdUHK page or in a document already registered in `sources.json`. I retrieved the official University Contact Us page (`https://www.eduhk.hk/en/contact-us`, registered as `EDUHK-CONTACT-US-2026`) and the SAO SEN Support Services page. Each address carries `source_ids`, `source_url` and `retrieved_date`. For the four role-only contacts, `email` is `null` and the row instead gives a `lookup_url` plus a plain-language note telling the student where to look. One attempted page (`/re/About-Registry/Contact-Us.html`) returned 404, so I did not use it — a missing page is not a licence to invent an address. Withholding the four addresses is itself a finding.
+
+**Status:** Resolved. 6 verified office addresses, 4 deliberately withheld role-only contacts, 6 route bindings.
+
+---
+
 ## B. Technical design
 
 ### B1. How to prevent AI hallucination in policy output
@@ -122,6 +133,36 @@ The 12 checks are in `data/quality/violations.json` and are tested in `tools/tes
 - `by_design` — the student has not identified a topic. The message says "no procedure has been identified yet."
 
 Each state has different UI copy and different writing tips. The states are driven by `known_gaps` in `sources.json`, so adding a new gap does not require code changes.
+
+**Status:** Resolved.
+
+---
+
+### B5. A course code is an identifier, not a category
+
+**Difficulty.** A course code like `LIN4049` cannot be offered as a radio option — it is a value the student supplies, not a value the tool can infer or enumerate. I also needed a "not known yet" path, and the instruction was that the final draft should "leave it blank". Simply deleting the token would produce a subject line with an invisible hole, which is the single detail most likely to be forgotten before sending.
+
+**How I resolved it.** I added `courseCode` as a **text step** (an input plus a "Not known yet — leave it blank" radio) to all six question sequences. The radio stores the literal string `"unknown"` rather than skipping the question, so the flow stays honest. `applyCourseCode()` runs as the last step of `buildDraft()` and replaces every `[Course code]` slot with the student's exact string — verbatim, with no normalisation or inference. For `"unknown"` it deliberately keeps the visible `[Course code]` placeholder. That placeholder is highlighted by the review preview (`.preview-placeholder`), counted in the copy prompt ("{n} placeholders still to replace") and covered by the sending checklist. V09 is designed to treat a bracketed course placeholder as "present", so it does not fire here — I corrected two code comments that had claimed otherwise.
+
+**Status:** Resolved. One wording decision remains open (D5).
+
+---
+
+### B6. Three interface languages without corrupting the evidence
+
+**Difficulty.** The interface needed English, Traditional Chinese and Simplified Chinese, but the generated email must stay uniformly English — it is the artefact being evaluated — and verbatim policy quotations must stay English because a translation is no longer verbatim and cannot be checked against a clause number. A naive "translate everything on the page" approach would silently destroy both.
+
+**How I resolved it.** `js/i18n.js` holds a dictionary keyed by the exact (whitespace-normalised) English source string, plus a DOM text-node sweep. Two exclusions do the real work: `data-no-i18n` protects the draft textarea and the review preview, and `data-verbatim` protects quoted policy wording. Each text node stores its original English so switching back to English restores it exactly instead of translating a translation. Composite strings (counts, dates, interpolated messages) are translated at the call site with `t()` and `{n}` placeholders, because they cannot be dictionary keys. Language is held in memory, can be pinned with `?lang=`, and is never stored — the privacy promise is unchanged.
+
+**Status:** Resolved. Verified in a headless browser: in `zh-Hant` and `zh-Hans` the quoted GAR 9.6.1 wording and the draft remain English.
+
+---
+
+### B7. Event handlers reintroduced English text after a language switch
+
+**Difficulty.** The sweep runs at the end of every full render, but several controls update their own labels in response to a click — the recipient confirmation checkboxes, the "Check this draft" toggle, the "Show source information" button, and the To: line status. Those assignments happened after the sweep, so in Chinese mode clicking them made English text reappear.
+
+**How I resolved it.** I wrapped every post-render text assignment in `window.MailStoneI18n.t()` and added dictionary entries for the labels that had been missing (`Source:`, `Retrieved:`, and four recipient-level badges). A headless-browser smoke test then clicked the checkboxes, switched language while a recipient was confirmed, and unchecked again: the status label stayed Chinese throughout, the To: line kept the confirmed addresses, and the draft stayed English.
 
 **Status:** Resolved.
 
@@ -211,6 +252,16 @@ Each state has different UI copy and different writing tips. The states are driv
 
 ---
 
+### D5. What "leave it blank" should look like in the final draft
+
+**What it is.** The instruction for a course code that is "not known yet" was that the generated email should leave it blank. I implemented this as a **visible** `[Course code]` placeholder rather than an empty string, because an invisible gap in a subject line is easy to overlook, whereas a highlighted bracketed token is caught by the review preview, the copy prompt and the sending checklist.
+
+**Why it is not resolved.** "Leave it blank" could reasonably mean either (a) an empty string, or (b) a visible unfilled field. The two behave differently: an empty string would trigger V09 ("No course code found"), while a visible placeholder is treated as "present" by V09 but still flagged as something to replace. I chose (b) and documented the reasoning in the code, but the wording decision has not been confirmed with the supervisor or the intended student users.
+
+**Plan:** Confirm the preferred behaviour in the next supervisor meeting. If an empty string is preferred, the change is one line in `applyCourseCode()`, but the V09 gating and the sending-checklist wording would then need to be reviewed together.
+
+---
+
 ## Summary table
 
 | # | Difficulty | Category | Status |
@@ -220,10 +271,14 @@ Each state has different UI copy and different writing tips. The states are driv
 | A3 | Separate regulations per programme type | Policy | Resolved for UG/PGDE; TPG/RPG pending |
 | A4 | SEN leaflet is image-only PDF | Technical | Resolved |
 | A5 | SEN page URL redirected | Technical | Resolved |
+| A6 | Official pages publish office, not personal, addresses | Policy | Resolved (6 published, 4 withheld) |
 | B1 | AI hallucination risk | Design | Resolved (deterministic Gatekeeper + template baseline) |
 | B2 | Converting negative examples to checks | Design | Resolved for Tier 1 |
 | B3 | Three lint defects found by using the tool | Technical | V06/V09 resolved; V08 documented |
 | B4 | Honest empty states | Design | Resolved |
+| B5 | Course code is an identifier, not a category | Design | Resolved (text step + verbatim substitution) |
+| B6 | Three languages without corrupting the evidence | Design | Resolved (sweep + exclusions) |
+| B7 | Event handlers reintroduced English after a switch | Technical | Resolved (t() at every post-render assignment) |
 | C1 | Identifying AI-tool procedure | Communication | Resolved (8 Nov) |
 | C2 | Identifying approved LLM service | Communication | Resolved (8 Nov) |
 | C3 | SAO did not answer specific questions | Communication | 2 of 3 resolved (9 Nov) |
@@ -232,3 +287,4 @@ Each state has different UI copy and different writing tips. The states are driv
 | D2 | Model integration not implemented | Pending | Decision by 30 Nov |
 | D3 | Corpus double-coding not done | Pending | Evaluation phase |
 | D4 | Retrospective SAO accommodation | Pending | Follow-up if needed |
+| D5 | "Leave it blank" = empty string or visible placeholder? | Wording | Implemented as visible placeholder; confirm at next meeting |

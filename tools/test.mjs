@@ -738,6 +738,502 @@ console.log("\nPolicy data");
   );
 }
 
+/* ---------- Recipient registry (office addresses, never guessed) ---------- */
+
+console.log("\nRecipient registry");
+
+{
+  const contacts = loadJson("data/policy/contacts.json");
+  const sourceText = readFileSync(join(root, "data/policy/sources.json"), "utf8");
+  const registered = new Set(sources.sources.map(item => item.source_id));
+  const entries = Object.values(contacts.contacts);
+
+  check(
+    "the registry states that it does not guess personal addresses",
+    /does not guess personal email addresses/.test(contacts.principle)
+  );
+
+  check(
+    "the registry states the student-confirmation contract",
+    /checkbox/.test(contacts.confirmation_contract) &&
+      /To: line/.test(contacts.confirmation_contract)
+  );
+
+  check(
+    "every contact cites only registered sources",
+    entries.every(contact =>
+      (contact.source_ids || []).every(id => registered.has(id))
+    ),
+    entries
+      .flatMap(contact => (contact.source_ids || []).filter(id => !registered.has(id)))
+      .join(", ")
+  );
+
+  check(
+    "every published address appears verbatim in a registered source",
+    entries
+      .filter(contact => contact.email)
+      .every(contact => sourceText.includes(contact.email)),
+    entries
+      .filter(contact => contact.email && !sourceText.includes(contact.email))
+      .map(contact => contact.email)
+      .join(", ")
+  );
+
+  check(
+    "every published address uses the official eduhk.hk domain",
+    entries
+      .filter(contact => contact.email)
+      .every(contact => /@eduhk\.hk$/.test(contact.email)),
+    entries
+      .filter(contact => contact.email && !/@eduhk\.hk$/.test(contact.email))
+      .map(contact => contact.email)
+      .join(", ")
+  );
+
+  check(
+    "role-only contacts carry email: null, never an invented address",
+    entries
+      .filter(contact => contact.verification_status === "unpublished_in_corpus")
+      .every(contact => contact.email === null)
+  );
+
+  check(
+    "unpublished role contacts give the student a lookup URL and a note",
+    entries
+      .filter(contact => !contact.email)
+      .every(contact => contact.lookup_url && contact.lookup_note)
+  );
+
+  check(
+    "every contact records a source URL, retrieval date and status",
+    entries.every(
+      contact =>
+        contact.source_url && contact.retrieved_date && contact.verification_status
+    )
+  );
+
+  check(
+    "every route binding points at a real contact",
+    Object.values(contacts.route_bindings).every(group =>
+      (group.contacts || []).every(id => contacts.contacts[id])
+    )
+  );
+
+  check(
+    "per-contact reasons only describe contacts bound in that group",
+    Object.values(contacts.route_bindings).every(group =>
+      Object.keys(group.contact_whys || {}).every(id =>
+        (group.contacts || []).includes(id)
+      )
+    )
+  );
+
+  const levels = new Set(
+    rules.map(rule => rule.route && rule.route.recipient_level).filter(Boolean)
+  );
+
+  check(
+    "every recipient_level used by a rule has a route binding",
+    [...levels].every(level => contacts.route_bindings[level]),
+    [...levels].filter(level => !contacts.route_bindings[level]).join(", ")
+  );
+
+  check(
+    "the support route binds the verified SEN office address",
+    contacts.route_bindings.support.contacts.includes("EDUHK-SEN-SUPPORT") &&
+      contacts.contacts["EDUHK-SEN-SUPPORT"].email === "saosen@eduhk.hk"
+  );
+
+  check(
+    "the University Contact Us page is registered as a source",
+    registered.has("EDUHK-CONTACT-US-2026")
+  );
+}
+
+/* ---------- Course code step and substitution ---------- */
+
+console.log("\nCourse code");
+
+{
+  const appSource = readFileSync(join(root, "js/app.js"), "utf8");
+
+  /*
+    Pull the real function out of app.js and run it in isolation. This tests
+    the code that actually ships, rather than a copy that could drift.
+    applyCourseCode has no braces inside strings, so brace matching is safe.
+  */
+  function extractFunction(code, name) {
+    const marker = `function ${name}(`;
+    const start = code.indexOf(marker);
+
+    if (start === -1) {
+      return null;
+    }
+
+    let depth = 0;
+
+    for (let index = start; index < code.length; index += 1) {
+      if (code[index] === "{") {
+        depth += 1;
+      } else if (code[index] === "}") {
+        depth -= 1;
+
+        if (depth === 0) {
+          return code.slice(start, index + 1);
+        }
+      }
+    }
+
+    return null;
+  }
+
+  const functionSource = extractFunction(appSource, "applyCourseCode");
+
+  check("applyCourseCode exists in app.js", Boolean(functionSource));
+
+  const makeApply = new Function(
+    "answers",
+    `${functionSource}\nreturn applyCourseCode;`
+  );
+
+  const withCode = makeApply({ courseCode: "LIN4049" })(
+    "Subject: [Course code] — about [Course code]"
+  );
+  const unknown = makeApply({ courseCode: "unknown" })(
+    "Subject: [Course code]"
+  );
+  const missing = makeApply({})("Subject: [Course code]");
+
+  check(
+    "a supplied code replaces every [Course code] slot",
+    withCode === "Subject: LIN4049 — about LIN4049",
+    withCode
+  );
+
+  check(
+    "the supplied code is inserted verbatim, not normalised or inferred",
+    makeApply({ courseCode: "ABC-1234" })("Subject: [Course code]") ===
+      "Subject: ABC-1234"
+  );
+
+  check(
+    "'not known yet' keeps the visible placeholder",
+    unknown === "Subject: [Course code]",
+    unknown
+  );
+
+  check(
+    "a missing answer also keeps the visible placeholder",
+    missing === "Subject: [Course code]",
+    missing
+  );
+
+  check(
+    "buildDraft applies the course code as its final step",
+    /return applyCourseCode\(draft\);/.test(appSource)
+  );
+
+  check(
+    "courseCode is a free-text step, not a radio category",
+    /courseCode: \{[\s\S]*?type: "text"/.test(appSource)
+  );
+
+  const seqBlock = appSource.slice(
+    appSource.indexOf("const SEQUENCES"),
+    appSource.indexOf("const CAPTIONS")
+  );
+  const seqEntries = [...seqBlock.matchAll(/(\w+):\s*\[([^\]]*)\]/g)];
+
+  check("all six request-type sequences are present", seqEntries.length === 6);
+
+  check(
+    "every sequence asks for the course code",
+    seqEntries.every(match => match[2].includes("courseCode")),
+    seqEntries
+      .filter(match => !match[2].includes("courseCode"))
+      .map(match => match[1])
+      .join(", ")
+  );
+
+  check(
+    "the 'not known yet' option stores the literal string unknown",
+    /unknownRadio.value = "unknown"/.test(appSource) &&
+      /setAnswer\("unknown"\)/.test(appSource)
+  );
+
+  /* The visible placeholder must still be caught by the review tooling. */
+  const placeholderText = "Subject: [Course code]";
+  const realCodeText = "Subject: LIN4049";
+  const options = {
+    violations,
+    answers: { requestType: "extension", programme: "ug" },
+    gate: { coverage: "covered" },
+    recipientLevel: "course"
+  };
+
+  const asPlaceholder = lint.run(placeholderText, options);
+  const asRealCode = lint.run(realCodeText, options);
+
+  check(
+    "an unfilled [Course code] blank is reported as a placeholder",
+    asPlaceholder.placeholders.some(item => /course/i.test(item.text || item.match || "")),
+    JSON.stringify(asPlaceholder.placeholders)
+  );
+
+  check(
+    "a real course code is not reported as an unfilled placeholder",
+    !asRealCode.placeholders.some(item => /course/i.test(item.text || item.match || ""))
+  );
+}
+
+/* ---------- Interface localisation (EN / 繁 / 简) ---------- */
+
+console.log("\nInterface localisation");
+
+{
+  const html = readFileSync(join(root, "index.html"), "utf8");
+  const appSource = readFileSync(join(root, "js/app.js"), "utf8");
+  const i18nSource = readFileSync(join(root, "js/i18n.js"), "utf8");
+
+  const windowStub = {};
+  let textNodes = [];
+
+  const NodeFilterStub = {
+    SHOW_TEXT: 4,
+    FILTER_ACCEPT: 1,
+    FILTER_REJECT: 2
+  };
+
+  const documentStub = {
+    documentElement: { lang: "en" },
+    title: "MailStone — A clearer academic message",
+    body: {},
+    createTreeWalker(target, whatToShow, filter) {
+      let index = 0;
+
+      return {
+        nextNode() {
+          while (index < textNodes.length) {
+            const node = textNodes[index];
+            index += 1;
+
+            if (filter.acceptNode(node) === NodeFilterStub.FILTER_ACCEPT) {
+              return node;
+            }
+          }
+
+          return null;
+        }
+      };
+    }
+  };
+
+  new Function("window", "document", "NodeFilter", i18nSource)(
+    windowStub,
+    documentStub,
+    NodeFilterStub
+  );
+
+  const i18n = windowStub.MailStoneI18n;
+
+  check(
+    "the i18n module exposes t, sweep, setLanguage and getLanguage",
+    ["t", "sweep", "setLanguage", "getLanguage", "onChange"].every(
+      key => typeof i18n[key] === "function"
+    )
+  );
+
+  check(
+    "exactly three interface languages are declared",
+    i18n.LANGUAGES.length === 3 &&
+      i18n.LANGUAGES.map(item => item.id).join(",") === "en,zh-Hant,zh-Hans"
+  );
+
+  check("English is the default interface language", i18n.getLanguage() === "en");
+
+  check(
+    "the translation dictionary is substantial",
+    i18n.dictionarySize > 200,
+    String(i18n.dictionarySize)
+  );
+
+  i18n.setLanguage("zh-Hant", true);
+
+  check(
+    "t() returns Traditional Chinese",
+    i18n.t("What is the course code?") === "這門課的課程編號是甚麼？",
+    i18n.t("What is the course code?")
+  );
+
+  check(
+    "setLanguage updates the html lang attribute and document title",
+    documentStub.documentElement.lang === "zh-Hant" &&
+      documentStub.title === "MailStone — 讓學術訊息更清晰",
+    `${documentStub.documentElement.lang} / ${documentStub.title}`
+  );
+
+  i18n.setLanguage("zh-Hans", true);
+
+  check(
+    "t() returns Simplified Chinese",
+    i18n.t("What is the course code?") === "这门课的课程编号是什么？",
+    i18n.t("What is the course code?")
+  );
+
+  i18n.setLanguage("en", true);
+
+  check(
+    "English t() is an identity function",
+    i18n.t("Suggested recipient") === "Suggested recipient"
+  );
+
+  const criticalStrings = [
+    "What is the course code?",
+    "Not known yet — leave it blank",
+    "Suggested recipient",
+    "I have checked this address on the official page",
+    "I have found and checked the address myself",
+    "Interface language only — the email draft and quoted policy wording stay in English.",
+    "Confirmed by you",
+    "No recipient confirmed yet.",
+    "Source:",
+    "Retrieved:",
+    "Not published — find it yourself",
+    "Where to look",
+    "Course-level contact",
+    "Adding the course code",
+    "A University-wide office that can direct you to the right unit if you cannot find the named contact's address."
+  ];
+
+  i18n.setLanguage("zh-Hant", true);
+
+  check(
+    "all critical new-feature strings are translated into Traditional Chinese",
+    criticalStrings.every(text => i18n.t(text) !== text),
+    criticalStrings.filter(text => i18n.t(text) === text).join(" | ")
+  );
+
+  i18n.setLanguage("zh-Hans", true);
+
+  check(
+    "all critical new-feature strings are translated into Simplified Chinese",
+    criticalStrings.every(text => i18n.t(text) !== text),
+    criticalStrings.filter(text => i18n.t(text) === text).join(" | ")
+  );
+
+  /* Minimal DOM stub: enough to prove sweep() honours its exclusions. */
+  function el(tagName, attributes, parentElement) {
+    return {
+      tagName,
+      parentElement: parentElement || null,
+      hasAttribute(name) {
+        return (attributes || []).includes(name);
+      }
+    };
+  }
+
+  function txt(nodeValue, parentElement) {
+    return { nodeValue, parentElement: parentElement || null };
+  }
+
+  const plain = txt("Suggested recipient", el("H3", [], el("SECTION")));
+  const noI18n = txt("Subject: [Course code]", el("DIV", ["data-no-i18n"]));
+  const verbatim = txt("“a verbatim quote”", el("SPAN", ["data-verbatim"]));
+  const script = txt("var x = 1;", el("SCRIPT"));
+  const textarea = txt("Dear [Recipient]", el("TEXTAREA"));
+  const unknownString = txt("An untranslated label", el("SPAN"));
+
+  textNodes = [plain, noI18n, verbatim, script, textarea, unknownString];
+
+  i18n.setLanguage("zh-Hant", true);
+  i18n.sweep();
+
+  check(
+    "sweep translates an ordinary text node",
+    plain.nodeValue === "建議收件人",
+    plain.nodeValue
+  );
+
+  check(
+    "sweep leaves data-no-i18n content (the email draft) in English",
+    noI18n.nodeValue === "Subject: [Course code]",
+    noI18n.nodeValue
+  );
+
+  check(
+    "sweep leaves data-verbatim policy quotes in English",
+    verbatim.nodeValue === "“a verbatim quote”",
+    verbatim.nodeValue
+  );
+
+  check("sweep skips SCRIPT text", script.nodeValue === "var x = 1;");
+  check("sweep skips TEXTAREA text", textarea.nodeValue === "Dear [Recipient]");
+
+  check(
+    "sweep leaves unknown strings unchanged rather than corrupting them",
+    unknownString.nodeValue === "An untranslated label"
+  );
+
+  i18n.setLanguage("zh-Hans", true);
+  i18n.sweep();
+
+  check(
+    "sweep switches an existing node to Simplified Chinese",
+    plain.nodeValue === "建议收件人",
+    plain.nodeValue
+  );
+
+  i18n.setLanguage("en", true);
+  i18n.sweep();
+
+  check(
+    "sweep restores the exact original English, not a translation of a translation",
+    plain.nodeValue === "Suggested recipient",
+    plain.nodeValue
+  );
+
+  check(
+    "restoring English still does not touch protected nodes",
+    noI18n.nodeValue === "Subject: [Course code]" &&
+      verbatim.nodeValue === "“a verbatim quote”"
+  );
+
+  /* Static guarantees about the English-only boundary. */
+  check(
+    "the draft textarea is excluded from interface translation",
+    /id="email-draft"[\s\S]{0,300}?data-no-i18n/.test(html)
+  );
+
+  check(
+    "the review preview is excluded from interface translation",
+    /id="draft-preview"[\s\S]{0,300}?data-no-i18n/.test(html)
+  );
+
+  check(
+    "the header declares all three language buttons",
+    /data-lang="en"/.test(html) &&
+      /data-lang="zh-Hant"/.test(html) &&
+      /data-lang="zh-Hans"/.test(html)
+  );
+
+  check(
+    "the English-only boundary is stated on the result page",
+    /class="english-only-note"/.test(html) &&
+      /stay in English/.test(html)
+  );
+
+  check(
+    "verbatim policy quotes are marked as non-translatable in app.js",
+    /data-verbatim/.test(appSource)
+  );
+
+  check(
+    "app.js loads contacts.json alongside the other data files",
+    /fetch\("\.\/data\/policy\/contacts\.json"\)/.test(appSource)
+  );
+}
+
 console.log(`\n${passed} passed, ${failed} failed\n`);
 
 process.exit(failed === 0 ? 0 : 1);

@@ -14,6 +14,7 @@
   <link rel="stylesheet" href="./css/styles.css">
   <script src="./js/gatekeeper.js" defer></script>
   <script src="./js/lint.js" defer></script>
+  <script src="./js/i18n.js" defer></script>
   <script src="./js/app.js" defer></script>
 </head>
 
@@ -30,6 +31,18 @@
     </a>
 
     <div class="header-right">
+      <div
+        id="language-switcher"
+        class="language-switcher"
+        role="group"
+        aria-label="Interface language"
+        data-no-i18n
+      >
+        <button class="language-button is-active" type="button" data-lang="en" aria-pressed="true">EN</button>
+        <button class="language-button" type="button" data-lang="zh-Hant" aria-pressed="false">繁</button>
+        <button class="language-button" type="button" data-lang="zh-Hans" aria-pressed="false">简</button>
+      </div>
+
       <span class="prototype-badge">Early prototype</span>
 
       <nav class="top-nav" aria-label="Website navigation">
@@ -290,6 +303,44 @@
           </div>
         </section>
 
+        <!-- Recipient confirmation (office addresses, never personal guesses) -->
+        <section
+          id="result-recipient"
+          class="recipient-panel"
+          aria-labelledby="recipient-title"
+        >
+          <div class="recipient-head">
+            <div>
+              <span class="workspace-kicker">BEFORE YOU SEND</span>
+              <h3 id="recipient-title">Suggested recipient</h3>
+            </div>
+
+            <span id="recipient-state" class="recipient-state">
+              Not confirmed
+            </span>
+          </div>
+
+          <p id="recipient-intro" class="recipient-intro">
+            These are officially published office addresses, not a guess. Tick a
+            box to confirm you have checked the address before it appears in the
+            To: line.
+          </p>
+
+          <div id="recipient-list" class="recipient-list"></div>
+
+          <p class="recipient-note">
+            MailStone does not guess personal email addresses. Only officially
+            published office addresses are listed here, each with its source.
+            Nothing is sent automatically. Confirming an address only fills in
+            the To: line on this page.
+          </p>
+
+          <div id="recipient-to" class="recipient-to" hidden>
+            <span>To:</span>
+            <strong id="recipient-to-value"></strong>
+          </div>
+        </section>
+
         <!-- Email workspace -->
         <section class="email-workspace" aria-labelledby="email-workspace-title">
           <div class="workspace-toolbar">
@@ -312,6 +363,7 @@
             id="email-draft"
             spellcheck="true"
             aria-describedby="draft-help"
+            data-no-i18n
           ></textarea>
 
           <div
@@ -319,11 +371,17 @@
             class="draft-preview"
             hidden
             aria-label="Draft review preview"
+            data-no-i18n
           ></div>
 
           <p id="draft-help" class="field-help">
             Replace the bracketed placeholders and check the details before
             sending.
+          </p>
+
+          <p class="english-only-note">
+            Interface language only — the email draft and quoted policy wording
+            stay in English.
           </p>
 
           <div id="review-legend" class="review-legend" hidden>
@@ -429,7 +487,7 @@
 
           <section class="checklist-content">
             <label class="check-item">
-              <input type="checkbox">
+              <input id="check-recipient" type="checkbox">
               <span>I checked the recipient or department.</span>
             </label>
 

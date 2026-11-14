@@ -2,7 +2,7 @@
 
 A guided academic-email writing tool for students with Special Educational Needs (SEN) at the Education University of Hong Kong (EdUHK).
 
-MailStone helps students understand which academic regulation applies to their situation, prepares a draft email grounded in that regulation, and checks the draft against 12 documented failure modes — all without calling a language model.
+MailStone helps students understand which academic regulation applies to their situation, prepares a draft email grounded in that regulation, checks the draft against 12 documented failure modes, finds the right office to send it to, and lets them read the interface in English, Traditional Chinese or Simplified Chinese — all without calling a language model.
 
 **Student:** LI Leer (11601718)
 **Course:** LIN4049 Capstone Project
@@ -24,12 +24,15 @@ MailStone helps students understand which academic regulation applies to their s
 
 ## What it does
 
-1. **Asks guided questions** — programme type, request type, timing, situation
+1. **Asks guided questions** — programme type, request type, timing, situation, course code, tone
 2. **Selects the applicable policy rule** — deterministically, from 11 verified EdUHK academic regulations
 3. **Checks programme scope** — refuses to quote undergraduate clauses to postgraduate students
-4. **Generates a draft email** — template-based, zero-hallucination baseline
-5. **Scans the draft for 12 failure modes** — lexical, structural, and policy cross-checks
-6. **Routes to SEN Support Services** — when the standard route is closed or no central rule exists
+4. **Inserts the course code** — typed once in the question flow, written into every `[Course code]` slot in the draft
+5. **Generates a draft email** — template-based, zero-hallucination baseline
+6. **Scans the draft for 12 failure modes** — lexical, structural, and policy cross-checks
+7. **Routes to SEN Support Services** — when the standard route is closed or no central rule exists
+8. **Suggests verified office addresses** — with a source link and a confirmation checkbox before anything appears in the To: line
+9. **Switches interface language** — EN / 繁 / 简, while the email draft and quoted policy wording stay in English
 
 ## Try it
 
@@ -44,6 +47,19 @@ Open `index.html` with a local web server (VS Code Live Server recommended — t
 | `?qa=extension-tpg` | TPG student, scope gap, regulations withheld |
 | `?qa=exam-ug` | Exam absence, no central rule, documented gap |
 | `?qa=grade` | Grade review, 9.2.1, 14-working-day deadline |
+| `?qa=extension-no-code` | "Not known yet" course code — the visible `[Course code]` blank is kept |
+| `?qa=unsure` | Student has not identified a topic — the `by_design` empty state |
+| `?lang=zh-Hant` / `?lang=zh-Hans` | Pins the interface to Traditional / Simplified Chinese |
+
+`?lang=` can be combined with any `?qa=` state, e.g. `?qa=extension-pre&lang=zh-Hans`.
+
+### The three second-iteration features
+
+**1. Verified recipient confirmation.** `data/policy/contacts.json` is a contact directory, not a policy source: it tells the student WHERE to send, never WHAT the rules say. Only addresses printed on an official EdUHK page or in a document already registered in `sources.json` may appear. Named individuals and course lecturers are never given an invented address — where no address is published, `email` is `null` and a lookup link tells the student where to find it. Each listed address carries its `source_ids`, `source_url` and `retrieved_date`, and the student must tick a checkbox before it appears in the To: line. Nothing is sent automatically.
+
+**2. Course code as an identifier.** The course code is collected as a free-text step, not a radio category, because it is an identifier the student supplies rather than a value the tool infers. `applyCourseCode()` substitutes the exact string into every `[Course code]` slot at the end of draft generation. Choosing "Not known yet — leave it blank" keeps the visible placeholder, which is highlighted in the review preview, counted in the copy prompt and covered by the sending checklist.
+
+**3. Interface-only localisation.** `js/i18n.js` translates EN / 繁 / 简 via a dictionary keyed by exact English source strings plus a DOM text-node sweep. The boundary is deliberate: the generated email is always English (it is the artefact being evaluated), and verbatim policy quotations are always English (a translation would no longer be verbatim). `data-no-i18n` protects the draft and review preview; `data-verbatim` protects quotes. Language is held in memory, can be pinned with `?lang=`, and is never stored — the privacy promise is unchanged.
 
 ## Project structure
 
@@ -54,19 +70,21 @@ mailstone/
 ├── js/
 │   ├── app.js              # UI logic, question flow, draft generation
 │   ├── gatekeeper.js       # Deterministic rule retrieval (no model call)
-│   └── lint.js             # 12-check draft scanner
+│   ├── lint.js             # 12-check draft scanner
+│   └── i18n.js             # EN / 繁 / 简 interface localisation
 ├── data/
 │   ├── policy/
-│   │   ├── sources.json    # 10 verified sources, scope model, known gaps
-│   │   └── rules.eduhk.json # 11 rules + SEN support service, all with verbatim quotes
+│   │   ├── sources.json     # 11 verified sources, scope model, known gaps
+│   │   ├── rules.eduhk.json # 11 rules + SEN support service, all with verbatim quotes
+│   │   └── contacts.json    # Verified office addresses + route bindings
 │   ├── quality/
-│   │   └── violations.json # 12 failure modes → machine-checkable rules
+│   │   └── violations.json  # 12 failure modes → machine-checkable rules
 │   └── exemplars/
-│       ├── exemplars.json  # Annotation scheme + collection plan
-│       └── corpus.json     # 18 annotated exemplars (13 public + 5 synthetic)
+│       ├── exemplars.json   # Annotation scheme + collection plan
+│       └── corpus.json      # 18 annotated exemplars (13 public + 5 synthetic)
 ├── tools/
-│   ├── test.mjs            # 65 assertions, all passing
-│   └── lint-file.mjs       # CLI: lint any email file
+│   ├── test.mjs             # 115 assertions, all passing
+│   └── lint-file.mjs        # CLI: lint any email file
 └── docs/
     ├── PLAN-2026-11-15.md       # Project plan and status
     ├── DELIVERABLE-2026-11-15.md # Deliverable checklist
@@ -80,6 +98,9 @@ mailstone/
 - **Template generator is the zero-hallucination baseline** — the model (when integrated) will be compared against this baseline, not against an ungrounded generation.
 - **Scope is a required field, not metadata** — a clause that governs BEd students may not govern taught master's students. The Gatekeeper withholds rather than substitutes when the student's programme is outside the collected corpus.
 - **Lint is an executable failure catalogue** — negative examples are converted into 12 checkable rules, not fed to a model as "avoid this" text.
+- **Never guess a personal email address** — a role named in a regulation is not an address. Published office addresses only, each traceable to a source, each requiring the student's own confirmation.
+- **Personal identifiers come from the student** — the course code is inserted verbatim from their answer, or left as a visible blank. The tool never infers one.
+- **Translate the interface, not the evidence** — the email and the verbatim quotes stay English so they remain checkable against the source.
 
 ## Tests
 
@@ -87,22 +108,26 @@ mailstone/
 node tools/test.mjs
 ```
 
-65 assertions covering: Gatekeeper route selection, programme scope integrity, lint detection, data integrity (every rule cites a registered source, every source declares its scope, every empty state is documented).
+115 assertions covering: Gatekeeper route selection, programme scope integrity, lint detection, policy data integrity, recipient-registry integrity (no invented addresses, every address traceable to a registered source), course-code substitution, and the localisation boundary (draft and quotes stay English in all three languages).
 
 ## Key findings
 
 1. **EdUHK has no standalone "extenuating circumstances" policy** — confirmed by the supervisor. After a deadline has passed, the standard extension route (GAR 9.6.1) is closed.
 2. **SAO SEN Support Services explicitly covers assignment deadline extensions** — the web page lists "Extension of assignment deadlines" under Lecture/Assignment Arrangements (confirmed 9 Nov 2026).
 3. **The AI-tool procedure is the reimbursement scheme** — supervisor pre-approval under the reimbursement framework constitutes the complete procedural requirement (confirmed 8 Nov 2026).
+4. **Official EdUHK pages publish office addresses, not personal ones** — the University Contact Us page and the SAO SEN Support Services page supply office addresses; the GAR names roles (lecturer, Dean, Programme Leader, SAppC secretary) but prints no address for them. This is why the recipient panel withholds rather than guesses.
 
 ## Status
 
 | Area | Status |
 |---|---|
-| Policy base | 11 rules, 10 sources, all verified |
+| Policy base | 11 rules, 11 sources, all verified |
+| Verified contact registry | 10 contacts, 6 published office addresses, 6 route bindings |
 | Gatekeeper | Working, deterministic |
-| Lint | 12 checks, 65 tests passing |
+| Lint | 12 checks, 115 tests passing |
 | Draft templates | 6 request types, 3 empty states |
+| Course code step | Working, with "not known yet" blank |
+| Interface languages | EN / 繁 / 简; draft + quotes always English |
 | Corpus | 18 exemplars annotated (first pass) |
 | AI tool procedure | Resolved |
 | Model integration | Pending (LTTC LLM Studio or reimbursement) |
@@ -116,4 +141,4 @@ node tools/test.mjs
 
 ## Disclaimer
 
-MailStone is a student capstone project, not an official EdUHK service. Policy text is quoted from publicly available university documents but does not constitute official university advice.
+MailStone is a student capstone project, not an official EdUHK service. Policy text is quoted from publicly available university documents but does not constitute official university advice. Contact addresses are leads, not verified destinations — the student must confirm them on the official page before sending.

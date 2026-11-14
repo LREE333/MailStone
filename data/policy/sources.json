@@ -286,6 +286,36 @@
       "used_for": ["corroboration"]
     },
     {
+      "source_id": "EDUHK-CONTACT-US-2026",
+      "title": "Contact Us — official University contact directory",
+      "publisher": "The Education University of Hong Kong",
+      "doc_type": "contact_directory",
+      "language": "en",
+      "edition": "current as retrieved",
+      "url": "https://www.eduhk.hk/en/contact-us",
+      "locator": null,
+      "retrieved_date": "2026-11-14",
+      "retrieval_method": "live web page",
+      "verification_status": "verified_primary",
+      "scope": {
+        "programme_levels": ["sub_degree", "ug", "pgde", "tpg", "rpg"],
+        "cohort_from": null,
+        "cohort_to": null,
+        "scope_basis": "verbatim",
+        "scope_note": "A University-wide contact directory. It lists office addresses, not programme-specific regulations."
+      },
+      "extract": {
+        "general_enquiries": "info@eduhk.hk · (852) 2948 8888",
+        "student_affairs": "saoemail@eduhk.hk · (852) 2948 6720",
+        "counselling_services": "saocs@eduhk.hk · (852) 2948 6245",
+        "career_services": "careerservice@eduhk.hk · (852) 2948 6246",
+        "library": "libinfo@eduhk.hk · (852) 2948 6653",
+        "it_help_desk": "helpdesk@ocio.eduhk.hk · (852) 2948 6601"
+      },
+      "notes": "Retrieved 2026-11-14 solely to supply the recipient-confirmation panel with officially published OFFICE addresses. This page does NOT publish addresses for the course lecturer, Faculty Dean, Programme Leader, or the Secretary of the Students' Appeal Committee; those roles are named in the academic regulations but their addresses are not printed there. MailStone therefore withholds an address for those roles rather than guessing one, and offers the general enquiry address as a fallback. This source is a contact directory, not evidence for any policy claim.",
+      "used_for": ["recipient_confirmation"]
+    },
+    {
       "source_id": "EDUHK-EDB-SEN-CONTACT",
       "title": "Transfer of SEN information from secondary schools to local post-secondary institutions — institutional contact list",
       "publisher": "Education Bureau, HKSAR Government (sense.edb.gov.hk)",

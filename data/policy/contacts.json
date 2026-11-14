@@ -1,0 +1,191 @@
+{
+  "schema_version": "1.0",
+  "purpose": "Verified, officially published office-level contact addresses for the recipient-confirmation panel on the result page. This is a contact directory, not a policy source: it tells the student WHERE to send, never WHAT the rules say.",
+  "institution": "The Education University of Hong Kong (EdUHK)",
+  "retrieved_date": "2026-11-14",
+  "principle": "MailStone does not guess personal email addresses. Only addresses printed on an official EdUHK page or on a document already registered in sources.json may appear here. Every address carries its source_ids, source_url and retrieved_date. Named individuals and course lecturers are never given an invented address: where an office address is not published in the corpus, email is null and a lookup_url plus lookup_note tell the student where to find it themselves. The student must actively confirm each address before it appears in the To: line.",
+  "confirmation_contract": "A listed address is a lead, not a verified destination. MailStone cannot check whether a given staff member still holds a role on the day the email is sent. Each contact row therefore has a checkbox: ticking it records the student's own confirmation and only then adds the address to the To: line. Nothing is sent automatically.",
+  "contacts": {
+    "EDUHK-SEN-SUPPORT": {
+      "contact_id": "EDUHK-SEN-SUPPORT",
+      "role": "SEN Support Services, Student Affairs Office",
+      "level": "central",
+      "email": "saosen@eduhk.hk",
+      "phone": "2948 6251",
+      "room": "Room 01S, 1/F, Cho Kwai Chee Foundation Building",
+      "source_ids": [
+        "EDUHK-SAO-SEN-LEAFLET",
+        "EDUHK-SAO-SEN-WEB-2026",
+        "EDUHK-SAO-REPLY-2026-11-09",
+        "EDUHK-EDB-SEN-CONTACT"
+      ],
+      "source_url": "https://www.eduhk.hk/sao/en/info/counselling_services/sen/support_service",
+      "retrieved_date": "2026-11-09",
+      "verification_status": "verified_primary",
+      "notes": "Published on the SAO SEN Support Services leaflet and repeated in the SAO reply email signature on 2026-11-09. Corroborated by the HKSAR Education Bureau post-secondary SEN contact directory. This is the only office address in the corpus tied to a specific support route."
+    },
+    "EDUHK-GENERAL-ENQUIRY": {
+      "contact_id": "EDUHK-GENERAL-ENQUIRY",
+      "role": "General Enquiries, EdUHK",
+      "level": "central",
+      "email": "info@eduhk.hk",
+      "phone": "(852) 2948 8888",
+      "room": null,
+      "source_ids": ["EDUHK-CONTACT-US-2026"],
+      "source_url": "https://www.eduhk.hk/en/contact-us",
+      "retrieved_date": "2026-11-14",
+      "verification_status": "verified_primary",
+      "notes": "University-wide general enquiry address. Used as a fallback when the specific office or person for a route has no published address in the corpus: a general enquiry office can direct the student to the right unit without MailStone inventing one."
+    },
+    "EDUHK-SAO-GENERAL": {
+      "contact_id": "EDUHK-SAO-GENERAL",
+      "role": "Student Affairs Office (general)",
+      "level": "central",
+      "email": "saoemail@eduhk.hk",
+      "phone": "(852) 2948 6720",
+      "room": null,
+      "source_ids": ["EDUHK-CONTACT-US-2026"],
+      "source_url": "https://www.eduhk.hk/en/contact-us",
+      "retrieved_date": "2026-11-14",
+      "verification_status": "verified_primary",
+      "notes": "General Student Affairs Office address. Shown alongside general enquiries for the no-rule and out-of-scope states, where the correct office has not been identified by a clause."
+    },
+    "EDUHK-COUNSELLING": {
+      "contact_id": "EDUHK-COUNSELLING",
+      "role": "Counselling Services, Student Affairs Office",
+      "level": "central",
+      "email": "saocs@eduhk.hk",
+      "phone": "(852) 2948 6245",
+      "room": null,
+      "source_ids": ["EDUHK-CONTACT-US-2026"],
+      "source_url": "https://www.eduhk.hk/en/contact-us",
+      "retrieved_date": "2026-11-14",
+      "verification_status": "verified_primary",
+      "notes": "Listed as 'Counselling Services' on the University Contact Us page. Retained in the registry for future support routing; not currently bound to a request type."
+    },
+    "EDUHK-CAREER": {
+      "contact_id": "EDUHK-CAREER",
+      "role": "Career Services, Student Affairs Office",
+      "level": "central",
+      "email": "careerservice@eduhk.hk",
+      "phone": "(852) 2948 6246",
+      "room": null,
+      "source_ids": ["EDUHK-CONTACT-US-2026"],
+      "source_url": "https://www.eduhk.hk/en/contact-us",
+      "retrieved_date": "2026-11-14",
+      "verification_status": "verified_primary",
+      "notes": "Listed as 'Career Services' on the University Contact Us page. Retained for future support routing; not currently bound to a request type."
+    },
+    "EDUHK-LIBRARY": {
+      "contact_id": "EDUHK-LIBRARY",
+      "role": "Mong Man Wai Library",
+      "level": "central",
+      "email": "libinfo@eduhk.hk",
+      "phone": "(852) 2948 6653",
+      "room": null,
+      "source_ids": ["EDUHK-CONTACT-US-2026"],
+      "source_url": "https://www.eduhk.hk/en/contact-us",
+      "retrieved_date": "2026-11-14",
+      "verification_status": "verified_primary",
+      "notes": "Retained for future support routing; not currently bound to a request type."
+    },
+    "EDUHK-COURSE-LECTURER": {
+      "contact_id": "EDUHK-COURSE-LECTURER",
+      "role": "Course lecturer (the person teaching the course)",
+      "level": "course",
+      "email": null,
+      "phone": null,
+      "room": null,
+      "source_ids": ["EDUHK-SH-2026-GAR"],
+      "source_url": "https://www.eduhk.hk/re/student_handbook/en/Rules-And-Regulations/General-Academic-Regulations.html",
+      "retrieved_date": "2026-10-31",
+      "verification_status": "unpublished_in_corpus",
+      "lookup_url": "https://www.eduhk.hk/re/",
+      "lookup_note": "MailStone does not guess personal email addresses. Find your lecturer's address on the course outline, the programme staff page, or the University staff directory. If you cannot find it, use the general enquiry address below to ask which unit to contact.",
+      "notes": "The route role comes from GAR 9.6.1 / 9.2.1, which name the course lecturer. Those clauses do not publish an address, so no address may be asserted here."
+    },
+    "EDUHK-FACULTY-DEAN": {
+      "contact_id": "EDUHK-FACULTY-DEAN",
+      "role": "Faculty Dean / Academy Executive Co-Director (formal review only)",
+      "level": "faculty",
+      "email": null,
+      "phone": null,
+      "room": null,
+      "source_ids": ["EDUHK-SH-2026-GAR", "EDUHK-SH-2026-PROC"],
+      "source_url": "https://www.eduhk.hk/re/student_handbook/en/Rules-And-Regulations/General-Academic-Regulations.html",
+      "retrieved_date": "2026-10-31",
+      "verification_status": "unpublished_in_corpus",
+      "lookup_url": "https://www.eduhk.hk/re/",
+      "lookup_note": "MailStone does not guess personal email addresses. GAR 9.2.3 requires a written request to the Faculty Dean within 14 working days; find the correct submission address on your programme handbook or the Faculty office page. The general enquiry address below can direct you.",
+      "notes": "Named in GAR 9.2.3 and Procedures 4.5, neither of which publishes an address."
+    },
+    "EDUHK-PROGRAMME-LEADER": {
+      "contact_id": "EDUHK-PROGRAMME-LEADER",
+      "role": "Programme Leader / Coordinator",
+      "level": "programme",
+      "email": null,
+      "phone": null,
+      "room": null,
+      "source_ids": ["EDUHK-SH-2026-GAR"],
+      "source_url": "https://www.eduhk.hk/re/student_handbook/en/Rules-And-Regulations/General-Academic-Regulations.html",
+      "retrieved_date": "2026-10-31",
+      "verification_status": "unpublished_in_corpus",
+      "lookup_url": "https://www.eduhk.hk/re/",
+      "lookup_note": "MailStone does not guess personal email addresses. GAR 13.1 requires a leave application form approved by the Programme Leader; find the programme office address on your programme handbook. The general enquiry address below can direct you.",
+      "notes": "Named in GAR 13.1, which does not publish an address."
+    },
+    "EDUHK-SAPPC-SECRETARY": {
+      "contact_id": "EDUHK-SAPPC-SECRETARY",
+      "role": "Secretary, Students' Appeal Committee (SAppC)",
+      "level": "central",
+      "email": null,
+      "phone": null,
+      "room": null,
+      "source_ids": ["EDUHK-SH-2026-PROC"],
+      "source_url": "https://www.eduhk.hk/re/student_handbook/en/Rules-And-Regulations/Procedures.html",
+      "retrieved_date": "2026-10-31",
+      "verification_status": "unpublished_in_corpus",
+      "lookup_url": "https://www.eduhk.hk/re/",
+      "lookup_note": "MailStone does not guess personal email addresses. Procedures 4.5 sets out the SAppC appeal but does not publish a submission address here; check the current Student Handbook or the Registry. The general enquiry address below can direct you.",
+      "notes": "Named in Procedures 4.5, which does not publish an address."
+    }
+  },
+  "route_bindings": {
+    "course": {
+      "contacts": ["EDUHK-COURSE-LECTURER", "EDUHK-GENERAL-ENQUIRY"],
+      "why": "The selected clause routes this request to a course-level contact.",
+      "contact_whys": {
+        "EDUHK-GENERAL-ENQUIRY": "A University-wide office that can direct you to the right unit if you cannot find the named contact's address."
+      }
+    },
+    "programme": {
+      "contacts": ["EDUHK-PROGRAMME-LEADER", "EDUHK-GENERAL-ENQUIRY"],
+      "why": "The selected clause routes this request to your programme office.",
+      "contact_whys": {
+        "EDUHK-GENERAL-ENQUIRY": "A University-wide office that can direct you to the right unit if you cannot find the named contact's address."
+      }
+    },
+    "faculty": {
+      "contacts": ["EDUHK-FACULTY-DEAN", "EDUHK-GENERAL-ENQUIRY"],
+      "why": "The selected clause routes this request to a Faculty-level contact.",
+      "contact_whys": {
+        "EDUHK-GENERAL-ENQUIRY": "A University-wide office that can direct you to the right unit if you cannot find the named contact's address."
+      }
+    },
+    "central": {
+      "contacts": ["EDUHK-SAPPC-SECRETARY", "EDUHK-GENERAL-ENQUIRY"],
+      "why": "The selected clause routes this request to a central committee.",
+      "contact_whys": {
+        "EDUHK-GENERAL-ENQUIRY": "A University-wide office that can direct you to the right unit if you cannot find the named contact's address."
+      }
+    },
+    "fallback": {
+      "contacts": ["EDUHK-GENERAL-ENQUIRY", "EDUHK-SAO-GENERAL"],
+      "why": "No clause selected a specific recipient, so these University-wide offices can direct you to the right unit."
+    },
+    "support": {
+      "contacts": ["EDUHK-SEN-SUPPORT"],
+      "why": "A separate SEN support route is listed for this situation."
+    }
+  }
+}

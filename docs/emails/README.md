@@ -134,3 +134,11 @@ The reply has been received and processed. Two of three questions resolved:
 **Still to do (if needed):**
 - If a follow-up to SAO is desired, ask only: "Can an accommodation be arranged after a deadline has passed?"
 - The retrospective question is the sole remaining open item
+
+---
+
+## 3. Note on contact addresses (no email sent)
+
+On 14 Nov 2026 the official University Contact Us page (`https://www.eduhk.hk/en/contact-us`) was retrieved directly to supply office addresses for the new recipient-confirmation panel. No email was sent and no new institutional question was raised. It is registered as `EDUHK-CONTACT-US-2026` in `data/policy/sources.json`, and every published address in `data/policy/contacts.json` is traceable to that page or to an already-registered SAO source.
+
+The page publishes office addresses only (`info@eduhk.hk`, `saoemail@eduhk.hk`, `saocs@eduhk.hk`, `careerservice@eduhk.hk`, `libinfo@eduhk.hk`). It does **not** publish addresses for the course lecturer, Faculty Dean, Programme Leader or SAppC secretary, so those four roles are shown with `email: null` and a lookup link instead of a guessed address. This distinction is the design principle behind the whole recipient panel: a role named in a regulation is not an email address.
