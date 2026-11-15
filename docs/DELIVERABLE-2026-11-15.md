@@ -26,7 +26,7 @@ git remote add origin https://github.com/LREE333/MailStone.git
 git push -u origin main
 ```
 
-仓库已包含 23 个文件，`115 passed, 0 failed`。第二迭代的三个功能（收件人确认、课程编号、三语界面）已一并推送。
+仓库已包含完整文件集，`160 passed, 0 failed`。第二迭代的三个功能（收件人确认、课程编号、三语界面）及第三迭代的五个功能（边签布局、关系步骤、反馈后端、师源注册、TOEFL语料）均已一并推送。
 
 老师打开链接后看到的顺序：
 1. **README.md** — 项目概述、演示方法、文件结构、关键发现
@@ -55,7 +55,7 @@ git push -u origin main
 
 右上角也可直接点 EN / 繁 / 简 切换，无需改 URL；`?lang=` 可与任何 `?qa=` 组合。
 
-**老师能看到的完整链路：** 选课程类型 → 回答问题（含课程编号）→ 看到<mark>政策条款原文引用</mark> → 生成草稿 → 查看<mark>建议收件人面板</mark>并勾选确认地址 → 点击"Check this draft" → 看到 lint 检查结果 → 看到 SEN 支援服务面板（含已确认/未确定信息） → 看到 Fact Lock 事实锁定面板 → 发送前检查表。
+**老师能看到的完整链路：** 选课程类型 → 回答问题（含课程编号、与老师关系）→ 看到<mark>政策条款原文引用</mark> → 生成草稿（含问候、自我介绍、结语）→ 查看<mark>边签面板</mark>（Route / Fact Lock / Why this structure?）→ 点击"Check this draft" → 看到 lint 检查结果 → 看到 SEN 支援服务面板（含已确认/未确定信息）→ 发送前检查表。
 
 ### 第二迭代三个功能（14–15 Nov 新增）
 
@@ -63,18 +63,26 @@ git push -u origin main
 2. **课程编号文字步骤** — 在選項流程中直接輸入（例如 `LIN4049`），草稿中所有 `[Course code]` 會被原樣替換；選「暫未知」則保留可見的待填欄位。
 3. **三語介面切換** — EN / 繁 / 简，僅翻譯介面；輸出郵件與逐字引用的政策原文一律保持英文。
 
+### 第三迭代五个功能（15 Nov 新增）
+
+4. **邮件为中心的边签布局** — 结果页从双栏网格改为邮件中心布局；Route、Fact Lock、"Why this structure?" 三个边签从右侧滑出，点击切换；窄屏自动改为横向标签。
+5. **关系步骤 + 自我介绍** — 新增问题"你与这位老师的熟悉程度"（熟悉/正常授课/不确定），控制草稿是否包含自我介绍行；所有草稿现在有完整的问候、自我介绍、上下文、结语。
+6. **反馈发送到后端** — Pebble 的反馈功能改为 POST 到 `window.MAILSTONE_FEEDBACK_URL`，服务器不可用时自动降级为剪贴板复制。
+7. **教职员目录来源注册** — `https://www.eduhk.hk/en/directory` 注册为 `EDUHK-STAFF-DIRECTORY-2026`；所有角色联系人的 `lookup_url` 已更新。
+8. **TOEFL 考试样本语料** — 3 条 TOEFL "Write an Email" 考试样本作为独立语料类别加入语料库，标注为考试样本而非真实学术邮件。
+
 ### B. 数据层（打开 JSON 文件查看）
 
 | 文件 | 内容 | 数量 |
 |---|---|---|
-| `data/policy/sources.json` | 已验证的政策来源 | 11 个来源 |
+| `data/policy/sources.json` | 已验证的政策来源 | 12 个来源 |
 | `data/policy/rules.eduhk.json` | 结构化规则 + 支援服务 | 11 条规则 + 1 个支援服务 |
 | `data/policy/contacts.json` | 已核实的部门电邮 + 路由绑定 | 10 个联系人（6 个已公布地址、4 个刻意留空）、6 条路由 |
 | `data/quality/violations.json` | 负面语料转化成的检查规则 | 12 条违规检查 |
-| `data/exemplars/corpus.json` | 已标注的正例语料 | 18 条（13 公开 + 5 自编） |
+| `data/exemplars/corpus.json` | 已标注的正例语料 | 18 条学术 + 3 条 TOEFL 考试样本 |
 | `data/exemplars/exemplars.json` | 标注方案 + 收集计划 | 8 个 move + 8 个礼貌特征 |
 
-**老师能验证什么：** 每条规则都有 `source_id` 指向来源文件 → 来源文件有 `url` 和 `retrieved_date` → 来源文件有 `verification_status` → 没有一条规则来自未检索的文件。`contacts.json` 中每个已公布地址都能在已注册的来源文件里逐字找到，且每个联系人都附 `source_ids`、`source_url`、`retrieved_date`。打开 `tools/test.mjs` 运行 `node tools/test.mjs` → 115 个断言全部通过。
+**老师能验证什么：** 每条规则都有 `source_id` 指向来源文件 → 来源文件有 `url` 和 `retrieved_date` → 来源文件有 `verification_status` → 没有一条规则来自未检索的文件。`contacts.json` 中每个已公布地址都能在已注册的来源文件里逐字找到，且每个联系人都附 `source_ids`、`source_url`、`retrieved_date`。打开 `tools/test.mjs` 运行 `node tools/test.mjs` → 160 个断言全部通过。
 
 ### C. 报告初稿（提交文档）
 
@@ -84,14 +92,14 @@ git push -u origin main
 
 1. **项目概述** — MailStone 是什么，为谁做，解决什么问题
 2. **设计决策** — 为什么用确定性规则检索而非 RAG；为什么模板先于模型；为什么 lint 是可执行的失败目录而非禁止性 prompt
-3. **政策基础** — 11 条规则、11 个来源（含官方 Contact Us 联络页）、五级课程范围模型、三个空状态（out_of_scope / no_rule / by_design）
+3. **政策基础** — 11 条规则、12 个来源（含官方 Contact Us 联络页和教职员目录）、五级课程范围模型、三个空状态（out_of_scope / no_rule / by_design）
 4. **关键发现**
    - EdUHK 没有独立的"特殊情况"政策（导师确认）
    - 考试缺席没有中央条款（文档化 gap）
    - SAO Academic Accommodation **明确覆盖作业截止日期延期**（2026-11-09 从官方网页确认）
    - AI 工具流程 = 报销方案框架下的导师事前审批
    - LTTC 提供 LLM Studio/MaaS，通过工作坊和学分课程访问
-5. **语料设计** — 18 条标注语料（13 公开 + 5 自编）；Swales move 分析 + Biesenbach-Lucas 礼貌特征；provenance 分离原则
+5. **语料设计** — 18 条学术标注语料（13 公开 + 5 自编）+ 3 条 TOEFL 考试样本；Swales move 分析 + Biesenbach-Lucas 礼貌特征；provenance 分离原则
 6. **Lint 系统** — 12 条检查规则；三个层级（词汇/结构/政策交叉检查）；已知限制（V08 计句子不计动作）
 7. **评估计划** — 模板 vs 模型 vs 人工 三方对比；双盲编码；kappa 一致性
 8. **局限与未来工作** — TPG/RPG 法规未收集；SAO 回顾性问题未解决；模型集成待定（LTTC 或报销）
@@ -135,4 +143,4 @@ git push -u origin main
 
 ## 五、给老师的一句话总结
 
-> "MailStone 目前是一个可运行的原型：学生回答引导式问题（含课程编号）后，系统从 11 条已验证的 EdUHK 学术法规中选取适用条款，生成一份草稿邮件，并用 12 条从负面语料提炼的检查规则扫描草稿中的问题。结果页还会列出官方已公布的部门邮箱供学生勾选二次确认，界面可切换 EN / 繁 / 简，但输出邮件与逐字引用的政策原文一律保持英文。政策基础覆盖本科、副学位和 PGDE 三个课程层级；TPG 和 RPG 被识别但刻意不引用。18 条标注语料已完成首轮编码，115 个自动化断言全部通过。最关键的发现是：SAO 的 SEN 支援服务网页明确将'作业截止日期延期'列为可能的合理便利——这意味着过期提交时虽然正常路线已关闭，但一条支援服务路线确实存在。"
+> "MailStone 目前是一个可运行的原型：学生回答引导式问题（含课程编号、与老师关系）后，系统从 11 条已验证的 EdUHK 学术法规中选取适用条款，生成一份草稿邮件（含问候、自我介绍、结语），并用 12 条从负面语料提炼的检查规则扫描草稿中的问题。结果页采用邮件为中心的边签布局，Route、Fact Lock、Why this structure? 三个面板从右侧滑出。界面可切换 EN / 繁 / 简，但输出邮件与逐字引用的政策原文一律保持英文。政策基础覆盖本科、副学位和 PGDE 三个课程层级；TPG 和 RPG 被识别但刻意不引用。18 条学术标注语料加 3 条 TOEFL 考试样本已完成首轮编码，160 个自动化断言全部通过。Pebble 的反馈功能可直接发送到后端。最关键的发现是：SAO 的 SEN 支援服务网页明确将'作业截止日期延期'列为可能的合理便利——这意味着过期提交时虽然正常路线已关闭，但一条支援服务路线确实存在。"

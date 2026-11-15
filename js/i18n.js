@@ -612,9 +612,139 @@ window.MailStoneI18n = (function () {
     [`The web page states that accommodations are provided 'Upon requests and provision of sufficient information (including but not limited to medical reports and records if necessary) by individual students'. This means a formal request with supporting documentation is the pathway — not a casual enquiry. However, the third question in the original email (can an unregistered student still make an enquiry) was not directly answered.`, `網頁寫明調適是「按個別學生提出請求並提供足夠資料（包括但不限於醫療報告及紀錄）」而提供，因此途徑是附有證明的正式請求，而非隨口查詢。原電郵第三個問題（未登記者可否先查詢）則未獲直接回答。`, `网页写明调适是「按个别学生提出请求并提供足够信息（包括但不限于医疗报告及纪录）」而提供，因此途径是附有证明的正式请求，而非随口查询。原邮件第三个问题（未登记者可否先查询）则未获直接回答。`]
   ];
 
+  /*
+    v2 redesign strings live in a second list so the original (audited)
+    PAIRS block stays untouched and easy to review. Both lists feed the same
+    dictionary. Every string below was found by the i18n gap audit: UI copy
+    that had no translation entry after the fixed-viewport redesign.
+  */
+  const REDESIGN_PAIRS = [
+    /* ---- Welcome gate and left rail ---- */
+    [`Start — help me write my email →`, `開始 — 幫我寫這封電郵 →`, `开始 — 帮我写这封邮件 →`],
+    [`No sign-in. No automatic sending. Your answers stay on this page and are not saved by the app.`, `無須登入，也不會自動傳送。你的答案只留在這頁，程式不會儲存。`, `无须登录，也不会自动发送。你的答案只留在这页，程序不会保存。`],
+    [`Tap Pebble for help`, `按一下 Pebble 尋求協助`, `点一下 Pebble 寻求帮助`],
+    [`One question at a time.`, `每次只問一個問題。`, `每次只问一个问题。`],
+    [`You can always go back and change an answer.`, `你可以隨時返回更改答案。`, `你可以随时返回更改答案。`],
+    [`← Start over`, `← 重新開始`, `← 重新开始`],
+    [`Step 1 of 3`, `第 1 步／共 3 步`, `第 1 步／共 3 步`],
+
+    /* ---- Result: concise info column ---- */
+    [`WHAT MATTERS`, `重點`, `重点`],
+    [`Short version: check the rule, check who to write to, then check your draft.`, `簡要版：先查規則、再確認收件人，最後檢查草稿。`, `简要版：先查规则、再确认收件人，最后检查草稿。`],
+
+    /* ---- Recipient: student-found addresses are labelled separately ---- */
+    [`Officially published office addresses, plus any teacher address you found yourself. Tick a box to confirm you have checked each address before it appears in the To: line.`, `以下是官方公布的部門地址，以及你自行找到的老師地址。勾選以確認已核對每個地址，地址才會出現在「收件人」一欄。`, `以下是官方公布的部门地址，以及你自行找到的老师地址。勾选以确认已核对每个地址，地址才会出现在「收件人」一栏。`],
+    [`MailStone does not guess personal email addresses. Office addresses are listed only when published on an official page, each with its source; any teacher address you found yourself is labelled separately. Nothing is sent automatically. Confirming an address only fills in the To: line on this page.`, `MailStone 不會猜測個人電郵地址。部門地址只在官方網頁公布時才列出，並逐項附註來源；你自行找到的老師地址會另行標示。程式不會自動傳送電郵，確認地址只會填寫本頁的「收件人」一欄。`, `MailStone 不会猜测个人邮件地址。部门地址只在官方网页公布时才列出，并逐项附注来源；你自行找到的老师地址会另行标示。程序不会自动发送邮件，确认地址只会填写本页的「收件人」一栏。`],
+
+    /* ---- Gated self-check ---- */
+    [`BEFORE YOU COPY`, `複製之前`, `复制之前`],
+    [`✓ Check all`, `✓ 全部勾選`, `✓ 全部勾选`],
+    [`✓ Uncheck all`, `✓ 取消全部勾選`, `✓ 取消全部勾选`],
+    [`Tick every item to unlock copying.`, `勾選每一項才可複製。`, `勾选每一项才可复制。`],
+    [`{n} of {m} checked. Tick every item to unlock copying.`, `已勾選 {n}／{m} 項。請勾選每一項才可複製。`, `已勾选 {n}／{m} 项。请勾选每一项才可复制。`],
+    [`All checked — you can copy your draft now.`, `全部已勾選 — 現在可以複製草稿。`, `全部已勾选 — 现在可以复制草稿。`],
+    [`Tick every self-check item before copying.`, `複製前請先勾選所有自我檢查項目。`, `复制前请先勾选所有自我检查项目。`],
+
+    /* ---- Mascot helper: head and tabs ---- */
+    [`Hi, I'm Pebble.`, `你好，我是 Pebble。`, `你好，我是 Pebble。`],
+    [`Ask me, or tell me what went wrong.`, `有任何問題，或遇到不順暢的地方，都可以告訴我。`, `有任何问题，或遇到不顺畅的地方，都可以告诉我。`],
+    [`FAQ`, `常見問題`, `常见问题`],
+    [`Feedback`, `意見回饋`, `意见反馈`],
+    [`Display`, `顯示設定`, `显示设置`],
+
+    /* ---- Mascot helper: FAQ ---- */
+    [`What is MailStone?`, `甚麼是 MailStone？`, `什么是 MailStone？`],
+    [`A guided tool that helps you work out which academic rule applies, who to write to, and what to say. It prepares a draft — it never sends anything.`, `一個引導式工具，助你找出適用的學術規例、該寫給誰，以及該怎麼說。它只預備草稿，絕不代你傳送。`, `一个引导式工具，帮你找出适用的学术规例、该写给谁，以及该怎么说。它只预备草稿，绝不代你发送。`],
+    [`Why does it ask so many questions?`, `為何要問這麼多問題？`, `为何要问这么多问题？`],
+    [`EdUHK publishes different regulations for different programmes, and different situations need different letters. Answering one short question at a time stops the tool from quoting the wrong rule.`, `教大按課程類別出版不同規例，不同情況也需要不同的信件。每次只回答一個簡短問題，可避免工具引用錯誤的條款。`, `教大按课程类别发布不同规例，不同情况也需要不同的信件。每次只回答一个简短问题，可避免工具引用错误的条款。`],
+    [`Is my answer saved anywhere?`, `我的答案會被儲存嗎？`, `我的答案会被保存吗？`],
+    [`No. There is no sign-in and no storage. Your answers live only in this browser tab and disappear when you close it.`, `不會。這工具無須登入，也不設儲存；答案只存在於這個分頁，關閉後便消失。`, `不会。这工具无须登录，也不设保存；答案只存在于这个分页，关闭后便消失。`],
+    [`Why is the email always in English?`, `為何電郵一定是英文？`, `为何邮件一定是英文？`],
+    [`The email is the thing being evaluated, and policy quotes must stay word-for-word. Only the interface is translated into 繁 / 简.`, `電郵正是要被檢視的成果，政策引文也必須逐字保留；只有介面會翻譯成繁／簡。`, `邮件正是要被检视的成果，政策引文也必须逐字保留；只有界面会翻译成繁／简。`],
+    [`Can I trust the policy quotes?`, `政策引文可信嗎？`, `政策引文可信吗？`],
+    [`Every quote is tied to a clause number, an official source URL and a retrieval date. If no rule is collected, MailStone says so instead of guessing.`, `每段引文都附條款編號、官方來源網址及檢索日期。若沒有收集到相關規則，MailStone 會如實說明，而不猜測。`, `每段引文都附条款编号、官方来源网址及检索日期。若没有收集到相关规则，MailStone 会如实说明，而不猜测。`],
+    [`I don't know my course code or teacher's name.`, `我不知道課程編號或老師姓名。`, `我不知道课程编号或老师姓名。`],
+    [`That's fine — choose "Not known yet". A visible [Course code] blank stays in the draft, and the lookup step points you to the official staff directory.`, `不要緊 — 選「暫未知」即可。草稿會保留一個可見的 [Course code] 待填欄位，查找步驟也會帶你到官方職員名錄。`, `不要紧 — 选「暂未知」即可。草稿会保留一个可见的 [Course code] 待填字段，查找步骤也会带你到官方职员名录。`],
+
+    /* ---- Mascot helper: feedback ---- */
+    [`Your feedback is sent directly to the MailStone team so we can improve the tool. If the server is unavailable, your note is copied to the clipboard instead so it is never lost.`, `你的意見會直接發送給 MailStone 團隊，幫助我們改進工具。若伺服器無法連接，你的意見會改為複製到剪貼簿，確保不會遺失。`, `你的意见会直接发送给 MailStone 团队，帮助我们改进工具。若服务器无法连接，你的意见会改为复制到剪贴簿，确保不会遗失。`],
+    [`Send feedback`, `發送意見`, `发送意见`],
+    [`Feedback sent. Thank you — your note helps us improve MailStone.`, `意見已發送。謝謝你 — 你的意見有助我們改進 MailStone。`, `意见已发送。谢谢你 — 你的意见有助我们改进 MailStone。`],
+    [`The server could not receive the feedback. Copying it instead.`, `伺服器無法接收意見，改為複製到剪貼簿。`, `服务器无法接收意见，改为复制到剪贴簿。`],
+    [`Could not reach the feedback server. Copying it instead.`, `無法連接意見伺服器，改為複製到剪貼簿。`, `无法连接意见服务器，改为复制到剪贴簿。`],
+    [`Copied. Paste it into an email to your supervisor — the feedback server was not available.`, `已複製。請貼到寄給指導老師的電郵 — 意見伺服器暫時無法使用。`, `已复制。请贴到寄给指导老师的邮件 — 意见服务器暂时无法使用。`],
+    [`What was confusing or broken?`, `哪裡令你困惑，或出現問題？`, `哪里令你困惑，或出现问题？`],
+    [`e.g. The question about timing was hard to answer...`, `例如：關於時間點的問題很難回答……`, `例如：关于时间点的问题很难回答……`],
+    [`Write a short note first, then copy it.`, `請先寫下簡短意見，再複製。`, `请先写下简短意见，再复制。`],
+    [`Automatic copying is unavailable. Select your note and copy it manually.`, `無法自動複製。請選取你的意見，手動複製。`, `无法自动复制。请选取你的意见，手动复制。`],
+
+    /* ---- Mascot helper: display / accessibility ---- */
+    [`Make the interface comfortable to read. These settings stay in this tab only.`, `調整介面，讓閱讀更舒適。這些設定只作用於本分頁。`, `调整界面，让阅读更舒适。这些设定只作用于本分页。`],
+    [`Text size`, `文字大小`, `文字大小`],
+    [`High contrast`, `高對比`, `高对比`],
+    [`Reduce motion`, `減少動態效果`, `减少动态效果`],
+    [`On`, `開啟`, `开启`],
+    [`Off`, `關閉`, `关闭`],
+
+    /* ---- Teacher-email lookup step ---- */
+    [`FIND THE ADDRESS`, `查找地址`, `查找地址`],
+    [`Find your teacher's university email`, `查找老師的大學電郵`, `查找老师的大学邮件`],
+    [`Use the course code and teacher's name below to look up the address on the official EdUHK staff directory. MailStone will not guess it for you.`, `用下方的課程編號與老師姓名，在教大官方職員名錄查找地址。MailStone 不會代你猜測。`, `用下方的课程编号与老师姓名，在教大官方职员名录查找地址。MailStone 不会代你猜测。`],
+    [`Paste the address you found (optional)`, `貼上你找到的地址（可略過）`, `粘贴你找到的地址（可略过）`],
+    [`Not clear yet — I will look it up later`, `尚未清楚 — 我稍後再查`, `尚未清楚 — 我稍后再查`],
+    [`Skip this step. The draft keeps a blank for the recipient.`, `略過此步驟。草稿會保留收件人的待填欄位。`, `略过此步骤。草稿会保留收件人的待填字段。`],
+    [`That does not look like an email address. Check it, or choose "Not clear yet".`, `這不像電郵地址。請檢查，或選「尚未清楚」。`, `这不像邮件地址。请检查，或选「尚未清楚」。`],
+    [`Course: {value}`, `課程：{value}`, `课程：{value}`],
+    [`Teacher: {value}`, `老師：{value}`, `老师：{value}`],
+    [`not provided`, `未提供`, `未提供`],
+    [`Copy a search phrase`, `複製搜尋字串`, `复制搜索字符串`],
+    [`Search phrase copied. Paste it into a search engine.`, `搜尋字串已複製。請貼到搜尋引擎。`, `搜索字符串已复制。请贴到搜索引擎。`],
+    [`Could not copy automatically. Select the phrase and copy it manually.`, `無法自動複製。請選取字串，手動複製。`, `无法自动复制。请选取字符串，手动复制。`],
+    [`Official staff directory (English)`, `官方職員名錄（英文）`, `官方职员名录（英文）`],
+    [`Official staff directory (Simplified Chinese)`, `官方職員名錄（簡體中文）`, `官方职员名录（简体中文）`],
+    [`University Contact Us`, `大學「聯絡我們」`, `大学「联络我们」`],
+    [`MailStone does not guess or store personal addresses. EdUHK publishes staff emails on its official directory and department pages. Find the address there, paste it below, and confirm it yourself before it goes into the To: line.`, `MailStone 不會猜測或儲存個人地址。教大在官方職員名錄及部門網頁公布職員電郵。請在那裡找到地址、貼在下方，並自行確認，才會填入「收件人」一欄。`, `MailStone 不会猜测或保存个人地址。教大在官方职员名录及部门网页公布职员邮件。请在那里找到地址、贴在下方，并自行确认，才会填入「收件人」一栏。`],
+
+    /* ---- Teacher-name text step ---- */
+    [`RECIPIENT`, `收件人`, `收件人`],
+    [`What is your teacher's name?`, `你的老師叫甚麼名字？`, `你的老师叫什么名字？`],
+    [`Use the form you would write in the email, for example "Dr Chan" or "Professor Lau". If you are not sure yet, choose "Not clear yet".`, `請填寫電郵中會用的稱呼，例如 "Dr Chan" 或 "Professor Lau"。若尚未確定，請選「尚未清楚」。`, `请填写邮件中会用的称呼，例如 "Dr Chan" 或 "Professor Lau"。若尚未确定，请选「尚未清楚」。`],
+    [`Teacher's name`, `老師姓名`, `老师姓名`],
+    [`e.g. Dr Chan`, `例如 Dr Chan`, `例如 Dr Chan`],
+    [`Not clear yet — leave it blank`, `尚未清楚 — 先留空`, `尚未清楚 — 先留空`],
+    [`I will check the course outline. The draft keeps a blank for the recipient.`, `我會查課程大綱。草稿會保留收件人的待填欄位。`, `我会查课程大纲。草稿会保留收件人的待填字段。`],
+    [`Enter the teacher's name, or choose "Not clear yet".`, `請輸入老師姓名，或選擇「尚未清楚」。`, `请输入老师姓名，或选择「尚未清楚」。`],
+    [`Naming your teacher`, `填寫老師姓名`, `填写老师姓名`],
+    [`Finding the address`, `查找地址`, `查找地址`],
+
+    /* ---- Student-found recipient provenance ---- */
+    [`Found by you`, `由你找到`, `由你找到`],
+    [`Teacher's email (found by you)`, `老師電郵（由你找到）`, `老师邮件（由你找到）`],
+    [`You entered this address in the lookup step. MailStone did not find or guess it — confirm it on the official page before sending.`, `這是你在查找步驟輸入的地址。MailStone 沒有找到或猜測它 — 傳送前請在官方網頁確認。`, `这是你在查找步骤输入的地址。MailStone 没有找到或猜测它 — 发送前请在官方网页确认。`],
+
+    /* ---- Relationship step ---- */
+    [`YOUR RELATIONSHIP`, `你與老師的關係`, `你与老师的关系`],
+    [`How well do you know this teacher?`, `你有多認識這位老師？`, `你有多认识这位老师？`],
+    [`This affects the greeting and whether you need to introduce yourself. There is no wrong answer — it just helps the email sound natural.`, `這會影響問候語，以及你是否需要自我介紹。沒有錯誤答案 — 只是讓電郵讀起來更自然。`, `这会影响问候语，以及你是否需要自我介绍。没有错误答案 — 只是让邮件读起来更自然。`],
+    [`I know them well`, `我認識他們`, `我认识他们`],
+    [`They would recognise my name. We have talked before.`, `他們會認得我的名字，我們之前談過話。`, `他们会认得我的名字，我们之前谈过话。`],
+    [`Normal teaching — they may not remember me`, `正常授課 — 他們未必記得我`, `正常授课 — 他们未必记得我`],
+    [`I attended classes but we have not spoken much.`, `我有上課，但我們沒怎麼交談過。`, `我有上课，但我们没怎么交谈过。`],
+    [`I am not sure`, `我不確定`, `我不确定`],
+    [`I will introduce myself to be safe.`, `為保險起見，我會先自我介紹。`, `为保险起见，我会先自我介绍。`],
+    [`Your relationship with the teacher`, `你與老師的關係`, `你与老师的关系`],
+
+    /* ---- Shortened "Why this structure?" title ---- */
+    [`Why this structure?`, `為何這樣組織？`, `为何这样组织？`],
+
+    /* ---- Edge tab labels ---- */
+    [`Route`, `途徑`, `途径`],
+    [`Fact Lock`, `Fact Lock`, `Fact Lock`]
+  ];
+
   const DICT = { "zh-Hant": {}, "zh-Hans": {} };
 
-  PAIRS.forEach(([en, hant, hans]) => {
+  PAIRS.concat(REDESIGN_PAIRS).forEach(([en, hant, hans]) => {
     DICT["zh-Hant"][en] = hant;
     DICT["zh-Hans"][en] = hans;
   });
@@ -636,6 +766,19 @@ window.MailStoneI18n = (function () {
     const map = DICT[lang];
 
     return map && map[key] ? map[key] : String(text);
+  }
+
+  /*
+    True only when a translation exists in BOTH Chinese variants. Used by the
+    regression suite to catch UI copy added without a translation, rather
+    than discovering it as English text in a Chinese session.
+  */
+  function has(text) {
+    const key = normalise(String(text));
+
+    return LANGUAGES.filter(item => item.id !== "en").every(
+      item => Boolean(DICT[item.id][key])
+    );
   }
 
   /*
@@ -740,6 +883,7 @@ window.MailStoneI18n = (function () {
     setLanguage,
     getLanguage,
     onChange,
-    dictionarySize: PAIRS.length
+    has,
+    dictionarySize: PAIRS.length + REDESIGN_PAIRS.length
   };
 })();

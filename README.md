@@ -24,15 +24,17 @@ MailStone helps students understand which academic regulation applies to their s
 
 ## What it does
 
-1. **Asks guided questions** — programme type, request type, timing, situation, course code, tone
+1. **Asks guided questions** — programme type, request type, timing, situation, course code, teacher name, teacher email lookup, relationship with the teacher, tone
 2. **Selects the applicable policy rule** — deterministically, from 11 verified EdUHK academic regulations
 3. **Checks programme scope** — refuses to quote undergraduate clauses to postgraduate students
 4. **Inserts the course code** — typed once in the question flow, written into every `[Course code]` slot in the draft
-5. **Generates a draft email** — template-based, zero-hallucination baseline
-6. **Scans the draft for 12 failure modes** — lexical, structural, and policy cross-checks
-7. **Routes to SEN Support Services** — when the standard route is closed or no central rule exists
-8. **Suggests verified office addresses** — with a source link and a confirmation checkbox before anything appears in the To: line
-9. **Switches interface language** — EN / 繁 / 简, while the email draft and quoted policy wording stay in English
+5. **Adapts greeting and self-introduction** — based on the student's relationship with the teacher (familiar / taught / unknown)
+6. **Generates a draft email** — template-based, zero-hallucination baseline, with proper salutation, self-introduction, context, and closing
+7. **Scans the draft for 12 failure modes** — lexical, structural, and policy cross-checks
+8. **Routes to SEN Support Services** — when the standard route is closed or no central rule exists
+9. **Suggests verified office addresses** — with a source link, staff directory lookup, and a confirmation checkbox before anything appears in the To: line
+10. **Sends feedback to the backend** — the Pebble mascot's feedback feature POSTs to a configurable endpoint, with clipboard fallback if the server is unavailable
+11. **Switches interface language** — EN / 繁 / 简, while the email draft and quoted policy wording stay in English
 
 ## Try it
 
@@ -61,6 +63,18 @@ Open `index.html` with a local web server (VS Code Live Server recommended — t
 
 **3. Interface-only localisation.** `js/i18n.js` translates EN / 繁 / 简 via a dictionary keyed by exact English source strings plus a DOM text-node sweep. The boundary is deliberate: the generated email is always English (it is the artefact being evaluated), and verbatim policy quotations are always English (a translation would no longer be verbatim). `data-no-i18n` protects the draft and review preview; `data-verbatim` protects quotes. Language is held in memory, can be pinned with `?lang=`, and is never stored — the privacy promise is unchanged.
 
+### Third-iteration features (2026-11-15)
+
+**4. Email-centric result layout with notebook-edge tabs.** The result page was redesigned from a two-column grid to an email-centric layout. The generated email occupies the main panel; three notebook-edge tabs (Route, Fact Lock, "Why this structure?") slide out from the right edge on click. Each tab toggles independently via `aria-expanded`. On narrow screens, the tabs switch to horizontal.
+
+**5. Relationship-aware draft generation.** A new question step asks how well the student knows the teacher (familiar / normal teaching / not sure). `getSelfIntroduction()` returns an empty string for "familiar" and a full intro line for the other two. `getOpeningLine()` combines the self-introduction with the context line in the right order. All three draft builders (standard, post-deadline, general) now produce: Subject → "Dear [Recipient title and surname]," → optional self-introduction + context line → reason → request → closing → "Kind regards, [Your name] [Student ID]".
+
+**6. Feedback-to-backend.** The Pebble mascot's feedback handler now POSTs to `window.MAILSTONE_FEEDBACK_URL` with a JSON payload (`{ text, timestamp, page }`). If the server is unavailable or no endpoint is configured, the note is copied to the clipboard instead so it is never lost. The HTML text and i18n entries were updated to explain this behaviour.
+
+**7. Staff directory source.** `EDUHK-STAFF-DIRECTORY-2026` (`https://www.eduhk.hk/en/directory`) is registered as a verified primary source. All role-only contacts (course lecturer, Faculty Dean, Programme Leader, SAppC Secretary) now cite this source and point their `lookup_url` at the official staff directory, replacing the generic Registry URL.
+
+**8. TOEFL exam-sample genre.** Three TOEFL "Write an Email" exam-task samples were added to the corpus as a distinct genre (`origin_class: "toefl_exam_sample"`). These are timed (7-minute) responses to prompted scenarios — not real academic correspondence. They are included for pedagogical comparison: students who have prepared for TOEFL may have internalised a semi-formal register that differs from the formal academic register MailStone teaches.
+
 ## Project structure
 
 ```
@@ -68,22 +82,22 @@ mailstone/
 ├── index.html              # Single-page app
 ├── css/styles.css          # Styles
 ├── js/
-│   ├── app.js              # UI logic, question flow, draft generation
+│   ├── app.js              # UI logic, question flow, draft generation, edge tabs, feedback
 │   ├── gatekeeper.js       # Deterministic rule retrieval (no model call)
 │   ├── lint.js             # 12-check draft scanner
 │   └── i18n.js             # EN / 繁 / 简 interface localisation
 ├── data/
 │   ├── policy/
-│   │   ├── sources.json     # 11 verified sources, scope model, known gaps
+│   │   ├── sources.json     # 12 verified sources, scope model, known gaps
 │   │   ├── rules.eduhk.json # 11 rules + SEN support service, all with verbatim quotes
 │   │   └── contacts.json    # Verified office addresses + route bindings
 │   ├── quality/
 │   │   └── violations.json  # 12 failure modes → machine-checkable rules
 │   └── exemplars/
 │       ├── exemplars.json   # Annotation scheme + collection plan
-│       └── corpus.json      # 18 annotated exemplars (13 public + 5 synthetic)
+│       └── corpus.json      # 18 academic + 3 TOEFL exam-sample exemplars
 ├── tools/
-│   ├── test.mjs             # 115 assertions, all passing
+│   ├── test.mjs             # 160 assertions, all passing
 │   └── lint-file.mjs        # CLI: lint any email file
 └── docs/
     ├── PLAN-2026-11-15.md       # Project plan and status
@@ -101,6 +115,7 @@ mailstone/
 - **Never guess a personal email address** — a role named in a regulation is not an address. Published office addresses only, each traceable to a source, each requiring the student's own confirmation.
 - **Personal identifiers come from the student** — the course code is inserted verbatim from their answer, or left as a visible blank. The tool never infers one.
 - **Translate the interface, not the evidence** — the email and the verbatim quotes stay English so they remain checkable against the source.
+- **Adapt the draft to the student–teacher relationship** — a student who knows the teacher well does not need a full self-introduction; one who may not be remembered does. The relationship step controls this without adding a model call.
 
 ## Tests
 
@@ -108,7 +123,7 @@ mailstone/
 node tools/test.mjs
 ```
 
-115 assertions covering: Gatekeeper route selection, programme scope integrity, lint detection, policy data integrity, recipient-registry integrity (no invented addresses, every address traceable to a registered source), course-code substitution, and the localisation boundary (draft and quotes stay English in all three languages).
+160 assertions covering: Gatekeeper route selection, programme scope integrity, lint detection, policy data integrity, recipient-registry integrity (no invented addresses, every address traceable to a registered source), course-code substitution, the localisation boundary (draft and quotes stay English in all three languages), relationship step and self-introduction logic, edge-tab panel behaviour, feedback-to-backend handler, TOEFL exam-sample corpus genre, and staff directory source registration.
 
 ## Key findings
 
@@ -121,14 +136,16 @@ node tools/test.mjs
 
 | Area | Status |
 |---|---|
-| Policy base | 11 rules, 11 sources, all verified |
-| Verified contact registry | 10 contacts, 6 published office addresses, 6 route bindings |
+| Policy base | 11 rules, 12 sources, all verified |
+| Verified contact registry | 10 contacts, 6 published office addresses, 6 route bindings, staff directory linked |
 | Gatekeeper | Working, deterministic |
-| Lint | 12 checks, 115 tests passing |
-| Draft templates | 6 request types, 3 empty states |
+| Lint | 12 checks, 160 tests passing |
+| Draft templates | 6 request types, 3 empty states, relationship-aware greeting/intro |
 | Course code step | Working, with "not known yet" blank |
 | Interface languages | EN / 繁 / 简; draft + quotes always English |
-| Corpus | 18 exemplars annotated (first pass) |
+| Result layout | Email-centric with notebook-edge tabs (Route, Fact Lock, Why this structure?) |
+| Feedback | POST to backend with clipboard fallback |
+| Corpus | 18 academic + 3 TOEFL exam-sample exemplars annotated |
 | AI tool procedure | Resolved |
 | Model integration | Pending (LTTC LLM Studio or reimbursement) |
 

@@ -1232,6 +1232,558 @@ console.log("\nInterface localisation");
     "app.js loads contacts.json alongside the other data files",
     /fetch\("\.\/data\/policy\/contacts\.json"\)/.test(appSource)
   );
+
+  /* ---------- Coverage: every visible UI string needs 繁 / 简 ---------- */
+
+  /*
+    This is the executable form of the i18n gap audit. It collects:
+      - every literal passed to t() in app.js,
+      - every static text node in index.html (skipping script/style/textarea/
+        noscript and anything under data-no-i18n or data-verbatim),
+      - every data-i18n-placeholder attribute,
+      - a curated list of strings built dynamically in app.js that the two
+        static passes cannot see (STEP_DEFS, captions, lookup labels, etc.).
+    Anything that is neither intentionally English nor in the dictionary
+    fails the build, so new copy cannot appear in English in a Chinese
+    session. The English draft and verbatim quotes remain excluded by the
+    data-no-i18n / data-verbatim boundaries checked above.
+  */
+  const candidates = new Set();
+
+  for (const match of appSource.matchAll(
+    /\bt\(\s*(`[^`]*`|"(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*')\s*\)/g
+  )) {
+    candidates.add(match[1].slice(1, -1).replace(/\\n/g, " "));
+  }
+
+  for (const match of html.matchAll(/data-i18n-placeholder="([^"]*)"/g)) {
+    candidates.add(match[1]);
+  }
+
+  const skipTags = new Set([
+    "SCRIPT", "STYLE", "TEXTAREA", "NOSCRIPT", "SYMBOL"
+  ]);
+  const voidTags = new Set([
+    "META", "LINK", "BR", "INPUT", "IMG", "HR", "SOURCE", "AREA",
+    "BASE", "COL", "EMBED", "PARAM", "TRACK", "WBR", "USE", "PATH",
+    "CIRCLE", "ELLIPSE", "RECT", "LINE", "POLYGON", "STOP"
+  ]);
+
+  const protectedStack = [];
+  let skipDepth = 0;
+  let buffer = "";
+  let cursor = 0;
+
+  function flushText() {
+    if (buffer.trim()) {
+      candidates.add(buffer);
+    }
+    buffer = "";
+  }
+
+  while (cursor < html.length) {
+    if (html.startsWith("<!--", cursor)) {
+      const end = html.indexOf("-->", cursor + 4);
+      cursor = end === -1 ? html.length : end + 3;
+      continue;
+    }
+
+    if (html[cursor] === "<") {
+      flushText();
+
+      const close = html.indexOf(">", cursor);
+
+      if (close === -1) {
+        break;
+      }
+
+      const rawTag = html.slice(cursor + 1, close).trim();
+
+      if (rawTag.startsWith("/")) {
+        if (protectedStack.length) protectedStack.pop();
+        if (skipDepth > 0) skipDepth -= 1;
+      } else {
+        const name = rawTag.split(/[\s/]/)[0].toUpperCase();
+        const selfClosing = rawTag.endsWith("/") || voidTags.has(name);
+
+        if (!selfClosing) {
+          protectedStack.push(/data-no-i18n|data-verbatim/.test(rawTag));
+          if (skipTags.has(name)) skipDepth += 1;
+        }
+      }
+
+      cursor = close + 1;
+      continue;
+    }
+
+    if (skipDepth === 0 && !protectedStack.some(Boolean)) {
+      buffer += html[cursor];
+    }
+
+    cursor += 1;
+  }
+
+  flushText();
+
+  /* Strings assembled at runtime that no static pass can reach. */
+  const dynamicStrings = [
+    "RECIPIENT", "FIND THE ADDRESS", "Naming your teacher", "Finding the address",
+    "What is your teacher's name?", "Teacher's name", "e.g. Dr Chan",
+    "Not clear yet — leave it blank",
+    "I will check the course outline. The draft keeps a blank for the recipient.",
+    "Enter the teacher's name, or choose \"Not clear yet\".",
+    "Find your teacher's university email",
+    "Paste the address you found (optional)",
+    "Not clear yet — I will look it up later",
+    "Skip this step. The draft keeps a blank for the recipient.",
+    "That does not look like an email address. Check it, or choose \"Not clear yet\".",
+    "Copy a search phrase", "Course: {value}", "Teacher: {value}",
+    "not provided", "Official staff directory (English)",
+    "Official staff directory (Simplified Chinese)", "University Contact Us",
+    "MailStone does not guess or store personal addresses. EdUHK publishes staff emails on its official directory and department pages. Find the address there, paste it below, and confirm it yourself before it goes into the To: line.",
+    "Found by you", "Teacher's email (found by you)",
+    "You entered this address in the lookup step. MailStone did not find or guess it — confirm it on the official page before sending.",
+    "All checked — you can copy your draft now.",
+    "{n} of {m} checked. Tick every item to unlock copying.",
+    "✓ Check all", "✓ Uncheck all", "Tick every self-check item before copying.",
+    "Write a short note first, then copy it.",
+    "Your feedback is sent directly to the MailStone team so we can improve the tool. If the server is unavailable, your note is copied to the clipboard instead so it is never lost.",
+    "Send feedback",
+    "Feedback sent. Thank you — your note helps us improve MailStone.",
+    "The server could not receive the feedback. Copying it instead.",
+    "Could not reach the feedback server. Copying it instead.",
+    "Copied. Paste it into an email to your supervisor — the feedback server was not available.",
+    "Automatic copying is unavailable. Select your note and copy it manually.",
+    "On", "Off",
+    "Use the course code and teacher's name below to look up the address on the official EdUHK staff directory. MailStone will not guess it for you.",
+    "Use the form you would write in the email, for example \"Dr Chan\" or \"Professor Lau\". If you are not sure yet, choose \"Not clear yet\".",
+    "How well do you know this teacher?",
+    "This affects the greeting and whether you need to introduce yourself. There is no wrong answer — it just helps the email sound natural.",
+    "I know them well",
+    "They would recognise my name. We have talked before.",
+    "Normal teaching — they may not remember me",
+    "I attended classes but we have not spoken much.",
+    "I am not sure",
+    "I will introduce myself to be safe.",
+    "Why this structure?",
+    "Route",
+    "Fact Lock"
+  ];
+
+  dynamicStrings.forEach(text => candidates.add(text));
+
+  /* Icons, brand marks and non-language tokens stay English by design. */
+  const intentionallyEnglish = new Set([
+    "m.", "MailStone", "0%", "🔒", "✧", "→", "＋", "−", "!", "+", "?",
+    "✓", "A−", "A", "A+", "EN", "繁", "简", "×"
+  ]);
+
+  const translatable = [...candidates]
+    .map(text => text.replace(/\s+/g, " ").trim())
+    .filter(
+      text =>
+        text.length >= 2 &&
+        !intentionallyEnglish.has(text) &&
+        /\p{L}/u.test(text)
+    );
+
+  const untranslated = translatable.filter(text => !i18n.has(text));
+
+  check(
+    "every visible UI string has Traditional and Simplified Chinese translations",
+    untranslated.length === 0,
+    `${translatable.length} strings checked; missing: ${untranslated.join(" | ")}`
+  );
+
+  check(
+    "the redesign added a substantial new translation batch",
+    i18n.dictionarySize > 560,
+    String(i18n.dictionarySize)
+  );
+
+  check(
+    "the i18n module exposes has() for coverage checks",
+    typeof i18n.has === "function" && i18n.has("Tap Pebble for help") &&
+      !i18n.has("This string is deliberately not in the dictionary")
+  );
+}
+
+/* ---------- Relationship step and self-introduction ---------- */
+
+console.log("\nRelationship and self-introduction");
+
+{
+  const appSource = readFileSync(join(root, "js/app.js"), "utf8");
+
+  /*
+    Extract a function from app.js source by brace matching.
+    Reused from the course-code test above.
+  */
+  function extractFunction(code, name) {
+    const marker = `function ${name}(`;
+    const start = code.indexOf(marker);
+    if (start === -1) { return null; }
+    let depth = 0;
+    for (let index = start; index < code.length; index += 1) {
+      if (code[index] === "{") { depth += 1; }
+      else if (code[index] === "}") {
+        depth -= 1;
+        if (depth === 0) { return code.slice(start, index + 1); }
+      }
+    }
+    return null;
+  }
+
+  const getSelfIntroSrc = extractFunction(appSource, "getSelfIntroduction");
+  const getOpeningSrc = extractFunction(appSource, "getOpeningLine");
+
+  check("getSelfIntroduction exists in app.js", Boolean(getSelfIntroSrc));
+  check("getOpeningLine exists in app.js", Boolean(getOpeningSrc));
+
+  /*
+    Build a runner that exposes both functions with a controllable answers
+    object. The functions reference `answers` as a free variable, so we
+    inject it as a parameter.
+  */
+  const makeRunner = new Function(
+    "answers",
+    `${getSelfIntroSrc}\n${getOpeningSrc}\nreturn { getSelfIntroduction, getOpeningLine };`
+  );
+
+  /* --- familiar: no self-introduction --- */
+  const familiar = makeRunner({ relationship: "familiar", courseCode: "LIN4049" });
+  check(
+    "familiar relationship produces no self-introduction",
+    familiar.getSelfIntroduction() === "",
+    familiar.getSelfIntroduction()
+  );
+  check(
+    "familiar opening line is just the context line",
+    familiar.getOpeningLine("I am writing about Essay 2.") === "I am writing about Essay 2.",
+    familiar.getOpeningLine("I am writing about Essay 2.")
+  );
+
+  /* --- taught: full self-introduction with course code --- */
+  const taught = makeRunner({ relationship: "taught", courseCode: "LIN4049" });
+  check(
+    "taught relationship produces a self-introduction",
+    taught.getSelfIntroduction().includes("I am [Your name]") &&
+      taught.getSelfIntroduction().includes("LIN4049"),
+    taught.getSelfIntroduction()
+  );
+  check(
+    "taught opening line introduces before context",
+    taught.getOpeningLine("I am writing about Essay 2.").includes("I am [Your name]") &&
+      taught.getOpeningLine("I am writing about Essay 2.").includes("I am writing about Essay 2."),
+    taught.getOpeningLine("I am writing about Essay 2.")
+  );
+
+  /* --- unknown: safe default with full self-introduction --- */
+  const unknown = makeRunner({ relationship: "unknown", courseCode: "LIN4049" });
+  check(
+    "unknown relationship produces a self-introduction",
+    unknown.getSelfIntroduction().includes("I am [Your name]"),
+    unknown.getSelfIntroduction()
+  );
+
+  /* --- unknown course code: placeholder is preserved --- */
+  const taughtNoCode = makeRunner({ relationship: "taught", courseCode: "unknown" });
+  check(
+    "taught with unknown course code keeps the placeholder",
+    taughtNoCode.getSelfIntroduction().includes("[Course code]"),
+    taughtNoCode.getSelfIntroduction()
+  );
+
+  /* --- missing course code: placeholder is preserved --- */
+  const taughtMissingCode = makeRunner({ relationship: "taught" });
+  check(
+    "taught with missing course code keeps the placeholder",
+    taughtMissingCode.getSelfIntroduction().includes("[Course code]"),
+    taughtMissingCode.getSelfIntroduction()
+  );
+
+  /* --- relationship step is in every sequence --- */
+  const seqBlock = appSource.slice(
+    appSource.indexOf("const SEQUENCES"),
+    appSource.indexOf("const CAPTIONS")
+  );
+  const seqEntries = [...seqBlock.matchAll(/(\w+):\s*\[([^\]]*)\]/g)];
+
+  check(
+    "every sequence includes the relationship step",
+    seqEntries.every(match => match[2].includes("relationship")),
+    seqEntries
+      .filter(match => !match[2].includes("relationship"))
+      .map(match => match[1])
+      .join(", ")
+  );
+
+  /* --- STEP_DEF for relationship has three options --- */
+  const relStepMatch = appSource.match(/relationship:\s*\{[\s\S]*?options:\s*\[([\s\S]*?)\]/);
+  check(
+    "relationship step has exactly three options",
+    relStepMatch && (relStepMatch[1].match(/value:/g) || []).length === 3,
+    String(relStepMatch ? (relStepMatch[1].match(/value:/g) || []).length : "no match")
+  );
+
+  check(
+    "relationship options are familiar, taught, unknown",
+    relStepMatch &&
+      relStepMatch[1].includes('"familiar"') &&
+      relStepMatch[1].includes('"taught"') &&
+      relStepMatch[1].includes('"unknown"'),
+    "missing one or more relationship values"
+  );
+}
+
+/* ---------- Edge-tab panels (notebook-edge tabs) ---------- */
+
+console.log("\nEdge-tab panels");
+
+{
+  const html = readFileSync(join(root, "index.html"), "utf8");
+  const css = readFileSync(join(root, "css/styles.css"), "utf8");
+  const appSource = readFileSync(join(root, "js/app.js"), "utf8");
+
+  check(
+    "the result layout uses the new result-layout grid",
+    /class="result-layout"/.test(html),
+    "result-layout class not found in HTML"
+  );
+
+  check(
+    "three edge-tab elements exist in HTML",
+    (html.match(/class="edge-tab"/g) || []).length === 3,
+    String((html.match(/class="edge-tab"/g) || []).length)
+  );
+
+  check(
+    "edge-tab panels exist for route, facts, and structure",
+    html.includes('id="panel-route"') &&
+      html.includes('id="panel-facts"') &&
+      html.includes('id="panel-structure"'),
+    "one or more panel IDs missing"
+  );
+
+  check(
+    "edge tabs use aria-controls for accessibility",
+    /aria-controls="panel-route"/.test(html) &&
+      /aria-controls="panel-facts"/.test(html) &&
+      /aria-controls="panel-structure"/.test(html),
+    "aria-controls not found on all edge tabs"
+  );
+
+  check(
+    "edge tabs start with aria-expanded false",
+    (html.match(/aria-expanded="false"/g) || []).length >= 3,
+    "edge tabs should start collapsed"
+  );
+
+  check(
+    "CSS defines vertical writing mode for edge tabs",
+    /writing-mode:\s*vertical-rl/.test(css),
+    "vertical writing mode not found in CSS"
+  );
+
+  check(
+    "CSS defines edge-tab-panel positioning",
+    /\.edge-tab-panel/.test(css) && /position:\s*absolute/.test(css),
+    "edge-tab-panel CSS not found"
+  );
+
+  check(
+    "app.js has edge-tab click handlers",
+    /querySelectorAll\("\.edge-tab"\)/.test(appSource),
+    "edge-tab click handler not found in app.js"
+  );
+
+  check(
+    "edge-tab handler toggles aria-expanded",
+    /setAttribute\("aria-expanded"/.test(appSource),
+    "aria-expanded toggle not found in handler"
+  );
+
+  check(
+    "edge-tab handler toggles panel hidden state",
+    /panel\.hidden\s*=/.test(appSource),
+    "panel.hidden toggle not found in handler"
+  );
+}
+
+/* ---------- Feedback-to-backend handler ---------- */
+
+console.log("\nFeedback handler");
+
+{
+  const appSource = readFileSync(join(root, "js/app.js"), "utf8");
+
+  check(
+    "app.js references MAILSTONE_FEEDBACK_URL",
+    /MAILSTONE_FEEDBACK_URL/.test(appSource),
+    "MAILSTONE_FEEDBACK_URL not found in app.js"
+  );
+
+  check(
+    "feedback handler uses fetch with POST method",
+    /fetch\([^)]+,\s*\{[\s\S]*?method:\s*"POST"/.test(appSource),
+    "POST fetch not found in feedback handler"
+  );
+
+  check(
+    "feedback handler sends JSON body",
+    /JSON\.stringify\(/.test(appSource) && /body:\s*JSON/.test(appSource),
+    "JSON body not found in feedback handler"
+  );
+
+  check(
+    "feedback handler has clipboard fallback",
+    /clipboard|navigator\.clipboard|execCommand\("copy"\)/.test(appSource),
+    "clipboard fallback not found"
+  );
+
+  check(
+    "feedback payload includes text and timestamp",
+    /timestamp/.test(appSource) && /text/.test(appSource),
+    "payload fields not found"
+  );
+
+  /* Check that the HTML has the updated feedback text */
+  const html = readFileSync(join(root, "index.html"), "utf8");
+
+  check(
+    "HTML has the 'Send feedback' button label",
+    /Send feedback/.test(html),
+    "'Send feedback' label not found in HTML"
+  );
+
+  check(
+    "HTML explains the backend-send behaviour",
+    /sent directly to the MailStone team/.test(html),
+    "backend-send explanation not found in HTML"
+  );
+}
+
+/* ---------- Corpus: TOEFL exam-sample genre ---------- */
+
+console.log("\nCorpus — TOEFL exam samples");
+
+{
+  const corpus = loadJson("data/exemplars/corpus.json");
+  const exemplarsJson = loadJson("data/exemplars/exemplars.json");
+
+  const toeflEntries = corpus.exemplars.filter(
+    ex => ex.origin_class === "toefl_exam_sample"
+  );
+
+  check(
+    "corpus has at least 2 TOEFL exam-sample entries",
+    toeflEntries.length >= 2,
+    String(toeflEntries.length)
+  );
+
+  check(
+    "TOEFL entries are not counted in the academic exemplar total",
+    corpus.status.exemplars_collected === 18 &&
+      corpus.status.toefl_exam_samples >= 2,
+    `academic: ${corpus.status.exemplars_collected}, toefl: ${corpus.status.toefl_exam_samples}`
+  );
+
+  check(
+    "each TOEFL entry has an exam_context block",
+    toeflEntries.every(ex => ex.exam_context && ex.exam_context.task_type === "Write an Email"),
+    "one or more TOEFL entries missing exam_context"
+  );
+
+  check(
+    "each TOEFL entry is labelled as prompted (not real correspondence)",
+    toeflEntries.every(ex => ex.exam_context.prompted === true),
+    "one or more TOEFL entries not labelled as prompted"
+  );
+
+  check(
+    "the corpus has a genre note explaining why TOEFL samples are included",
+    typeof corpus.toefl_exam_sample_genre_note === "object" &&
+      typeof corpus.toefl_exam_sample_genre_note.pedagogical_use === "string",
+    "genre note not found"
+  );
+
+  check(
+    "exemplars.json registers the toefl_exam_sample provenance type",
+    exemplarsJson.provenance_rules &&
+      typeof exemplarsJson.provenance_rules.toefl_exam_sample === "string",
+    "toefl_exam_sample not in provenance_rules"
+  );
+
+  /* The ETS official sample should have a source URL */
+  const etsEntry = toeflEntries.find(ex => ex.exemplar_id === "EX-019");
+  check(
+    "EX-019 is the ETS official high-level sample",
+    Boolean(etsEntry) && /ets\.org/.test(etsEntry.source_url || ""),
+    etsEntry ? etsEntry.source_url : "EX-019 not found"
+  );
+
+  /* The Wofo entry should register the platform without a full-text email */
+  const wofoEntry = toeflEntries.find(ex => ex.exemplar_id === "EX-021");
+  check(
+    "EX-021 registers the Wofo.cc platform as a consulted source",
+    Boolean(wofoEntry) && /wofo\.cc/.test(wofoEntry.source_url || ""),
+    wofoEntry ? wofoEntry.source_url : "EX-021 not found"
+  );
+}
+
+/* ---------- Staff directory source registration ---------- */
+
+console.log("\nStaff directory source");
+
+{
+  const sourcesData = loadJson("data/policy/sources.json");
+  const contacts = loadJson("data/policy/contacts.json");
+  const registered = new Set(sourcesData.sources.map(s => s.source_id));
+
+  check(
+    "EDUHK-STAFF-DIRECTORY-2026 is registered in sources.json",
+    registered.has("EDUHK-STAFF-DIRECTORY-2026"),
+    "source not registered"
+  );
+
+  const dirSource = sourcesData.sources.find(
+    s => s.source_id === "EDUHK-STAFF-DIRECTORY-2026"
+  );
+
+  check(
+    "staff directory source has the correct URL",
+    dirSource && dirSource.url === "https://www.eduhk.hk/en/directory",
+    dirSource ? dirSource.url : "source not found"
+  );
+
+  check(
+    "staff directory source is verified_primary",
+    dirSource && dirSource.verification_status === "verified_primary",
+    dirSource ? dirSource.verification_status : "source not found"
+  );
+
+  /* Every role-only contact should now cite the staff directory */
+  const roleOnly = Object.values(contacts.contacts).filter(
+    c => c.verification_status === "unpublished_in_corpus"
+  );
+
+  check(
+    "every role-only contact cites the staff directory source",
+    roleOnly.every(c => (c.source_ids || []).includes("EDUHK-STAFF-DIRECTORY-2026")),
+    roleOnly
+      .filter(c => !(c.source_ids || []).includes("EDUHK-STAFF-DIRECTORY-2026"))
+      .map(c => c.contact_id)
+      .join(", ")
+  );
+
+  check(
+    "every role-only contact points at the staff directory lookup_url",
+    roleOnly.every(c => c.lookup_url === "https://www.eduhk.hk/en/directory"),
+    roleOnly
+      .filter(c => c.lookup_url !== "https://www.eduhk.hk/en/directory")
+      .map(c => c.contact_id)
+      .join(", ")
+  );
 }
 
 console.log(`\n${passed} passed, ${failed} failed\n`);

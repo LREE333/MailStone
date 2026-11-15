@@ -19,8 +19,22 @@
   not fetch JSON from a file:// page.
 */
 
+/*
+  Every sequence shares the same three opening steps. This matters because
+  getSteps() is called before requestType is known (it falls back to the
+  "unsure" list), and again after the student chooses a request type. A shared
+  prefix keeps step indices aligned when the sequence changes mid-flow.
+
+  The intake order follows the student's request: course code, teacher name,
+  then a guided lookup for the teacher's address. Only afterwards do we ask
+  which regulations and which situation apply.
+*/
 const SEQUENCES = {
   extension: [
+    "courseCode",
+    "teacherName",
+    "teacherEmail",
+    "relationship",
     "programme",
     "requestType",
     "timing",
@@ -29,10 +43,13 @@ const SEQUENCES = {
     "reason",
     "disclosure",
     "time",
-    "courseCode",
     "tone"
   ],
   absence: [
+    "courseCode",
+    "teacherName",
+    "teacherEmail",
+    "relationship",
     "programme",
     "requestType",
     "timing",
@@ -40,10 +57,13 @@ const SEQUENCES = {
     "situation",
     "reason",
     "disclosure",
-    "courseCode",
     "tone"
   ],
   exam: [
+    "courseCode",
+    "teacherName",
+    "teacherEmail",
+    "relationship",
     "programme",
     "requestType",
     "timing",
@@ -51,28 +71,43 @@ const SEQUENCES = {
     "situation",
     "reason",
     "disclosure",
-    "courseCode",
     "tone"
   ],
   grade: [
+    "courseCode",
+    "teacherName",
+    "teacherEmail",
+    "relationship",
     "programme",
     "requestType",
     "timing",
     "goal",
     "situation",
-    "courseCode",
     "tone"
   ],
   review: [
+    "courseCode",
+    "teacherName",
+    "teacherEmail",
+    "relationship",
     "programme",
     "requestType",
     "timing",
     "goal",
     "situation",
-    "courseCode",
     "tone"
   ],
-  unsure: ["programme", "requestType", "goal", "situation", "courseCode", "tone"]
+  unsure: [
+    "courseCode",
+    "teacherName",
+    "teacherEmail",
+    "relationship",
+    "programme",
+    "requestType",
+    "goal",
+    "situation",
+    "tone"
+  ]
 };
 
 const CAPTIONS = {
@@ -85,6 +120,9 @@ const CAPTIONS = {
   disclosure: "Choosing disclosure",
   time: "Planning the request",
   courseCode: "Adding the course code",
+  teacherName: "Naming your teacher",
+  teacherEmail: "Finding the address",
+  relationship: "Your relationship with the teacher",
   tone: "Choosing a tone"
 };
 
@@ -419,14 +457,13 @@ const STEP_DEFS = {
   },
 
   /*
-    Course code is collected as a text answer rather than a radio option:
-    it is an identifier, not a category. The student may choose "not known
-    yet", in which case the draft keeps an unfilled [Course code] blank. V09
-    deliberately treats a bracketed course placeholder as "present", so it
-    does not warn here; instead the blank is highlighted by the review
-    preview (.preview-placeholder), counted in the copy prompt and covered by
-    the sending checklist. Deleting the token entirely would hide the one
-    thing most likely to be forgotten before the email is sent.
+    Course code and teacher name are collected as text answers rather than
+    radio options: they are identifiers, not categories. Both offer an
+    explicit "not known yet" escape. V09 deliberately treats a bracketed
+    course placeholder as "present", so it does not warn here; instead the
+    blank is highlighted by the review preview, counted in the copy prompt
+    and covered by the sending checklist. Deleting the token entirely would
+    hide the one thing most likely to be forgotten before the email is sent.
   */
   courseCode: {
     id: "courseCode",
@@ -435,10 +472,85 @@ const STEP_DEFS = {
     title: "What is the course code?",
     hint:
       "For example LIN4049. If you do not know it yet, choose \"Not known yet\" and the draft will leave a blank for you to fill in.",
+    inputLabel: "Course code",
     placeholder: "e.g. LIN4049",
+    maxLength: 24,
     unknownLabel: "Not known yet — leave it blank",
     unknownDetail: "I will look it up later. The draft keeps an unfilled blank.",
     validationMessage: "Enter the course code, or choose \"Not known yet\"."
+  },
+
+  /*
+    Teacher name is the second intake identifier. Whatever the student types
+    is inserted verbatim into [Recipient title and surname] by
+    applyTeacherName(); "unknown" keeps the visible blank. MailStone never
+    infers a title or a surname from other data.
+  */
+  teacherName: {
+    id: "teacherName",
+    type: "text",
+    tag: "RECIPIENT",
+    title: "What is your teacher's name?",
+    hint:
+      "Use the form you would write in the email, for example \"Dr Chan\" or \"Professor Lau\". If you are not sure yet, choose \"Not clear yet\".",
+    inputLabel: "Teacher's name",
+    placeholder: "e.g. Dr Chan",
+    maxLength: 60,
+    unknownLabel: "Not clear yet — leave it blank",
+    unknownDetail: "I will check the course outline. The draft keeps a blank for the recipient.",
+    validationMessage: "Enter the teacher's name, or choose \"Not clear yet\"."
+  },
+
+  /*
+    The lookup step does not guess or scrape a personal address. It shows the
+    two identifiers the student just supplied, gives a copyable search phrase
+    and links to EdUHK's official staff directory, then lets the student paste
+    an address THEY found. That address is clearly labelled as student-found,
+    never as an officially published office address.
+  */
+  teacherEmail: {
+    id: "teacherEmail",
+    type: "lookup",
+    tag: "FIND THE ADDRESS",
+    title: "Find your teacher's university email",
+    hint:
+      "Use the course code and teacher's name below to look up the address on the official EdUHK staff directory. MailStone will not guess it for you.",
+    addressLabel: "Paste the address you found (optional)",
+    placeholder: "name@eduhk.hk",
+    unknownLabel: "Not clear yet — I will look it up later",
+    unknownDetail: "Skip this step. The draft keeps a blank for the recipient.",
+    validationMessage: "That does not look like an email address. Check it, or choose \"Not clear yet\"."
+  },
+
+  /*
+    Relationship affects the greeting and self-introduction. A student who
+    knows the teacher well can open more naturally; one who has had normal
+    teaching contact but may not be remembered needs to identify themselves
+    clearly. "Not sure" defaults to the safe self-introduction.
+  */
+  relationship: {
+    id: "relationship",
+    tag: "YOUR RELATIONSHIP",
+    title: "How well do you know this teacher?",
+    hint:
+      "This affects the greeting and whether you need to introduce yourself. There is no wrong answer — it just helps the email sound natural.",
+    options: [
+      {
+        value: "familiar",
+        title: "I know them well",
+        detail: "They would recognise my name. We have talked before."
+      },
+      {
+        value: "taught",
+        title: "Normal teaching — they may not remember me",
+        detail: "I attended classes but we have not spoken much."
+      },
+      {
+        value: "unknown",
+        title: "I am not sure",
+        detail: "I will introduce myself to be safe."
+      }
+    ]
   },
 
   tone: {
@@ -538,6 +650,23 @@ let lint = { findings: [], placeholders: [], blocking: false };
 */
 const confirmedRecipients = new Set();
 
+/*
+  A teacher address the student found and pasted themselves is deliberately
+  NOT a row in contacts.json: this synthetic id lets it share the same
+  confirmation contract without pretending to be an officially published
+  office address.
+*/
+const STUDENT_TEACHER_CONTACT_ID = "STUDENT-TEACHER-EMAIL";
+
+/*
+  UI-only state for the fixed-viewport shell. None of this is persisted,
+  sent anywhere, or part of the answer set.
+*/
+let appStarted = false;
+let initialView = null;
+let lastShownDraft = null;
+let uiScale = 1;
+
 const form = document.querySelector("#step-form");
 const questionCard = document.querySelector("#question-card");
 const resultCard = document.querySelector("#result-card");
@@ -567,6 +696,152 @@ const copyStatus = document.querySelector("#copy-status");
 const utilityPanel = document.querySelector("#utility-panel");
 const utilityTitle = document.querySelector("#utility-title");
 const utilityContent = document.querySelector("#utility-content");
+
+const welcomeScreen = document.querySelector("#welcome-screen");
+const appShell = document.querySelector("#app-shell");
+const startButton = document.querySelector("#start-button");
+const restartButton = document.querySelector("#restart-button");
+
+const mascotButton = document.querySelector("#mascot-button");
+const mascotPanel = document.querySelector("#mascot-panel");
+const mascotClose = document.querySelector("#mascot-close");
+
+const selfCheckList = document.querySelector("#self-check-list");
+const selfCheckStatus = document.querySelector("#self-check-status");
+const checkAllButton = document.querySelector("#check-all-button");
+const copyButton = document.querySelector("#copy-button");
+
+/* ---------- Fixed-viewport shell: welcome, start, restart ---------- */
+
+function startApp() {
+  if (appStarted) {
+    return;
+  }
+
+  appStarted = true;
+  welcomeScreen.hidden = true;
+  appShell.hidden = false;
+
+  if (typeof initialView === "function") {
+    initialView();
+  } else {
+    renderStep(false);
+  }
+
+  window.MailStoneI18n.sweep();
+}
+
+function restartApp() {
+  Object.keys(answers).forEach(key => delete answers[key]);
+
+  currentStep = 0;
+  savedDraft = null;
+  lastShownDraft = null;
+  isReviewMode = false;
+  gate = null;
+  lint = { findings: [], placeholders: [], blocking: false };
+  confirmedRecipients.clear();
+
+  toggleReview.setAttribute("aria-pressed", "false");
+  toggleReview.textContent = window.MailStoneI18n.t("Check this draft");
+  draftEditor.hidden = false;
+  draftPreview.hidden = true;
+  reviewLegend.hidden = true;
+  copyStatus.textContent = "";
+
+  resetSelfCheck();
+  setMascotPanel(false);
+  utilityPanel.hidden = true;
+
+  appStarted = false;
+  initialView = null;
+  appShell.hidden = true;
+  welcomeScreen.hidden = false;
+
+  window.MailStoneI18n.sweep();
+  startButton.focus();
+}
+
+/* ---------- Gated self-check ---------- */
+
+function selfCheckBoxes() {
+  return [...selfCheckList.querySelectorAll('input[type="checkbox"]')];
+}
+
+function updateSelfCheck() {
+  const i18n = window.MailStoneI18n;
+  const boxes = selfCheckBoxes();
+  const checked = boxes.filter(box => box.checked).length;
+  const all = boxes.length > 0 && checked === boxes.length;
+
+  copyButton.disabled = !all;
+  selfCheckStatus.classList.toggle("is-unlocked", all);
+
+  selfCheckStatus.textContent = all
+    ? i18n.t("All checked — you can copy your draft now.")
+    : i18n
+        .t("{n} of {m} checked. Tick every item to unlock copying.")
+        .replace("{n}", checked)
+        .replace("{m}", boxes.length);
+
+  checkAllButton.textContent = i18n.t(all ? "✓ Uncheck all" : "✓ Check all");
+}
+
+function resetSelfCheck() {
+  selfCheckBoxes().forEach(box => {
+    box.checked = false;
+  });
+
+  updateSelfCheck();
+}
+
+/* ---------- Mascot helper panel ---------- */
+
+function setMascotPanel(open) {
+  mascotPanel.hidden = !open;
+  mascotButton.setAttribute("aria-expanded", String(open));
+}
+
+function setMascotTab(tabId) {
+  mascotPanel.querySelectorAll(".mascot-tab").forEach(tab => {
+    const active = tab.dataset.tab === tabId;
+
+    tab.classList.toggle("is-active", active);
+    tab.setAttribute("aria-selected", String(active));
+  });
+
+  mascotPanel.querySelectorAll(".mascot-tab-panel").forEach(panel => {
+    panel.hidden = panel.dataset.tabPanel !== tabId;
+  });
+}
+
+/*
+  Attributes are invisible to a text-node walker. Placeholders therefore
+  need their own refresh on a language change, using an explicit English
+  source string stored on the element.
+*/
+function refreshAttributeText() {
+  const i18n = window.MailStoneI18n;
+
+  document.querySelectorAll("[data-i18n-placeholder]").forEach(element => {
+    element.placeholder = i18n.t(element.dataset.i18nPlaceholder);
+  });
+
+  const contrast = document.querySelector("#contrast-toggle");
+  const motion = document.querySelector("#motion-toggle");
+
+  if (contrast) {
+    contrast.textContent = i18n.t(
+      document.body.classList.contains("high-contrast") ? "On" : "Off"
+    );
+  }
+
+  if (motion) {
+    motion.textContent = i18n.t(
+      document.body.classList.contains("reduce-motion") ? "On" : "Off"
+    );
+  }
+}
 
 /* ---------- Step sequence ---------- */
 
@@ -652,14 +927,20 @@ function updateInlinePolicyCheckpoint() {
 /*
   A text step collects an identifier the draft can insert verbatim. The
   "not known yet" radio is an explicit answer, not a skipped question: it
-  stores the literal string "unknown", which buildDraft() reads to decide
-  whether to substitute a real code or leave the blank in place.
+  stores the literal string "unknown", which the substitution functions read
+  to decide whether to insert a real value or leave the blank in place.
 
   Leaving the blank rather than deleting it is deliberate. An empty gap in a
   subject line is easy to overlook; a highlighted [Course code] placeholder
   is shown in the review preview, counted in the copy prompt and covered by
   the sending checklist. V09 only warns when there is no identifier AND no
   placeholder at all, so the visible token is the safer failure mode.
+
+  The same renderer serves courseCode and teacherName. Both are identifiers;
+  only their labels, placeholders and validation messages differ. Static
+  labels are left in English so the DOM sweep translates them; only
+  attributes (placeholders) need an explicit t() because a text-node walker
+  cannot reach attributes.
 */
 function renderTextStep(step) {
   const wrap = document.createElement("div");
@@ -667,18 +948,18 @@ function renderTextStep(step) {
 
   const label = document.createElement("label");
   label.className = "text-step-label";
-  label.htmlFor = "course-code-input";
-  label.textContent = "Course code";
+  label.htmlFor = `${step.id}-input`;
+  label.textContent = step.inputLabel;
 
   const input = document.createElement("input");
-  input.id = "course-code-input";
+  input.id = `${step.id}-input`;
   input.className = "text-step-input";
   input.type = "text";
   input.autocomplete = "off";
   input.spellcheck = false;
   /* Placeholders are attributes, not text nodes, so the sweep cannot reach them. */
   input.placeholder = window.MailStoneI18n.t(step.placeholder);
-  input.maxLength = 24;
+  input.maxLength = step.maxLength || 60;
 
   const validation = document.createElement("p");
   validation.className = "text-step-validation";
@@ -697,19 +978,19 @@ function renderTextStep(step) {
 
   const unknownTitle = document.createElement("span");
   unknownTitle.className = "choice-title";
+  unknownTitle.id = `${step.id}-unknown-title`;
   unknownTitle.textContent = step.unknownLabel;
 
   const unknownDetail = document.createElement("span");
   unknownDetail.className = "choice-detail";
   unknownDetail.textContent = step.unknownDetail;
 
-  unknownRadio.setAttribute("aria-labelledby", "course-code-unknown-title");
-  unknownTitle.id = "course-code-unknown-title";
+  unknownRadio.setAttribute("aria-labelledby", unknownTitle.id);
 
   const isUnknown = answers[step.id] === "unknown";
-  const hasCode = Boolean(answers[step.id]) && !isUnknown;
+  const hasValue = Boolean(answers[step.id]) && !isUnknown;
 
-  input.value = hasCode ? answers[step.id] : "";
+  input.value = hasValue ? answers[step.id] : "";
   input.disabled = isUnknown;
   unknownRadio.checked = isUnknown;
   unknownChoice.classList.toggle("selected", isUnknown);
@@ -752,6 +1033,221 @@ function renderTextStep(step) {
   /* i18n sweep runs at the end of renderStep(), after the DOM is built. */
 }
 
+/*
+  Guided lookup, not address guessing.
+
+  EdUHK publishes a staff directory (EDUHK-STAFF-DIRECTORY-2026) with a
+  searchable form for surname, other names, Chinese name and email. MailStone
+  links to it, offers a copyable search phrase built from the two identifiers
+  the student supplied, and lets the student paste back an address THEY found.
+  A pasted address is labelled "found by you" and must be re-confirmed with a
+  checkbox before it appears in the To: line — the same contract as a
+  published office address, but with a different provenance label.
+*/
+function buildSearchPhrase() {
+  const terms = [];
+
+  if (answers.teacherName && answers.teacherName !== "unknown") {
+    terms.push(`"${answers.teacherName}"`);
+  }
+
+  if (answers.courseCode && answers.courseCode !== "unknown") {
+    terms.push(answers.courseCode);
+  }
+
+  terms.push("site:eduhk.hk");
+
+  return terms.join(" ");
+}
+
+function isValidEmail(value) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+}
+
+function renderLookupStep(step) {
+  const i18n = window.MailStoneI18n;
+  const wrap = document.createElement("div");
+  wrap.className = "lookup-step";
+
+  const summary = document.createElement("div");
+  summary.className = "lookup-summary";
+
+  const codeChip = document.createElement("span");
+  codeChip.className = "lookup-chip";
+  codeChip.textContent = i18n
+    .t("Course: {value}")
+    .replace(
+      "{value}",
+      answers.courseCode && answers.courseCode !== "unknown"
+        ? answers.courseCode
+        : i18n.t("not provided")
+    );
+
+  const nameChip = document.createElement("span");
+  nameChip.className = "lookup-chip";
+  nameChip.textContent = i18n
+    .t("Teacher: {value}")
+    .replace(
+      "{value}",
+      answers.teacherName && answers.teacherName !== "unknown"
+        ? answers.teacherName
+        : i18n.t("not provided")
+    );
+
+  summary.append(codeChip, nameChip);
+
+  const copyRow = document.createElement("div");
+  copyRow.className = "lookup-links";
+
+  const copyButton = document.createElement("button");
+  copyButton.type = "button";
+  copyButton.className = "lookup-copy-button";
+  copyButton.textContent = "Copy a search phrase";
+
+  const copyStatus = document.createElement("span");
+  copyStatus.className = "mascot-status";
+  copyStatus.setAttribute("role", "status");
+
+  copyButton.addEventListener("click", async () => {
+    const phrase = buildSearchPhrase();
+
+    try {
+      await navigator.clipboard.writeText(phrase);
+      copyStatus.textContent = i18n.t(
+        "Search phrase copied. Paste it into a search engine."
+      );
+    } catch {
+      copyStatus.textContent = i18n.t(
+        "Could not copy automatically. Select the phrase and copy it manually."
+      );
+    }
+  });
+
+  copyRow.append(copyButton, copyStatus);
+
+  const links = document.createElement("div");
+  links.className = "lookup-links";
+
+  const directorySource =
+    (data.sources && data.sources["EDUHK-STAFF-DIRECTORY-2026"]) || {};
+  const directoryUrl = directorySource.url || "https://www.eduhk.hk/en/directory";
+  const directoryAltUrl =
+    (directorySource.extract && directorySource.extract.alternative_url) ||
+    "https://www.eduhk.hk/zhs/directory";
+
+  [
+    { label: "Official staff directory (English)", url: directoryUrl },
+    { label: "Official staff directory (Simplified Chinese)", url: directoryAltUrl },
+    { label: "University Contact Us", url: "https://www.eduhk.hk/en/contact-us" }
+  ].forEach(item => {
+    const link = document.createElement("a");
+    link.className = "lookup-link";
+    link.href = item.url;
+    link.target = "_blank";
+    link.rel = "noopener";
+    link.textContent = item.label;
+    links.append(link);
+  });
+
+  const principle = document.createElement("p");
+  principle.className = "lookup-principle";
+  principle.textContent =
+    "MailStone does not guess or store personal addresses. EdUHK publishes staff emails on its official directory and department pages. Find the address there, paste it below, and confirm it yourself before it goes into the To: line.";
+
+  const addressLabel = document.createElement("label");
+  addressLabel.className = "lookup-address-label";
+  addressLabel.htmlFor = "teacher-email-input";
+  addressLabel.textContent = step.addressLabel;
+
+  const input = document.createElement("input");
+  input.id = "teacher-email-input";
+  input.className = "lookup-address-input";
+  input.type = "email";
+  input.autocomplete = "off";
+  input.spellcheck = false;
+  input.placeholder = i18n.t(step.placeholder);
+
+  const validation = document.createElement("p");
+  validation.className = "lookup-validation";
+  validation.textContent = step.validationMessage;
+
+  const unknownChoice = document.createElement("label");
+  unknownChoice.className = "choice text-step-unknown";
+
+  const unknownRadio = document.createElement("input");
+  unknownRadio.type = "radio";
+  unknownRadio.name = step.id;
+  unknownRadio.value = "unknown";
+
+  const unknownCopy = document.createElement("span");
+  unknownCopy.className = "choice-copy";
+
+  const unknownTitle = document.createElement("span");
+  unknownTitle.className = "choice-title";
+  unknownTitle.id = "teacher-email-unknown-title";
+  unknownTitle.textContent = step.unknownLabel;
+
+  const unknownDetail = document.createElement("span");
+  unknownDetail.className = "choice-detail";
+  unknownDetail.textContent = step.unknownDetail;
+
+  unknownRadio.setAttribute("aria-labelledby", unknownTitle.id);
+  unknownCopy.append(unknownTitle, unknownDetail);
+  unknownChoice.append(unknownRadio, unknownCopy);
+
+  const isUnknown = answers[step.id] === "unknown";
+  const hasValue = Boolean(answers[step.id]) && !isUnknown;
+
+  input.value = hasValue ? answers[step.id] : "";
+  input.disabled = isUnknown;
+  unknownRadio.checked = isUnknown;
+  unknownChoice.classList.toggle("selected", isUnknown);
+  validation.hidden = true;
+
+  function setAnswer(value) {
+    if (answers[step.id] !== value) {
+      savedDraft = null;
+    }
+
+    answers[step.id] = value;
+    nextButton.disabled = !value;
+  }
+
+  input.addEventListener("input", () => {
+    const value = input.value.trim();
+
+    if (unknownRadio.checked) {
+      unknownRadio.checked = false;
+      unknownChoice.classList.remove("selected");
+      input.disabled = false;
+    }
+
+    const valid = !value || isValidEmail(value);
+    validation.hidden = valid;
+    setAnswer(valid ? value : "");
+  });
+
+  unknownRadio.addEventListener("change", () => {
+    unknownChoice.classList.add("selected");
+    input.disabled = true;
+    input.value = "";
+    validation.hidden = true;
+    setAnswer("unknown");
+  });
+
+  wrap.append(
+    summary,
+    copyRow,
+    links,
+    principle,
+    addressLabel,
+    input,
+    validation,
+    unknownChoice
+  );
+  choices.append(wrap);
+}
+
 function renderStep(moveFocus = true) {
   questionCard.hidden = false;
   resultCard.hidden = true;
@@ -770,12 +1266,16 @@ function renderStep(moveFocus = true) {
   choices.replaceChildren();
 
   /*
-    Text steps (currently only courseCode) are identifiers rather than
+    Text steps (courseCode, teacherName) are identifiers rather than
     categories, so they render an input plus a "not known yet" escape instead
-    of a radio list. The rest of the step machinery is shared.
+    of a radio list. The lookup step guides the student to the official staff
+    directory instead of guessing an address. The rest of the step machinery
+    is shared.
   */
   if (step.type === "text") {
     renderTextStep(step);
+  } else if (step.type === "lookup") {
+    renderLookupStep(step);
   } else {
     step.options.forEach((option, index) => {
     const label = document.createElement("label");
@@ -873,6 +1373,54 @@ function renderStep(moveFocus = true) {
 
 /* ---------- Draft content ---------- */
 
+/*
+  The greeting and self-introduction adapt to the student's relationship
+  with the teacher. A student who knows the teacher well can open with a
+  warmer greeting and skip the full introduction. A student who has only
+  had normal teaching contact should identify themselves clearly so the
+  recipient can place them before reading the request.
+
+  This is not a courtesy flourish — it is a functional part of academic
+  email. A teacher who cannot identify the student cannot act on the
+  request, and a request without context reads as presumptuous.
+*/
+function getSelfIntroduction() {
+  const rel = answers.relationship;
+
+  if (rel === "familiar") {
+    return "";
+  }
+
+  const courseCode = answers.courseCode && answers.courseCode !== "unknown"
+    ? answers.courseCode
+    : "[Course code]";
+
+  if (rel === "taught") {
+    return `I am [Your name], a student in your ${courseCode} class.`;
+  }
+
+  /* "unknown" or not set: safe default with full self-introduction */
+  return `I am [Your name], a student in your ${courseCode} class.`;
+}
+
+/*
+  The opening line varies by tone and relationship. When the student knows
+  the teacher well, a warm "I hope you are well" is natural. When they may
+  not be remembered, the self-introduction comes before the pleasantry so
+  the recipient has context.
+*/
+function getOpeningLine(contextLine) {
+  const rel = answers.relationship;
+  const intro = getSelfIntroduction();
+
+  if (rel === "familiar") {
+    return intro ? `${intro} ${contextLine}` : contextLine;
+  }
+
+  /* For "taught" and "unknown": introduce first, then the context */
+  return intro ? `${intro}\n\n${contextLine}` : contextLine;
+}
+
 function getDurationText() {
   const durations = {
     "2": "two extra days",
@@ -963,7 +1511,7 @@ function buildExtensionDraft() {
     ? "Follow-up on extension request — [Assignment name], [Course code]"
     : "Extension request — [Assignment name], [Course code]";
 
-  const firstLines = {
+  const contextLines = {
     warm: followup
       ? "I hope you are well. I am following up on my earlier request for an extension for [Assignment name] in [Course code], originally due on [Original deadline]."
       : "I hope you are well. I would like to ask whether it would be possible to have an extension for [Assignment name] in [Course code], due on [Original deadline].",
@@ -985,7 +1533,7 @@ function buildExtensionDraft() {
   const paragraphs = [
     `Subject: ${subject}`,
     "Dear [Recipient title and surname],",
-    firstLines[answers.tone],
+    getOpeningLine(contextLines[answers.tone]),
     reasonText,
     timing
   ];
@@ -1011,7 +1559,7 @@ function buildPostDeadlineDraft(reasonText, followup) {
     ? "Follow-up — late submission, [Assignment name], [Course code]"
     : "Late submission — [Assignment name], [Course code]";
 
-  const openings = {
+  const contextLines = {
     warm:
       "I hope you are well. I am writing about [Assignment name] in [Course code], which was due on [Original deadline]. I was not able to submit it by that date, and I am sorry for not writing to you sooner.",
     formal:
@@ -1032,7 +1580,7 @@ function buildPostDeadlineDraft(reasonText, followup) {
   const paragraphs = [
     `Subject: ${subject}`,
     "Dear [Recipient title and surname],",
-    openings[answers.tone],
+    getOpeningLine(contextLines[answers.tone]),
     reasonText
   ];
 
@@ -1064,7 +1612,7 @@ function buildGeneralDraft() {
     unsure: "Question about the appropriate academic procedure"
   };
 
-  const purposes = {
+  const contextLines = {
     extension:
       "I am writing about [Assignment name] in [Course code], due on [Original deadline]. Before I rely on any procedure, I would like to confirm which one applies to my programme.",
     grade:
@@ -1097,7 +1645,7 @@ function buildGeneralDraft() {
   const paragraphs = [
     `Subject: ${subjects[requestType] || subjects.unsure}`,
     "Dear [Recipient title and surname],",
-    purposes[requestType] || purposes.unsure,
+    getOpeningLine(contextLines[requestType] || contextLines.unsure),
     getReasonText(),
     requests[requestType] || requests.unsure,
     getToneClosing(),
@@ -1105,6 +1653,22 @@ function buildGeneralDraft() {
   ];
 
   return paragraphs.filter(Boolean).join("\n\n");
+}
+
+/*
+  The teacher's name is also an identifier the student supplied. It replaces
+  the [Recipient title and surname] salutation slot verbatim. "unknown" keeps
+  the visible blank, exactly like the course code: an invisible gap in the
+  salutation is too easy to send by mistake.
+*/
+function applyTeacherName(text) {
+  const name = answers.teacherName;
+
+  if (!name || name === "unknown") {
+    return text;
+  }
+
+  return text.replaceAll("[Recipient title and surname]", name);
 }
 
 /*
@@ -1140,6 +1704,8 @@ function buildDraft() {
     draft = buildGeneralDraft();
   }
 
+  /* Both substitutions are verbatim inserts, never inferred values. */
+  draft = applyTeacherName(draft);
   return applyCourseCode(draft);
 }
 
@@ -1460,7 +2026,8 @@ const RECIPIENT_LEVEL_LABELS = {
   course: "Course-level contact",
   programme: "Programme-level contact",
   faculty: "Faculty-level contact",
-  central: "Central office"
+  central: "Central office",
+  student: "Found by you"
 };
 
 function buildRecipientRow(contact, why) {
@@ -1581,7 +2148,15 @@ function renderRecipientTo() {
   const registry = data.contacts;
 
   const emails = [...confirmedRecipients]
-    .map(id => registry && registry.contacts[id] && registry.contacts[id].email)
+    .map(id => {
+      if (id === STUDENT_TEACHER_CONTACT_ID) {
+        return answers.teacherEmail && answers.teacherEmail !== "unknown"
+          ? answers.teacherEmail
+          : null;
+      }
+
+      return registry && registry.contacts[id] && registry.contacts[id].email;
+    })
     .filter(Boolean);
 
   if (emails.length) {
@@ -1600,6 +2175,32 @@ function renderRecipientTo() {
   if (checklistBox) {
     checklistBox.checked = confirmedRecipients.size > 0;
   }
+
+  updateSelfCheck();
+}
+
+/*
+  A student-found address is rendered with the SAME confirmation contract as
+  a published office address, but with a different provenance label. It never
+  enters contacts.json and is never described as "officially published".
+*/
+function buildTeacherEmailRow() {
+  const pseudo = {
+    contact_id: STUDENT_TEACHER_CONTACT_ID,
+    role: "Teacher's email (found by you)",
+    level: "student",
+    email: answers.teacherEmail,
+    phone: null,
+    source_ids: ["EDUHK-STAFF-DIRECTORY-2026"],
+    source_url: "https://www.eduhk.hk/en/directory",
+    retrieved_date: null,
+    verification_status: "student_confirmed"
+  };
+
+  return buildRecipientRow(
+    pseudo,
+    "You entered this address in the lookup step. MailStone did not find or guess it — confirm it on the official page before sending."
+  );
 }
 
 function renderRecipientPanel() {
@@ -1631,6 +2232,15 @@ function renderRecipientPanel() {
   list.replaceChildren();
 
   const seen = new Set();
+
+  /*
+    A student-found teacher address is shown first, explicitly separated from
+    the officially published office addresses below it by its "Found by you"
+    badge and its own reason line.
+  */
+  if (answers.teacherEmail && answers.teacherEmail !== "unknown") {
+    list.append(buildTeacherEmailRow());
+  }
 
   groups.forEach(group => {
     (group.contacts || []).forEach(id => {
@@ -2017,6 +2627,16 @@ function showResult(skipFocus = false) {
 
   draftEditor.value = savedDraft;
 
+  /*
+    A genuinely new draft invalidates the self-check. A language change calls
+    showResult(true) with the SAME draft, so the student's ticks survive.
+  */
+  if (draftEditor.value !== lastShownDraft) {
+    resetSelfCheck();
+  }
+
+  lastShownDraft = draftEditor.value;
+
   renderRoute();
   renderResultPolicy();
   renderSupport();
@@ -2025,6 +2645,21 @@ function showResult(skipFocus = false) {
   renderLearningTips();
 
   refreshLint();
+
+  const i18n = window.MailStoneI18n;
+
+  /* Controls whose labels are set outside a full render need a refresh. */
+  toggleReview.textContent = isReviewMode
+    ? i18n.t("Back to editing")
+    : i18n.t("Check this draft");
+
+  document.querySelector("#show-policy-source").textContent = i18n.t(
+    document.querySelector("#result-policy-source").hidden
+      ? "Show source information"
+      : "Hide source information"
+  );
+
+  updateSelfCheck();
 
   currentStep = getSteps().length - 1;
 
@@ -2046,12 +2681,20 @@ function showResult(skipFocus = false) {
   showResult() restores it, and renderStep() rebuilds inputs from answers.
 */
 function refreshUi() {
+  if (!appStarted) {
+    /* Only the welcome screen is visible; translate it and its attributes. */
+    refreshAttributeText();
+    window.MailStoneI18n.sweep();
+    return;
+  }
+
   if (resultCard.hidden === false) {
     showResult(true);
   } else {
     renderStep(false);
   }
 
+  refreshAttributeText();
   copyStatus.textContent = "";
   window.MailStoneI18n.sweep();
 }
@@ -2123,6 +2766,137 @@ if (initialLang) {
 
 markActiveLanguage(window.MailStoneI18n.getLanguage());
 
+/* ---------- Welcome gate, restart, self-check, mascot, display ---------- */
+
+startButton.addEventListener("click", startApp);
+restartButton.addEventListener("click", restartApp);
+
+checkAllButton.addEventListener("click", () => {
+  const boxes = selfCheckBoxes();
+  const allChecked = boxes.length > 0 && boxes.every(box => box.checked);
+
+  boxes.forEach(box => {
+    box.checked = !allChecked;
+  });
+
+  updateSelfCheck();
+});
+
+selfCheckList.addEventListener("change", event => {
+  if (event.target.matches('input[type="checkbox"]')) {
+    updateSelfCheck();
+  }
+});
+
+mascotButton.addEventListener("click", () => {
+  setMascotPanel(mascotPanel.hidden);
+});
+
+mascotClose.addEventListener("click", () => {
+  setMascotPanel(false);
+  mascotButton.focus();
+});
+
+mascotPanel.querySelectorAll(".mascot-tab").forEach(tab => {
+  tab.addEventListener("click", () => setMascotTab(tab.dataset.tab));
+});
+
+document.querySelector("#feedback-copy").addEventListener("click", async () => {
+  const i18n = window.MailStoneI18n;
+  const field = document.querySelector("#feedback-text");
+  const status = document.querySelector("#feedback-status");
+  const text = field.value.trim();
+
+  if (!text) {
+    status.textContent = i18n.t("Write a short note first, then copy it.");
+    return;
+  }
+
+  /*
+    Send the feedback to the MailStone backend for the project team to review.
+    The endpoint URL is configurable via window.MAILSTONE_FEEDBACK_URL so it
+    can be changed without modifying app.js. If no endpoint is configured, or
+    the request fails, fall back to clipboard-copy so the student's feedback
+    is never lost.
+  */
+  const endpoint = window.MAILSTONE_FEEDBACK_URL || "";
+  const payload = {
+    text: text,
+    timestamp: new Date().toISOString(),
+    page: window.location.pathname
+  };
+
+  if (endpoint) {
+    try {
+      const response = await fetch(endpoint, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+
+      if (response.ok) {
+        status.textContent = i18n.t(
+          "Feedback sent. Thank you — your note helps us improve MailStone."
+        );
+        field.value = "";
+        return;
+      }
+
+      /* If the server returned an error, fall back to clipboard */
+      status.textContent = i18n.t(
+        "The server could not receive the feedback. Copying it instead."
+      );
+    } catch {
+      /* Network error or endpoint unreachable — fall back to clipboard */
+      status.textContent = i18n.t(
+        "Could not reach the feedback server. Copying it instead."
+      );
+    }
+  }
+
+  /*
+    Fallback: nothing leaves the page. The app only formats the note and
+    copies it to the clipboard; the student chooses whether and where to
+    send it. This is also the path when no backend endpoint is configured.
+  */
+  const message = `MailStone feedback\n\n${text}`;
+
+  try {
+    await navigator.clipboard.writeText(message);
+    status.textContent = i18n.t(
+      "Copied. Paste it into an email to your supervisor — the feedback server was not available."
+    );
+  } catch {
+    status.textContent = i18n.t(
+      "Automatic copying is unavailable. Select your note and copy it manually."
+    );
+  }
+});
+
+document.querySelectorAll(".display-button[data-size]").forEach(button => {
+  button.addEventListener("click", () => {
+    uiScale = Number(button.dataset.size);
+
+    document.querySelectorAll(".display-button[data-size]").forEach(item => {
+      item.classList.toggle("is-active", item === button);
+    });
+
+    document.documentElement.style.setProperty("--ui-scale", String(uiScale));
+  });
+});
+
+function bindPressedToggle(button, className) {
+  button.addEventListener("click", () => {
+    const on = document.body.classList.toggle(className);
+
+    button.setAttribute("aria-pressed", String(on));
+    button.textContent = window.MailStoneI18n.t(on ? "On" : "Off");
+  });
+}
+
+bindPressedToggle(document.querySelector("#contrast-toggle"), "high-contrast");
+bindPressedToggle(document.querySelector("#motion-toggle"), "reduce-motion");
+
 form.addEventListener("submit", event => {
   event.preventDefault();
 
@@ -2167,6 +2941,29 @@ document.querySelector("#route-tab").addEventListener("click", event => {
   arrow.textContent = isOpen ? "＋" : "−";
 });
 
+/* ---------- Notebook-edge tabs (result page) ---------- */
+
+/*
+  Each edge tab toggles its own panel. Clicking a different tab does NOT
+  close the first one — the student can have multiple panels open for
+  comparison. Clicking an open tab closes it.
+*/
+document.querySelectorAll(".edge-tab").forEach(tab => {
+  tab.addEventListener("click", () => {
+    const panelId = tab.getAttribute("aria-controls");
+    const panel = document.querySelector(`#${panelId}`);
+
+    if (!panel) {
+      return;
+    }
+
+    const isOpen = tab.getAttribute("aria-expanded") === "true";
+
+    tab.setAttribute("aria-expanded", String(!isOpen));
+    panel.hidden = isOpen;
+  });
+});
+
 document
   .querySelector("#show-policy-source")
   .addEventListener("click", event => {
@@ -2207,6 +3004,16 @@ document.querySelector("#edit-answers").addEventListener("click", () => {
 });
 
 document.querySelector("#copy-button").addEventListener("click", async () => {
+  const boxes = selfCheckBoxes();
+
+  /* Defence in depth: the button is also disabled until every box is ticked. */
+  if (!boxes.length || !boxes.every(box => box.checked)) {
+    copyStatus.textContent = window.MailStoneI18n.t(
+      "Tick every self-check item before copying."
+    );
+    return;
+  }
+
   refreshLint();
 
   const draftText = draftEditor.value;
@@ -2254,12 +3061,8 @@ document.querySelector("#copy-button").addEventListener("click", async () => {
   }
 });
 
+/* In a fixed viewport the page cannot scroll; just open the utility panel. */
 document.querySelector("#journey-button").addEventListener("click", () => {
-  document.querySelector(".journey").scrollIntoView({
-    behavior: "smooth",
-    block: "start"
-  });
-
   openUtility("journey");
 });
 
@@ -2267,8 +3070,10 @@ document.querySelector("#privacy-button").addEventListener("click", () => {
   openUtility("privacy");
 });
 
+/* "Help" and the mascot open the same helper, so there is one place to ask. */
 document.querySelector("#help-button").addEventListener("click", () => {
-  openUtility("help");
+  setMascotTab("faq");
+  setMascotPanel(true);
 });
 
 document.querySelector("#close-utility").addEventListener("click", () => {
@@ -2278,6 +3083,7 @@ document.querySelector("#close-utility").addEventListener("click", () => {
 document.addEventListener("keydown", event => {
   if (event.key === "Escape") {
     utilityPanel.hidden = true;
+    setMascotPanel(false);
   }
 });
 
@@ -2324,6 +3130,16 @@ async function loadData() {
 }
 
 function showDataError() {
+  /*
+    The error text lives inside the app shell, which is hidden behind the
+    welcome gate. Reveal it so the message is actually visible.
+  */
+  welcomeScreen.hidden = true;
+  appShell.hidden = false;
+  appStarted = true;
+  questionCard.hidden = false;
+  resultCard.hidden = true;
+
   questionTitle.textContent = "The policy data did not load.";
   questionHint.textContent =
     "This page must be opened through a local server, not by double-clicking the file. In VS Code, right-click index.html and choose Open with Live Server.";
@@ -2355,6 +3171,7 @@ loadData()
         disclosure: "brief",
         time: "3",
         courseCode: "LIN4049",
+        relationship: "taught",
         tone: "warm"
       },
       "extension-post": {
@@ -2367,6 +3184,7 @@ loadData()
         disclosure: "impact",
         time: "7",
         courseCode: "LIN4049",
+        relationship: "taught",
         tone: "warm"
       },
       "extension-tpg": {
@@ -2379,6 +3197,7 @@ loadData()
         disclosure: "brief",
         time: "7",
         courseCode: "LIN4049",
+        relationship: "familiar",
         tone: "formal"
       },
       "exam-ug": {
@@ -2390,6 +3209,7 @@ loadData()
         reason: "health",
         disclosure: "brief",
         courseCode: "LIN4049",
+        relationship: "taught",
         tone: "formal"
       },
       grade: {
@@ -2399,6 +3219,7 @@ loadData()
         goal: "understand",
         situation: "new",
         courseCode: "LIN4049",
+        relationship: "taught",
         tone: "formal"
       },
       "extension-no-code": {
@@ -2411,6 +3232,7 @@ loadData()
         disclosure: "brief",
         time: "3",
         courseCode: "unknown",
+        relationship: "taught",
         tone: "warm"
       },
       unsure: {
@@ -2421,13 +3243,17 @@ loadData()
         reason: "omit",
         disclosure: "brief",
         courseCode: "LIN4049",
+        relationship: "unknown",
         tone: "warm"
       }
     };
 
     if (preset && presets[preset]) {
       Object.assign(answers, presets[preset]);
-      showResult();
+
+      /* QA links bypass the welcome gate so a demo lands straight on a result. */
+      initialView = () => showResult();
+      startApp();
       return;
     }
 
@@ -2443,12 +3269,24 @@ loadData()
         programme: "ug",
         requestType: "extension",
         timing: "before_deadline",
-        courseCode: "LIN4049"
+        courseCode: "LIN4049",
+        teacherName: "Dr Chan",
+        teacherEmail: "unknown",
+        relationship: "taught"
       });
 
       currentStep = Math.min(step, getSteps().length - 1);
+      initialView = () => renderStep(false);
+      startApp();
+      return;
     }
 
-    renderStep(false);
+    /*
+      Normal visit: the slogan is the first thing on screen. No question is
+      rendered until the student presses Start (progressive disclosure).
+    */
+    initialView = () => renderStep(false);
+    refreshAttributeText();
+    window.MailStoneI18n.sweep();
   })
   .catch(showDataError);

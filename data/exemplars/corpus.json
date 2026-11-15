@@ -44,6 +44,27 @@
       "type": "synthetic_verified",
       "exemplars_collected": 5,
       "notes": "Written by the project author to cover scenarios not well represented in public sources: post-deadline extension, grade review with prior contact, SEN support enquiry, scope-gap (TPG) enquiry, and a negative example (V01 presumptive approval). Labelled synthetic_verified throughout."
+    },
+    {
+      "name": "ETS Official — TOEFL iBT 2026 Write an Email (high-level sample)",
+      "url": "https://www.ets.org/toefl/test-takers/ibt/prepare.html",
+      "type": "standardised_exam_sample",
+      "exemplars_collected": 1,
+      "notes": "Official ETS high-level sample for the 2026 TOEFL 'Write an Email' task. Timed (7 min) response to a prompted scenario (poetry magazine submission). Included as a DISTINCT GENRE for pedagogical comparison, not as model academic correspondence. Reprinted in a Zhihu article (zhuanlan.zhihu.com/p/1939386583846463382) from which the full text was retrieved."
+    },
+    {
+      "name": "Zhihu — TOEFL Write an Email model answer (cultural event invitation)",
+      "url": "https://zhuanlan.zhihu.com/p/1939386583846463382",
+      "type": "standardised_exam_sample",
+      "exemplars_collected": 1,
+      "notes": "Model answer from a Chinese TOEFL prep article for the 2026 'Write an Email' task. Scenario: school cultural event invitation to a community centre. Semi-formal register. Included as a DISTINCT GENRE for comparison."
+    },
+    {
+      "name": "Wofo.cc (卧佛) — TOEFL preparation platform",
+      "url": "https://wofo.cc/toefl/mock",
+      "type": "exam_preparation_platform",
+      "exemplars_collected": 0,
+      "notes": "Chinese study-abroad / TOEFL preparation platform hosting 10+ full mock tests with AI scoring, including the 'Write an Email' task. Investigated as a potential source of email templates. Individual model answers are behind the practice interface and were not individually retrievable from the public landing page. Registered as a consulted source. The platform's content is compiled from publicly available sources and candidate recollections per its own confidentiality agreement."
     }
   ],
 
@@ -622,14 +643,151 @@
         "unresolved_placeholder_count": 1
       },
       "annotation_note": "SYNTHETIC. NEGATIVE EXAMPLE — do not use as a model. Triggers V01 (presumptive approval: 'thanks for granting me an extension'), V05 (no modal mitigation), V09 (no course code), V10 ('Hey' and 'Cheers'). No request at all because the student assumes the extension is already granted. This exemplar exists to demonstrate what the lint catches and why the V01 check matters."
+    },
+
+    {
+      "exemplar_id": "EX-019",
+      "provenance": "public_model",
+      "origin_class": "toefl_exam_sample",
+      "source_name": "ETS Official Student Practice TEST 1 — Write an Email (high-level sample)",
+      "source_url": "https://www.ets.org/toefl/test-takers/ibt/prepare.html",
+      "source_locator": "https://zhuanlan.zhihu.com/p/1939386583846463382",
+      "request_type": "meeting",
+      "timing": "before_deadline",
+      "register": "semi_formal",
+      "policy_rules": [],
+      "exam_context": {
+        "exam": "TOEFL iBT 2026",
+        "task_type": "Write an Email",
+        "time_limit_minutes": 7,
+        "word_count": 117,
+        "prompt_summary": "A poetry magazine asked for submissions. The submitter had a problem with the online form and is unsure the submission was received. Task points: (1) tell the editor what you like about the magazine, (2) describe the problem, (3) ask about the status of your submissions.",
+        "prompted": true
+      },
+      "text": "Hi Editor,\n\nI hope you are well! I wanted to say that I really love the new Sunshine Poetry Magazine. It's refreshing to see such a diverse range of voices, and the layout is very engaging. However, I had some trouble with the online submission form when I tried to submit two of my poems. After I uploaded the files and hit submit, the page just kept loading and loading, and eventually, I wasn't sure if my poems were successfully sent.\n\nCould you please confirm if you received my submissions? I'm really excited to be a part of your magazine and would appreciate any help you can provide to fix this issue. Looking forward to your response.\n\nBest regards.",
+      "moves": ["M1_SALUTATION", "M3_PURPOSE", "M4_CONTEXT", "M5_REQUEST", "M8_CLOSING"],
+      "missing_moves": ["M2_IDENTITY"],
+      "politeness_features": {
+        "modal_mitigation": true,
+        "hedging": false,
+        "indirect_request_form": true,
+        "formal_address": false,
+        "apology_marker": 0,
+        "gratitude_marker": 0,
+        "self_deprecation": false,
+        "imposition_acknowledgement": true
+      },
+      "accessibility_features": {
+        "sentence_count": 6,
+        "mean_sentence_length_words": 17.8,
+        "max_sentence_length_words": 28,
+        "distinct_request_count": 1,
+        "unresolved_placeholder_count": 0
+      },
+      "annotation_note": "TOEFL EXAM SAMPLE — not real academic correspondence. This is the ETS official high-level sample for the 2026 TOEFL 'Write an Email' task. It is a timed (7-minute) response to a prompted scenario about a poetry magazine submission. Included in the corpus as a DISTINCT GENRE for comparison: it demonstrates semi-formal email conventions (Hi + first name salutation, exclamation marks, contractions) that differ from the formal academic register MailStone teaches. Key differences from academic email: (1) 'Hi Editor' is not a valid academic salutation (should be 'Dear [Title] [Surname]'), (2) no writer identity (M2_IDENTITY missing — no name, no student ID, no course/programme reference), (3) exclamation mark and contractions ('I'm', 'It's') are informal features, (4) the scenario is social/commercial (magazine submission), not academic (course lecturer). Useful for showing students what exam-task emails look like and why they differ from real academic emails to faculty."
+    },
+
+    {
+      "exemplar_id": "EX-020",
+      "provenance": "public_model",
+      "origin_class": "toefl_exam_sample",
+      "source_name": "TOEFL Write an Email — model answer (school cultural event invitation)",
+      "source_url": "https://zhuanlan.zhihu.com/p/1939386583846463382",
+      "request_type": "meeting",
+      "timing": "before_deadline",
+      "register": "formal",
+      "policy_rules": [],
+      "exam_context": {
+        "exam": "TOEFL iBT 2026",
+        "task_type": "Write an Email",
+        "time_limit_minutes": 7,
+        "word_count": 108,
+        "prompt_summary": "Organising a school cultural event. Write to a community centre coordinator to invite them as a guest speaker. Task points: ask about availability, inquire about topics they could present.",
+        "prompted": true
+      },
+      "text": "Dear Coordinator,\n\nI hope you are doing well. I am organizing a school cultural event scheduled for next month to celebrate the diverse backgrounds of our students and promote cultural understanding. We are inviting guest speakers from local organizations to share their knowledge and experiences. We would be honored if your community center could join us as a guest speaker.\n\nCould you please let me know your availability during the week of the event? If your center can join us, I would like to inquire about the topics your organization could present. We are interested in topics related to local culture, history, traditions, or community initiatives. Please let us know what areas your team could cover so we can plan accordingly.\n\nI'm looking forward to your response.\n\nBest regards.",
+      "moves": ["M1_SALUTATION", "M3_PURPOSE", "M4_CONTEXT", "M5_REQUEST", "M8_CLOSING"],
+      "missing_moves": ["M2_IDENTITY"],
+      "politeness_features": {
+        "modal_mitigation": true,
+        "hedging": false,
+        "indirect_request_form": true,
+        "formal_address": true,
+        "apology_marker": 0,
+        "gratitude_marker": 0,
+        "self_deprecation": false,
+        "imposition_acknowledgement": false
+      },
+      "accessibility_features": {
+        "sentence_count": 7,
+        "mean_sentence_length_words": 15.4,
+        "max_sentence_length_words": 22,
+        "distinct_request_count": 2,
+        "unresolved_placeholder_count": 0
+      },
+      "annotation_note": "TOEFL EXAM SAMPLE — not real academic correspondence. This is a model answer from a Chinese TOEFL prep resource (Zhihu article) for the 2026 'Write an Email' task. The scenario is a school cultural event invitation to an external community centre. More formal than EX-019 (uses 'Dear Coordinator' and no exclamation marks), but still lacks M2_IDENTITY (no writer name, no institutional affiliation beyond 'school'). Two distinct requests (availability + topics) — V08 risk in a real academic context. The 'Dear Coordinator' salutation is role-based, which is acceptable when the recipient's name is unknown, but in academic email to a course lecturer, the name should be looked up. Useful as a comparison point: demonstrates the 'semi-formal institutional' register that TOEFL rewards, which is close to but not identical with the formal academic register MailStone targets."
+    },
+
+    {
+      "exemplar_id": "EX-021",
+      "provenance": "public_model",
+      "origin_class": "toefl_exam_sample",
+      "source_name": "Wofo.cc — TOEFL Write an Email practice platform",
+      "source_url": "https://wofo.cc/toefl/mock",
+      "request_type": "meeting",
+      "timing": "before_deadline",
+      "register": "semi_formal",
+      "policy_rules": [],
+      "exam_context": {
+        "exam": "TOEFL iBT 2026",
+        "task_type": "Write an Email",
+        "platform": "Wofo.cc (卧佛)",
+        "platform_type": "Chinese study-abroad / TOEFL preparation platform",
+        "time_limit_minutes": 7,
+        "word_count": null,
+        "prompt_summary": "Wofo.cc hosts 10+ full TOEFL mock tests with AI scoring. The 'Write an Email' section presents prompted scenarios and evaluates responses on communicative effectiveness, social conventions, and language quality. Specific model answers are behind the platform's practice interface and were not individually retrievable.",
+        "prompted": true,
+        "access_note": "Wofo.cc model answers require starting a mock test session. The platform's confidentiality agreement states materials are compiled from publicly available sources and candidate recollections. Individual email texts were not extractable from the landing page."
+      },
+      "text": "[Platform access required — Wofo.cc TOEFL mock tests present 'Write an Email' tasks within an interactive testing interface. Model answers are shown after completion with AI scoring. The platform was researched as a source of TOEFL email-writing practice materials, but individual full-text model answers were not retrievable from the public landing page.]",
+      "moves": [],
+      "missing_moves": ["M1_SALUTATION", "M2_IDENTITY", "M3_PURPOSE", "M4_CONTEXT", "M5_REQUEST", "M6_CONSTRAINT_ACK", "M7_REMEDY", "M8_CLOSING"],
+      "politeness_features": {
+        "modal_mitigation": null,
+        "hedging": null,
+        "indirect_request_form": null,
+        "formal_address": null,
+        "apology_marker": null,
+        "gratitude_marker": null,
+        "self_deprecation": null,
+        "imposition_acknowledgement": null
+      },
+      "accessibility_features": {
+        "sentence_count": 0,
+        "mean_sentence_length_words": 0,
+        "max_sentence_length_words": 0,
+        "distinct_request_count": 0,
+        "unresolved_placeholder_count": 0
+      },
+      "annotation_note": "PLATFORM REGISTRATION — not an individual exemplar. Wofo.cc (卧佛) is a Chinese TOEFL/IELTS/GRE preparation platform that hosts TOEFL 'Write an Email' practice tasks with AI scoring. It was investigated as a potential source of email templates, but the platform requires starting a mock test session to view prompts and model answers; full-text answers are not publicly available on the landing page. The platform's content is compiled from 'publicly available sources and candidate recollections' per its own confidentiality agreement. This entry registers the platform as a consulted source and records that its individual model answers were not retrievable for annotation. The TOEFL 'Write an Email' samples that WERE collected (EX-019, EX-020) come from ETS official materials and a Zhihu article that reprinted them. Wofo.cc is a delivery platform for the same exam-task genre, not a separate source of original email content."
     }
   ],
+
+  "toefl_exam_sample_genre_note": {
+    "added_date": "2026-11-15",
+    "description": "The TOEFL 'Write an Email' task (introduced in the 2026 TOEFL iBT reform) is a DISTINCT GENRE from real academic correspondence. Students have 7 minutes to write an email response to a prompted scenario. The task evaluates communicative effectiveness, social convention awareness, and language quality — not policy compliance or institutional procedure.",
+    "why_included": "These samples are included in the corpus for GENRE COMPARISON, not as model academic emails. They demonstrate the semi-formal register that standardised tests reward, which differs from the formal academic register MailStone teaches in several ways: (1) salutation is often 'Hi [Role]' rather than 'Dear [Title] [Surname]', (2) writer identity (M2_IDENTITY) is typically absent because the exam scenario does not require it, (3) contractions and exclamation marks are acceptable in the exam but not in formal academic email, (4) the scenarios are social/commercial (magazine submission, event invitation) rather than academic (extension request, grade review), (5) there is no policy or regulation context — the emails exist in a procedural vacuum.",
+    "pedagogical_use": "In the MailStone learning tips, these samples can be used to show students the CONTRAST between exam-task email writing and real academic email writing. A student who has prepared for TOEFL may have internalised the semi-formal 'Hi + exclamation + contraction' register and need explicit instruction on why academic email to a course lecturer requires a different register. This contrast is a genuine pedagogical contribution, not a corpus gap.",
+    "provenance_caveat": "TOEFL exam samples must never be counted as 'real academic correspondence' in any reported figure. The corpus status block separates them from the main exemplar count."
+  },
 
   "status": {
     "exemplars_collected": 18,
     "public_model": 13,
     "synthetic_verified": 5,
     "exemplars_annotated": 18,
+    "toefl_exam_samples": 3,
+    "total_entries": 21,
     "double_coded": 0,
     "by_request_type": {
       "extension": 4,
@@ -637,8 +795,9 @@
       "absence": 5,
       "exam": 1,
       "meeting": 4,
-      "negative_example": 1
+      "negative_example": 1,
+      "toefl_exam_sample": 3
     },
-    "note": "18 exemplars collected and annotated in a first pass. Single-coded by the author. Double coding (for kappa) requires a second coder and is planned for the evaluation phase. The negative example (EX-018) is labelled as such and excluded from any reported 'good exemplar' count."
+    "note": "18 real/synthetic academic exemplars collected and annotated in a first pass (13 public_model + 5 synthetic_verified). Plus 3 TOEFL 'Write an Email' exam-task samples (EX-019, EX-020, EX-021) added 2026-11-15 as a DISTINCT GENRE for pedagogical comparison — these are not counted in the 18 academic exemplars. Single-coded by the author. Double coding (for kappa) requires a second coder and is planned for the evaluation phase. The negative example (EX-018) is labelled as such and excluded from any reported 'good exemplar' count. EX-021 is a platform registration entry (Wofo.cc), not an individual annotated exemplar."
   }
 }

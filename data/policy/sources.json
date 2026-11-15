@@ -316,6 +316,33 @@
       "used_for": ["recipient_confirmation"]
     },
     {
+      "source_id": "EDUHK-STAFF-DIRECTORY-2026",
+      "title": "Staff Directory — official University staff search",
+      "publisher": "The Education University of Hong Kong",
+      "doc_type": "contact_directory",
+      "language": "en",
+      "edition": "current as retrieved",
+      "url": "https://www.eduhk.hk/en/directory",
+      "locator": null,
+      "retrieved_date": "2026-11-15",
+      "retrieval_method": "live web page",
+      "verification_status": "verified_primary",
+      "scope": {
+        "programme_levels": ["sub_degree", "ug", "pgde", "tpg", "rpg"],
+        "cohort_from": null,
+        "cohort_to": null,
+        "scope_basis": "verbatim",
+        "scope_note": "A University-wide staff directory. It lists individual staff members by name, department, and email. It does not contain policy or regulation content."
+      },
+      "extract": {
+        "search_fields": ["Last name/Surname (English)", "Other names (English)", "Name (Chinese)", "Email @eduhk.hk"],
+        "minimum_query": "At least 2 characters in any of the English name fields, or at least 1 character in the Chinese name field",
+        "listed_information": "Staff name, department/office, email address, phone (where published)"
+      },
+      "notes": "Registered 2026-11-15 as the official staff directory for the recipient-confirmation panel's lookup_url fields. This is the authoritative source for finding an individual lecturer's email address when the course outline or programme staff page does not list it. MailStone links to this directory (not to individual staff pages) so the student performs the lookup themselves and confirms the result. The directory does not publish addresses for committees (e.g., SAppC Secretary) or role-only contacts that have no named individual — those remain without an address in the contacts registry.",
+      "used_for": ["recipient_confirmation"]
+    },
+    {
       "source_id": "EDUHK-EDB-SEN-CONTACT",
       "title": "Transfer of SEN information from secondary schools to local post-secondary institutions — institutional contact list",
       "publisher": "Education Bureau, HKSAR Government (sense.edb.gov.hk)",

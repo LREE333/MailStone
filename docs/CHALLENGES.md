@@ -3,7 +3,7 @@
 **Student:** LI Leer (11601718)
 **Course:** LIN4049, EdUHK
 **Date:** 9 November 2026
-**Last updated:** 15 November 2026 (second-iteration features A6, B5–B7, D5 added)
+**Last updated:** 15 November 2026 (third-iteration features B8–B12, A7, D6 added)
 **Repository:** https://github.com/LREE333/MailStone
 
 ---
@@ -72,7 +72,17 @@ This document records the difficulties I encountered while building MailStone, h
 
 **How I resolved it.** I separated a **contact directory** from a **policy source**. `data/policy/contacts.json` is explicitly not a source of rules: it says WHERE to send, never WHAT the rules say. It may only contain addresses printed on an official EdUHK page or in a document already registered in `sources.json`. I retrieved the official University Contact Us page (`https://www.eduhk.hk/en/contact-us`, registered as `EDUHK-CONTACT-US-2026`) and the SAO SEN Support Services page. Each address carries `source_ids`, `source_url` and `retrieved_date`. For the four role-only contacts, `email` is `null` and the row instead gives a `lookup_url` plus a plain-language note telling the student where to look. One attempted page (`/re/About-Registry/Contact-Us.html`) returned 404, so I did not use it — a missing page is not a licence to invent an address. Withholding the four addresses is itself a finding.
 
-**Status:** Resolved. 6 verified office addresses, 4 deliberately withheld role-only contacts, 6 route bindings.
+**Status:** Resolved. 6 verified office addresses, 4 deliberately withheld role-only contacts, 6 route bindings. Role-only contacts now cite the staff directory (`https://www.eduhk.hk/en/directory`) as their lookup source.
+
+---
+
+### A7. Wofo (卧佛) "email templates" are TOEFL exam-task samples, not academic correspondence
+
+**Difficulty.** The user asked whether "academic email templates" from the Wofo website (wofo.cc) had been collected. Wofo is a Chinese study-abroad and TOEFL preparation platform. Its "email templates" are TOEFL "Write an Email" exam-task samples — timed (7-minute) responses to prompted scenarios, not real academic correspondence. Including them as if they were model academic emails would mislabel the corpus.
+
+**How I resolved it.** I collected three TOEFL "Write an Email" samples (the ETS official high-level sample and two model answers from Chinese test-prep sources) and added them to the corpus with `origin_class: "toefl_exam_sample"` and provenance caveats. They are a distinct genre, included for pedagogical comparison: students who have prepared for TOEFL may have internalised a semi-formal register that differs from the formal academic register MailStone teaches. The ETS TOEFL website was registered as a source (`ETS-TOEFL-2026`).
+
+**Status:** Resolved. 3 TOEFL exam-sample exemplars added as a distinct genre.
 
 ---
 
@@ -165,6 +175,56 @@ Each state has different UI copy and different writing tips. The states are driv
 **How I resolved it.** I wrapped every post-render text assignment in `window.MailStoneI18n.t()` and added dictionary entries for the labels that had been missing (`Source:`, `Retrieved:`, and four recipient-level badges). A headless-browser smoke test then clicked the checkboxes, switched language while a recipient was confirmed, and unchecked again: the status label stayed Chinese throughout, the To: line kept the confirmed addresses, and the draft stayed English.
 
 **Status:** Resolved.
+
+---
+
+### B8. Result page layout overflow and email buried in a two-column grid
+
+**Difficulty.** After clicking "Check this draft", the two-column result grid caused layout overflow — fonts extended beyond the viewport. More fundamentally, the generated email — the central artefact — was squeezed into one column alongside route/policy/support information. The user's instruction was clear: "the focus should be the email generation result, displayed prominently in the centre-right; other functions should be collapsible bookmark/tab style elements."
+
+**How I resolved it.** I replaced the two-column `.result-grid` with a single-column email-centric `.result-layout`. The generated email, lint results, self-check, and action buttons now occupy the full main panel. Three notebook-edge tabs (Route, Fact Lock, "Why this structure?") slide out from the right edge via CSS `writing-mode: vertical-rl` and absolutely-positioned panels. Each tab toggles independently with `aria-expanded`. On narrow screens, the tabs switch to horizontal. The viewport is fixed: `html, body.app-mode { height: 100%; overflow: hidden; }` — only `.app-main` may scroll internally.
+
+**Status:** Resolved. No more horizontal overflow; email is the focal point; ancillary information is collapsible.
+
+---
+
+### B9. Generated emails lacked greeting and self-introduction
+
+**Difficulty.** The user tested the tool and found the generated email unsatisfactory: "it doesn't have an opening greeting or a self-introduction. If I were a user who answered all those questions and got this result, I definitely wouldn't want to use it again." The drafts jumped straight into the context line without "Dear [Name]" or any introduction.
+
+**How I resolved it.** I added a `relationship` step to all six question sequences with three options: "familiar" (I know them well), "taught" (normal teaching — they may not remember me), and "unknown" (I am not sure). Two helper functions were added: `getSelfIntroduction()` returns an empty string for "familiar" and a full intro ("I am [Your name], a student in your [Course code] class.") for the other two; `getOpeningLine()` combines the self-introduction with the context line in the correct order. All three draft builders (standard, post-deadline, general) were rewritten to produce: Subject → "Dear [Recipient title and surname]," → optional self-introduction + context line → reason → request → closing → "Kind regards, [Your name] [Student ID]".
+
+**Status:** Resolved. All drafts now have proper salutation, self-introduction (where appropriate), and closing.
+
+---
+
+### B10. Feedback was clipboard-only; user wanted backend send
+
+**Difficulty.** The Pebble mascot's feedback feature originally copied a feedback message to the clipboard for the user to paste into an email to the supervisor. The user wanted feedback sent directly to the backend: "I want users' feedback during use to be sent directly to our backend so we can improve the tool."
+
+**How I resolved it.** I rewrote the feedback handler to POST a JSON payload (`{ text, timestamp, page }`) to `window.MAILSTONE_FEEDBACK_URL`, a configurable endpoint. If the server is unavailable or no endpoint is configured, the note is copied to the clipboard instead so it is never lost. The HTML text and i18n entries were updated to explain this behaviour: "Your feedback is sent directly to the MailStone team so we can improve the tool. If the server is unavailable, your note is copied to the clipboard instead so it is never lost."
+
+**Status:** Resolved. Feedback handler sends to backend with graceful clipboard fallback.
+
+---
+
+### B11. Role-only contacts pointed at a generic Registry URL
+
+**Difficulty.** The four role-only contacts (course lecturer, Faculty Dean, Programme Leader, SAppC Secretary) had `lookup_url` set to `https://www.eduhk.hk/re/` — the Registry homepage. This was too vague; the student would have to navigate the Registry site to find the right person. There was no registered source for the staff directory itself.
+
+**How I resolved it.** I registered the EdUHK staff directory (`https://www.eduhk.hk/en/directory`) as `EDUHK-STAFF-DIRECTORY-2026` in `sources.json`, with `verification_status: "verified_primary"`. All four role-only contacts now cite this source in their `source_ids` and point their `lookup_url` at the staff directory. The `lookup_note` text was updated to reference the staff directory specifically.
+
+**Status:** Resolved. Staff directory registered as source; all role-only contacts updated.
+
+---
+
+### B12. TOEFL "Write an Email" as a distinct corpus genre
+
+**Difficulty.** The user asked whether Wofo (卧佛) email templates had been collected. Wofo is a TOEFL preparation platform; its "email templates" are TOEFL exam-task samples — timed responses to prompted scenarios in a semi-formal register. Including them as `public_model` exemplars would mislabel them as model academic correspondence.
+
+**How I resolved it.** I added a new `origin_class` value (`toefl_exam_sample`) to the exemplars schema and collected three samples: the ETS official high-level response and two model answers from Chinese test-prep sources. Each entry carries provenance caveats noting they are exam-task samples, not real academic correspondence. The ETS TOEFL website was registered as a source. The corpus status block was updated to report both academic and TOEFL exam-sample counts separately. These exemplars are included for pedagogical comparison — students who have prepared for TOEFL may have internalised a different register than what MailStone teaches.
+
+**Status:** Resolved. 3 TOEFL exam-sample exemplars added as a distinct genre; source registered; provenance clearly labelled.
 
 ---
 
@@ -279,6 +339,11 @@ Each state has different UI copy and different writing tips. The states are driv
 | B5 | Course code is an identifier, not a category | Design | Resolved (text step + verbatim substitution) |
 | B6 | Three languages without corrupting the evidence | Design | Resolved (sweep + exclusions) |
 | B7 | Event handlers reintroduced English after a switch | Technical | Resolved (t() at every post-render assignment) |
+| B8 | Result page layout overflow and email buried | Design | Resolved (email-centric layout + notebook-edge tabs) |
+| B9 | Drafts lacked greeting and self-introduction | Design | Resolved (relationship step + helper functions) |
+| B10 | Feedback was clipboard-only | Design | Resolved (POST to backend with clipboard fallback) |
+| B11 | Role-only contacts pointed at generic Registry URL | Technical | Resolved (staff directory registered + contacts updated) |
+| B12 | Wofo/TOEFL templates are exam samples, not academic correspondence | Design | Resolved (distinct genre with provenance caveats) |
 | C1 | Identifying AI-tool procedure | Communication | Resolved (8 Nov) |
 | C2 | Identifying approved LLM service | Communication | Resolved (8 Nov) |
 | C3 | SAO did not answer specific questions | Communication | 2 of 3 resolved (9 Nov) |
