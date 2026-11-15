@@ -85,7 +85,7 @@ Date fields are request-specific: extension = original deadline / preferred new 
 
 ### Latest corrections (15 Nov, second pass)
 
-The separate "Has the deadline passed?" question has been merged into the date step: the first date the student enters now decides whether the route is open, and an undecided date stays undecided. The default type size moved from 16px to 17px, with small body copy lifted to 0.9rem. The footer became one bar with a stone mark and a bordered disclaimer pill, and the result page now states that the draft text is selectable while the Copy button also runs the self-check list and Fact Lock. 214 assertions pass. The result page was measured in Chrome at 127.0.0.1 for font size, footer fit and internal scrolling; a full click-through of every branch is still outstanding.
+The separate "Has the deadline passed?" question has been merged into the date step: the first date the student enters now decides whether the route is open, and an undecided date stays undecided. The default type size moved from 16px to 17px, with small body copy lifted to 0.9rem. The footer became one bar with a stone mark and a bordered disclaimer pill, and the result page now states that the draft text is selectable while the Copy button also runs the self-check list and Fact Lock. 228 assertions pass. The result page was measured in Chrome at 127.0.0.1 for font size, footer fit and internal scrolling, and the "not clear yet" answers on the name and address steps were driven in Chrome: selecting, deselecting, typing and the "type it instead" link all work. A full click-through of every branch is still outstanding.
 
 ## Project structure
 
@@ -109,7 +109,7 @@ mailstone/
 │       ├── exemplars.json   # Annotation scheme + collection plan
 │       └── corpus.json      # 18 academic + 2 full-text TOEFL + 1 Wofo metadata record
 ├── tools/
-│   ├── test.mjs             # 214 automated assertions passing; not browser validation
+│   ├── test.mjs             # 228 automated assertions passing; not browser validation
 │   └── lint-file.mjs        # CLI: lint any email file
 └── docs/
     ├── PLAN-2026-11-15.md       # Project plan and status
@@ -136,7 +136,7 @@ mailstone/
 node tools/test.mjs
 ```
 
-**214 passed, 0 failed** on the current local files (15 Nov 2026). Coverage includes Gatekeeper routes and scope, lint and data integrity, source-backed recipient handling, identifier substitution, localisation boundaries, relationship logic, date validity and substitution, local staff matching and historical course limits, stale-confirmation invalidation, Fact Lock intake, dark-toggle markup, notebook drawer logic and configurable feedback frontend checks. Some UI checks inspect source text or use stubs; this is not end-to-end browser or deployed-backend validation. Earlier second-iteration headless-browser findings remain historical; actual browser testing of the latest changes is underway.
+**228 passed, 0 failed** on the current local files (15 Nov 2026). Coverage includes Gatekeeper routes and scope, lint and data integrity, source-backed recipient handling, identifier substitution, localisation boundaries, relationship logic, date validity and substitution, local staff matching and historical course limits, stale-confirmation invalidation, Fact Lock intake, dark-toggle markup, notebook drawer logic and configurable feedback frontend checks. Some UI checks inspect source text or use stubs; this is not end-to-end browser or deployed-backend validation. Earlier second-iteration headless-browser findings remain historical; actual browser testing of the latest changes is underway.
 
 ## Key findings
 
@@ -154,7 +154,7 @@ Counts below are checked against actual `contacts.json`, `sources.json` and `cor
 | Policy base | 11 rules (10 verbatim + 1 derived); 14 registered sources: 10 primary, 1 secondary, 1 oral, 2 identified/not retrieved |
 | Contact registry | 10 route contacts: 6 office addresses + 4 withheld roles; separately 18 LML staff, 1 historical course link; 6 route bindings; 24 unique published addresses |
 | Gatekeeper | Working, deterministic; inferred handbook scope still needs confirmation |
-| Lint / automated suite | 12 checks; 214 automated assertions passing |
+| Lint / automated suite | 12 checks; 228 automated assertions passing |
 | Draft templates | 6 request types, 3 documented empty states, relationship-aware greeting/intro |
 | Intake / Fact Lock | Programme → request → dates where relevant; course/name/email and preferred dates shown without verified-approval claims |
 | Interface / Display | EN / 繁 / 简; draft + quotes always English; dark-mode toggle implemented |

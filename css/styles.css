@@ -3777,7 +3777,7 @@ body.reduce-motion :is(.choice:hover, .choice.selected, .route-tab:hover, .prima
 }
 
 .draft-preview,
-#draft-editor {
+#email-draft {
   font-size: 1rem;
   line-height: 1.7;
 }
@@ -3898,4 +3898,12 @@ body.high-contrast .footer-note {
   .footer-note {
     font-size: 0.78rem;
   }
+}
+
+/* "Type it instead" escape hatch inside the unknown-answer card. It is a real
+   button, so it works with a keyboard even though a checked radio cannot be
+   unchecked by clicking it twice. */
+.text-step-switch {
+  margin-top: 6px;
+  font-size: 0.86rem;
 }

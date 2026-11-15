@@ -361,6 +361,7 @@ const STEP_DEFS = {
     maxLength: 24,
     unknownLabel: "Not known yet — leave it blank",
     unknownDetail: "I will look it up later. The draft keeps an unfilled blank.",
+    unknownSwitchLabel: "Type a course code instead",
     validationMessage: "Enter the course code, or choose \"Not known yet\"."
   },
 
@@ -382,6 +383,7 @@ const STEP_DEFS = {
     maxLength: 60,
     unknownLabel: "Not clear yet — leave it blank",
     unknownDetail: "I will check the course outline. The draft keeps a blank for the recipient.",
+    unknownSwitchLabel: "Type a name instead",
     validationMessage: "Enter the teacher's name, or choose \"Not clear yet\"."
   },
 
@@ -881,10 +883,22 @@ function renderTextStep(step) {
   const hasValue = Boolean(answers[step.id]) && !isUnknown;
 
   input.value = hasValue ? answers[step.id] : "";
-  input.disabled = isUnknown;
-  unknownRadio.checked = isUnknown;
-  unknownChoice.classList.toggle("selected", isUnknown);
-  validation.hidden = Boolean(answers[step.id]);
+
+  /*
+    The input is never disabled. Disabling it made "Not clear yet" a one-way
+    door: the radio could not be unchecked (a checked radio fires no change
+    event), and a disabled input cannot take focus, so returning to this step
+    left the student with no way to type a name again. The field now stays
+    editable, and typing is itself a way back.
+  */
+  const typeInstead = document.createElement("button");
+  typeInstead.type = "button";
+  typeInstead.className = "inline-link-button text-step-switch";
+  typeInstead.textContent = window.MailStoneI18n.t(
+    step.unknownSwitchLabel || "Type it instead"
+  );
+
+  let unknownSelected = isUnknown;
 
   function setAnswer(value) {
     if (answers[step.id] !== value) {
@@ -897,26 +911,50 @@ function renderTextStep(step) {
     nextButton.disabled = !value;
   }
 
-  input.addEventListener("input", () => {
-    const value = input.value.trim();
+  function applyUnknown(on, options) {
+    const settings = options || {};
 
-    if (unknownRadio.checked) {
-      unknownRadio.checked = false;
-      unknownChoice.classList.remove("selected");
-      input.disabled = false;
+    unknownSelected = on;
+    unknownRadio.checked = on;
+    unknownChoice.classList.toggle("selected", on);
+    typeInstead.hidden = !on;
+
+    if (on) {
+      input.value = "";
+      setAnswer("unknown");
+      return;
     }
 
-    setAnswer(value);
+    setAnswer(settings.keepValue ? input.value.trim() : "");
+
+    if (!settings.silent) {
+      input.focus();
+    }
+  }
+
+  input.addEventListener("input", () => {
+    if (unknownSelected) {
+      applyUnknown(false, { keepValue: true, silent: true });
+    }
+
+    setAnswer(input.value.trim());
   });
 
-  unknownRadio.addEventListener("change", () => {
-    unknownChoice.classList.add("selected");
-    input.disabled = true;
-    input.value = "";
-    setAnswer("unknown");
+  /*
+    preventDefault keeps the browser from toggling the radio itself, so the
+    click can mean "select" or "deselect" depending on the current state.
+    Keyboard Space fires the same click, so this works without a mouse.
+  */
+  unknownRadio.addEventListener("click", event => {
+    event.preventDefault();
+    applyUnknown(!unknownSelected);
   });
 
-  unknownCopy.append(unknownTitle, unknownDetail);
+  typeInstead.addEventListener("click", () => applyUnknown(false));
+
+  applyUnknown(isUnknown, { silent: true });
+
+  unknownCopy.append(unknownTitle, unknownDetail, typeInstead);
   unknownChoice.append(unknownRadio, unknownCopy);
   wrap.append(label, input, validation, unknownChoice);
   choices.append(wrap);
@@ -1302,7 +1340,10 @@ function renderLookupStep(step) {
   const hasValue = Boolean(answers[step.id]) && !isUnknown;
 
   input.value = hasValue ? answers[step.id] : "";
-  input.disabled = isUnknown;
+
+  /* Same one-way-door problem as the name step: keep the field usable and make
+     "continue without an address" a toggle rather than a final state. */
+  let unknownSelected = isUnknown;
   unknownRadio.checked = isUnknown;
   unknownChoice.classList.toggle("selected", isUnknown);
   validation.hidden = true;
@@ -1317,26 +1358,41 @@ function renderLookupStep(step) {
     nextButton.disabled = !value;
   }
 
-  input.addEventListener("input", () => {
-    const value = input.value.trim();
+  function applyUnknown(on, options) {
+    const settings = options || {};
 
-    if (unknownRadio.checked) {
-      unknownRadio.checked = false;
-      unknownChoice.classList.remove("selected");
-      input.disabled = false;
+    unknownSelected = on;
+    unknownRadio.checked = on;
+    unknownChoice.classList.toggle("selected", on);
+    validation.hidden = true;
+
+    if (on) {
+      input.value = "";
+      setAnswer("unknown");
+      return;
     }
 
+    setAnswer(settings.keepValue ? input.value.trim() : "");
+
+    if (!settings.silent) {
+      input.focus();
+    }
+  }
+
+  input.addEventListener("input", () => {
+    if (unknownSelected) {
+      applyUnknown(false, { keepValue: true, silent: true });
+    }
+
+    const value = input.value.trim();
     const valid = !value || isValidEmail(value);
     validation.hidden = valid;
     setAnswer(valid ? value : "");
   });
 
-  unknownRadio.addEventListener("change", () => {
-    unknownChoice.classList.add("selected");
-    input.disabled = true;
-    input.value = "";
-    validation.hidden = true;
-    setAnswer("unknown");
+  unknownRadio.addEventListener("click", event => {
+    event.preventDefault();
+    applyUnknown(!unknownSelected);
   });
 
   const matches = findStaffMatches(answers.teacherName, answers.courseCode, data.contacts);
@@ -1572,6 +1628,20 @@ function getOpeningLine(contextLine) {
     return intro ? `${intro} ${contextLine}` : contextLine;
   }
 
+  /*
+    When the context line already opens with a pleasantry, the introduction
+    belongs inside that same paragraph. Splitting them produced:
+      "I am [Your name], a student in your LIN4049 class."
+      "I hope you are well. I am writing about ..."
+    which reads like two messages glued together.
+  */
+  const pleasantry = "I hope you are well.";
+
+  if (intro && contextLine.startsWith(pleasantry)) {
+    const rest = contextLine.slice(pleasantry.length).trim();
+    return `${pleasantry} ${intro} ${rest}`;
+  }
+
   /* For "taught" and "unknown": introduce first, then the context */
   return intro ? `${intro}\n\n${contextLine}` : contextLine;
 }
@@ -1679,16 +1749,22 @@ function buildExtensionDraft() {
     ? "Follow-up on extension request — [Assignment name], [Course code]"
     : "Extension request — [Assignment name], [Course code]";
 
+  /*
+    The opening states the situation; it does not ask. The single request lives
+    in `timing` below. An earlier version asked twice — once in the opening and
+    once in the request paragraph — which read like two different emails stitched
+    together and made the draft feel machine-made.
+  */
   const contextLines = {
     warm: followup
-      ? "I hope you are well. I am following up on my earlier request for an extension for [Assignment name] in [Course code], originally due on [Original deadline]."
-      : "I hope you are well. I would like to ask whether it would be possible to have an extension for [Assignment name] in [Course code], due on [Original deadline].",
+      ? "I hope you are well. I am writing to follow up on my earlier request for an extension for [Assignment name] in [Course code], which was due on [Original deadline]."
+      : "I hope you are well. I am writing about [Assignment name] in [Course code], which is due on [Original deadline].",
     formal: followup
-      ? "I am writing to follow up on my previous extension request for [Assignment name] in [Course code], originally due on [Original deadline]."
-      : "I am writing to request an extension for [Assignment name] in [Course code], due on [Original deadline].",
+      ? "I am writing to follow up on my earlier extension request for [Assignment name] in [Course code], which was due on [Original deadline]."
+      : "I am writing about [Assignment name] in [Course code], which is due on [Original deadline].",
     concise: followup
-      ? "Could you please let me know if there is an update on my extension request for [Assignment name] in [Course code], originally due on [Original deadline]?"
-      : "Could I please request an extension for [Assignment name] in [Course code], due on [Original deadline]?"
+      ? "I am following up on my earlier extension request for [Assignment name] in [Course code], due on [Original deadline]."
+      : "I am writing about [Assignment name] in [Course code], due on [Original deadline]."
   };
 
   const timing = isValidDateOnly(answers.requestedDate)
@@ -1699,17 +1775,49 @@ function buildExtensionDraft() {
         ? `If an extension is possible, my current preference would be ${getDurationText()} beyond the original deadline.`
         : `Would an extension of ${getDurationText()} beyond the original deadline be possible?`;
 
+  /*
+    A one-line reason reads like a form. The impact sentence says what the
+    circumstances actually changed, without naming a diagnosis or inventing
+    details about the student's progress. It appears only when the student
+    chose the fuller disclosure, so the "brief" answer still means brief.
+  */
+  const impactLines = {
+    health:
+      "The main effect has been on how much I can do in one sitting, so the work has taken longer than I planned for.",
+    personal:
+      "The main effect has been on the time and attention I could give the work, so it has taken longer than I planned for.",
+    workload:
+      "The main effect has been on the time left for this assignment, which is less than I had planned for."
+  };
+
+  const impactText =
+    reasonText && answers.disclosure === "impact"
+      ? impactLines[answers.reason] || ""
+      : "";
+
+  const position = followup
+    ? "I have not made any other arrangement, so your answer would decide what I do next."
+    : "I would rather ask in advance than submit work I am not confident in.";
+
   const paragraphs = [
     `Subject: ${subject}`,
     "Dear [Recipient title and surname],",
     getOpeningLine(contextLines[answers.tone]),
     reasonText,
+    impactText,
+    position,
     timing
   ];
 
   if (answers.tone !== "concise") {
     paragraphs.push(
-      "I understand that any change to the deadline would require your approval, and that a late submission may affect the grade for this assignment."
+      "I understand that any change to the deadline would require your approval, and that a late submission may affect the grade for this assignment.",
+      /*
+        Offers evidence without asserting that a document already exists.
+        The paperwork phrase itself is blocked (V02), because a promise of
+        evidence that never arrives is worse than no promise.
+      */
+      "If it would help, I can send whatever evidence you need."
     );
   }
 
@@ -1741,7 +1849,7 @@ function buildPostDeadlineDraft(reasonText, followup) {
     warm:
       "Could you let me know what options are available to me now, and whether there is anything I should submit in support of my case?",
     formal:
-      "I would be grateful to know what options remain available to me, and whether any supporting documentation is required.",
+      "I would be grateful to know what options remain available to me, and whether you need anything from me in support.",
     concise:
       "Could you let me know what options I have now, and whether I should send anything in support?"
   };
@@ -1761,6 +1869,7 @@ function buildPostDeadlineDraft(reasonText, followup) {
 
   paragraphs.push(
     "I understand that work submitted late without prior approval is treated as not submitted, and that a late submission that is approved may still affect the grade for this assignment.",
+    "I am still able to submit the work, and I would rather do that than leave it incomplete.",
     asks[answers.tone],
     getToneClosing(),
     "Kind regards,\n[Your name]\n[Student ID]"
@@ -1811,12 +1920,29 @@ function buildGeneralDraft() {
       "Could you please let me know which office, form or procedure I should use?"
   };
 
+  const detailLines = {
+    extension:
+      "I would rather confirm the correct procedure first than assume that one applies to me.",
+    grade:
+      "I would like to understand what was expected before I start the next assignment.",
+    exam:
+      "The course information I have does not explain what to do in this situation.",
+    absence:
+      "I would like to follow the correct procedure rather than simply miss the class.",
+    review:
+      "I would like to use the official route rather than raise this informally.",
+    unsure:
+      "I am not sure which office handles this, and I would rather ask than guess."
+  };
+
   const paragraphs = [
     `Subject: ${subjects[requestType] || subjects.unsure}`,
     "Dear [Recipient title and surname],",
     getOpeningLine(contextLines[requestType] || contextLines.unsure),
     getReasonText(),
+    detailLines[requestType] || detailLines.unsure,
     requests[requestType] || requests.unsure,
+    "I can provide any documentation or details that would help.",
     getToneClosing(),
     "Kind regards,\n[Your name]\n[Student ID]"
   ];

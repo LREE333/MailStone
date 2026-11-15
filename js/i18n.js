@@ -212,6 +212,7 @@ window.MailStoneI18n = (function () {
     [`Course code`, `課程編號`, `课程编号`],
     [`e.g. LIN4049`, `例如 LIN4049`, `例如 LIN4049`],
     [`Not known yet — leave it blank`, `暫未知 — 先留空`, `暂未知 — 先留空`],
+    [`Type a course code instead`, `改為輸入課程編號`, `改为输入课程编号`],
     [`I will look it up later. The draft keeps an unfilled blank.`, `我稍後再查。草稿會保留一個待填空格。`, `我稍后再查。草稿会保留一个待填空格。`],
     [`Enter the course code, or choose "Not known yet".`, `請輸入課程編號，或選擇「暫未知」。`, `请输入课程编号，或选择「暂未知」。`],
 
@@ -712,6 +713,7 @@ window.MailStoneI18n = (function () {
     [`Teacher's name`, `老師姓名`, `老师姓名`],
     [`e.g. Dr Chan`, `例如 Dr Chan`, `例如 Dr Chan`],
     [`Not clear yet — leave it blank`, `尚未清楚 — 先留空`, `尚未清楚 — 先留空`],
+    [`Type a name instead`, `改為輸入姓名`, `改为输入姓名`],
     [`I will check the course outline. The draft keeps a blank for the recipient.`, `我會查課程大綱。草稿會保留收件人的待填欄位。`, `我会查课程大纲。草稿会保留收件人的待填字段。`],
     [`Enter the teacher's name, or choose "Not clear yet".`, `請輸入老師姓名，或選擇「尚未清楚」。`, `请输入老师姓名，或选择「尚未清楚」。`],
     [`Naming your teacher`, `填寫老師姓名`, `填写老师姓名`],

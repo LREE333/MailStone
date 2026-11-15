@@ -1985,6 +1985,162 @@ console.log("\nOne question, not two");
   );
 }
 
+console.log("\nLeaving \"not clear yet\" is reversible");
+
+{
+  const appSource = readFileSync(join(root, "js/app.js"), "utf8");
+
+  function extract(code, name) {
+    const marker = `function ${name}(`;
+    const start = code.indexOf(marker);
+    let depth = 0;
+
+    for (let index = start; index < code.length; index += 1) {
+      if (code[index] === "{") {
+        depth += 1;
+      } else if (code[index] === "}") {
+        depth -= 1;
+        if (depth === 0) {
+          return code.slice(start, index + 1);
+        }
+      }
+    }
+
+    return null;
+  }
+
+  function element() {
+    return {
+      children: [],
+      listeners: {},
+      className: "",
+      textContent: "",
+      value: "",
+      hidden: false,
+      disabled: false,
+      checked: false,
+      classList: {
+        set: new Set(),
+        add(name) { this.set.add(name); },
+        remove(name) { this.set.delete(name); },
+        toggle(name, on) { on ? this.set.add(name) : this.set.delete(name); },
+        contains(name) { return this.set.has(name); }
+      },
+      append(...items) { this.children.push(...items); },
+      setAttribute(key, value) { this[key] = value; },
+      addEventListener(type, handler) {
+        (this.listeners[type] = this.listeners[type] || []).push(handler);
+      },
+      focus() { this.focused = true; },
+      fire(type, extra) {
+        const event = Object.assign({ preventDefault() {} }, extra);
+        (this.listeners[type] || []).forEach(handler => handler(event));
+      }
+    };
+  }
+
+  const created = [];
+  const documentStub = {
+    createElement() {
+      const node = element();
+      created.push(node);
+      return node;
+    }
+  };
+
+  const step = {
+    id: "teacherName",
+    inputLabel: "Teacher's name",
+    placeholder: "e.g. Dr Chan",
+    unknownLabel: "Not clear yet — leave it blank",
+    unknownDetail: "I will check the course outline.",
+    unknownSwitchLabel: "Type a name instead",
+    validationMessage: "Enter the teacher's name."
+  };
+
+  const answers = { teacherName: "unknown" };
+  const choices = element();
+  const nextButton = { disabled: true };
+  let invalidations = 0;
+
+  const run = new Function(
+    "document",
+    "window",
+    "answers",
+    "choices",
+    "nextButton",
+    "invalidateTeacherContact",
+    "savedDraft",
+    `${extract(appSource, "renderTextStep")}
+     renderTextStep(${JSON.stringify(step)});
+     return true;`
+  );
+
+  run(
+    documentStub,
+    { MailStoneI18n: { t: value => value } },
+    answers,
+    choices,
+    nextButton,
+    () => { invalidations += 1; },
+    null
+  );
+
+  const input = created.find(node => node.id === "teacherName-input");
+  const radio = created.find(node => node.type === "radio");
+  const switchButton = created.find(
+    node => node.textContent === "Type a name instead"
+  );
+
+  check("the name field stays editable after choosing not clear yet", input && input.disabled === false);
+  check("a visible way back to typing exists", Boolean(switchButton));
+
+  radio.fire("click");
+  check("clicking the chosen option again clears it", answers.teacherName === "", answers.teacherName);
+  check("clearing the option puts the cursor back in the field", input.focused === true);
+
+  input.value = "Dr Lau";
+  input.fire("input");
+  check("typing a name stores it", answers.teacherName === "Dr Lau", answers.teacherName);
+
+  radio.fire("click");
+  check("choosing not clear yet again keeps the unknown answer", answers.teacherName === "unknown");
+  check("choosing not clear yet clears the typed value", input.value === "");
+
+  switchButton.fire("click");
+  check("the switch link returns to typing", answers.teacherName === "" && input.focused === true);
+  check("changing the answer invalidates the old contact", invalidations > 0);
+  check("the old one-way disable is gone", !appSource.includes("input.disabled = isUnknown"));
+}
+
+console.log("\nDraft depth");
+
+{
+  const appSource = readFileSync(join(root, "js/app.js"), "utf8");
+
+  check(
+    "the extension draft explains the impact when the student chose the fuller answer",
+    appSource.includes("The main effect has been on how much I can do in one sitting")
+  );
+
+  check(
+    "the brief answer still stays brief",
+    appSource.includes('reasonText && answers.disclosure === "impact"')
+  );
+
+  check(
+    "the draft offers supporting documents without claiming they are attached",
+    appSource.includes("I can send whatever evidence you need") &&
+      !appSource.includes("I have attached")
+  );
+
+  check(
+    "the draft asks for one thing only",
+    (appSource.match(/Would it be possible/g) || []).length >= 1 &&
+      !appSource.includes("Would you also")
+  );
+}
+
 console.log(`\n${passed} passed, ${failed} failed\n`);
 
 process.exit(failed === 0 ? 0 : 1);

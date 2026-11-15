@@ -5,7 +5,7 @@
 **Date:** 9 November 2026
 **Last updated:** 15 November 2026 (latest local intake/contact/display changes; source, validation and publication claims corrected)
 
-**Current evidence boundary:** 214 automated assertions pass on the local files. The result page has since been re-measured in Chrome at 127.0.0.1 (17px root, 15.3px self-check text, one 53px footer row, no page-level overflow, `main.app-main` as the only scrolling region besides the draft textarea). A branch-by-branch click-through is still outstanding; earlier browser findings below are historical, not latest validation. `b5d8618` is the historical last pushed commit; latest changes are not pushed and the website is not live. GitHub Pages management authentication and one-time Settings > Pages → branch `main` → `/ (root)` setup remain pending. Publication final status will be added by the parent.
+**Current evidence boundary:** 228 automated assertions pass on the local files. The result page has since been re-measured in Chrome at 127.0.0.1 (17px root, 15.3px self-check text, one 53px footer row, no page-level overflow, `main.app-main` as the only scrolling region besides the draft textarea). A branch-by-branch click-through is still outstanding; earlier browser findings below are historical, not latest validation. `b5d8618` is the historical last pushed commit; latest changes are not pushed and the website is not live. GitHub Pages management authentication and one-time Settings > Pages → branch `main` → `/ (root)` setup remain pending. Publication final status will be added by the parent.
 **Repository:** https://github.com/LREE333/MailStone
 
 ---
@@ -246,7 +246,7 @@ Each state has different UI copy and different writing tips. The states are driv
 
 **How I resolved it.** Every flow now begins programme → request. Extension, absence, exam, grade and review immediately ask for two request-specific dates using explicit Year/Month/Day native `<select size="5">` lists; `unsure` omits irrelevant dates. "Choose a date" opens the lists, "Use this date" saves the selection, and "Leave this date undecided" records an unknown rather than silently accepting the initial displayed date. Calendar validity and extension/absence ordering are checked. Fact Lock separates supplied course/name/email, selected dates, unresolved fields and approval: a provided course code no longer appears as missing, and a preferred new deadline no longer retains the obsolete missing-duration message. "Provided by you / selected by you" identifies provenance, not official verification; "Not yet approved" and unconfirmed supporting documents remain explicit. Preferred dates do not replace the formal 14-working-day review window.
 
-**Status:** Code/date display bug fixed locally, with regression assertions for supplied code and preferred deadline. The reported current suite is 214 passed, 0 failed; source/stub checks are not the latest browser validation (D6).
+**Status:** Code/date display bug fixed locally, with regression assertions for supplied code and preferred deadline. The reported current suite is 228 passed, 0 failed; source/stub checks are not the latest browser validation (D6).
 
 ---
 
@@ -409,5 +409,5 @@ Each state has different UI copy and different writing tips. The states are driv
 | D3 | Corpus double-coding not done | Pending | Evaluation phase |
 | D4 | Retrospective SAO accommodation | Pending | Follow-up if needed |
 | D5 | "Leave it blank" = empty string or visible placeholder? | Wording | Implemented as visible placeholder; confirm at next meeting |
-| D6 | Latest browser validation and publication | Pending | 214 automated assertions pass; browser checks underway; unpushed/not live; Pages auth missing |
+| D6 | Latest browser validation and publication | Pending | 228 automated assertions pass; browser checks underway; unpushed/not live; Pages auth missing |
 | D7 | Wider public-contact feed permission/maintenance | Pending | Permission not obtained; narrow snapshot and current-teaching limits retained |
