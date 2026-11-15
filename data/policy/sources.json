@@ -339,8 +339,40 @@
         "minimum_query": "At least 2 characters in any of the English name fields, or at least 1 character in the Chinese name field",
         "listed_information": "Staff name, department/office, email address, phone (where published)"
       },
-      "notes": "Registered 2026-11-15 as the official staff directory for the recipient-confirmation panel's lookup_url fields. This is the authoritative source for finding an individual lecturer's email address when the course outline or programme staff page does not list it. MailStone links to this directory (not to individual staff pages) so the student performs the lookup themselves and confirms the result. The directory does not publish addresses for committees (e.g., SAppC Secretary) or role-only contacts that have no named individual — those remain without an address in the contacts registry.",
+      "notes": "Public anonymous POST form at /en/directory with surname, othername, chineseName and email fields. No readable cross-origin response is enabled for GitHub Pages; it is not a public CORS JSON email API. MailStone instead performs local matching against a verified departmental public-contact snapshot. Directory links are optional supplementary evidence, not a required navigation step. Role-only committee destinations remain unresolved.",
       "used_for": ["recipient_confirmation"]
+    },
+    {
+      "source_id": "EDUHK-LML-STAFF-2026",
+      "title": "LML Academic/Teaching Staff — public contact facts",
+      "publisher": "The Education University of Hong Kong",
+      "doc_type": "contact_directory",
+      "language": "en",
+      "edition": "current as retrieved",
+      "url": "https://www.eduhk.hk/lml/people",
+      "retrieved_date": "2026-11-15",
+      "retrieval_method": "public HTML staff list, name-email pair verification",
+      "verification_status": "verified_primary",
+      "scope": {"programme_levels":["sub_degree","ug","pgde","tpg","rpg"],"cohort_from":null,"cohort_to":null,"scope_basis":"verbatim","scope_note":"Departmental public contact information only. Not evidence of policy, course assignment or current destination."},
+      "extract": {"published_staff_contacts":18},
+      "notes": "Only factual names, publicly listed work addresses, and source attribution are used in the contact index. No biography, page layout, images or private addresses are reproduced. This is a manually verified snapshot; no automated whole-site harvesting is enabled. Institutional permission for a wider maintained feed remains to be arranged.",
+      "used_for": ["recipient_matching"]
+    },
+    {
+      "source_id": "EDUHK-LIN4049-2025-26",
+      "title": "Public course summary: 2025-26S2 LIN4049 (31E)",
+      "publisher": "The Education University of Hong Kong",
+      "doc_type": "course_directory",
+      "language": "en",
+      "edition": "2025-26 Semester 2",
+      "url": "https://moodle.eduhk.hk/course/info.php?id=9482&lang=en",
+      "retrieved_date": "2026-11-15",
+      "retrieval_method": "public anonymous course-summary HTML",
+      "verification_status": "verified_primary",
+      "scope": {"programme_levels":["ug"],"cohort_from":null,"cohort_to":null,"scope_basis":"verbatim","scope_note":"Historical course/group listing; no 2026-27 assignment established."},
+      "extract": {"course":"2025-26S2 LIN4049 (31E) CAPSTN PROJ I RES METH PROP","teacher":"LAU Chaak Ming"},
+      "notes": "Used only to rank a possible contact when the name is absent or consistent. Never treated as proof of the student's current teacher or academic entitlement.",
+      "used_for": ["recipient_matching"]
     },
     {
       "source_id": "EDUHK-EDB-SEN-CONTACT",

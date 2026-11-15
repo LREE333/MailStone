@@ -281,6 +281,11 @@
                   Replace the bracketed placeholders and check the details before sending.
                 </p>
 
+                <p class="draft-select-note">
+                  The text can be selected directly. The Copy draft button also checks
+                  your self-check list and Fact Lock first.
+                </p>
+
                 <p class="english-only-note">
                   Interface language only — the email draft and quoted policy wording
                   stay in English.
@@ -462,19 +467,16 @@
                   </div>
 
                   <p id="recipient-intro" class="recipient-intro">
-                    Officially published office addresses, plus any teacher address you
-                    found yourself. Tick a box to confirm you have checked each address
-                    before it appears in the To: line.
+                    Officially published contacts, plus any address you supplied.
+                    Confirm the intended recipient before the address appears in the To: line.
                   </p>
 
                   <div id="recipient-list" class="recipient-list"></div>
 
                   <p class="recipient-note">
-                    MailStone does not guess personal email addresses. Office addresses
-                    are listed only when published on an official page, each with its
-                    source; any teacher address you found yourself is labelled
-                    separately. Nothing is sent automatically. Confirming an address
-                    only fills in the To: line on this page.
+                    MailStone never guesses an address. Published contacts have source
+                    links; addresses supplied by you are labelled separately.
+                    Nothing is sent automatically. Confirmation fills the To: line on this page.
                   </p>
 
                   <div id="recipient-to" class="recipient-to" hidden>
@@ -538,8 +540,11 @@
     </div>
 
     <footer class="app-footer">
-      <span>Made for the moments before you press send.</span>
-      <span>MailStone is not an official university service.</span>
+      <p class="footer-line">
+        <span class="footer-mark" aria-hidden="true"></span>
+        <span>Made for the moments before you press send.</span>
+      </p>
+      <p class="footer-note">MailStone is not an official university service.</p>
     </footer>
   </div>
 
@@ -586,7 +591,7 @@
         </details>
         <details class="faq-item">
           <summary>I don't know my course code or teacher's name.</summary>
-          <p>That's fine — choose "Not known yet". A visible [Course code] blank stays in the draft, and the lookup step points you to the official staff directory.</p>
+          <p>Choose "Not known yet". We can show possible contacts from course history when available. You can continue without an address; we never invent one.</p>
         </details>
       </div>
 
@@ -614,6 +619,11 @@
             <button class="display-button is-active" type="button" data-size="1">A</button>
             <button class="display-button" type="button" data-size="1.15">A+</button>
           </div>
+        </div>
+
+        <div class="display-row">
+          <span>Dark mode</span>
+          <button id="dark-toggle" class="display-button" type="button" aria-pressed="false">Off</button>
         </div>
 
         <div class="display-row">

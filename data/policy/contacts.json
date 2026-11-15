@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0",
-  "purpose": "Verified, officially published office-level contact addresses for the recipient-confirmation panel on the result page. This is a contact directory, not a policy source: it tells the student WHERE to send, never WHAT the rules say.",
+  "purpose": "Source-backed office/role contacts for result-page routing, plus a separate limited LML public staff snapshot for in-page teacher-email matching. This is contact information, not policy evidence: it supplies possible destinations, never academic entitlements or proof of current teaching.",
   "institution": "The Education University of Hong Kong (EdUHK)",
   "retrieved_date": "2026-11-14",
   "principle": "MailStone does not guess personal email addresses. Only addresses printed on an official EdUHK page or on a document already registered in sources.json may appear here. Every address carries its source_ids, source_url and retrieved_date. Named individuals and course lecturers are never given an invented address: where an office address is not published in the corpus, email is null and a lookup_url plus lookup_note tell the student where to find it themselves. The student must actively confirm each address before it appears in the To: line.",
@@ -150,6 +150,30 @@
       "notes": "Named in Procedures 4.5, which does not publish an address."
     }
   },
+  "staff_index_scope": "Factual public contact snapshot of 18 LML staff, verified 2026-11-15. Not a live directory or a whole-University list. No private contact information or biographical text is reproduced. Course associations are separately evidenced, historical and not proof of current teaching.",
+  "staff_directory": [
+    {"staff_id":"LML-STOCKWELL","name":"Prof STOCKWELL, Glenn","salutation":"Professor Stockwell","aliases":["Glenn Stockwell"],"email":"gstock@eduhk.hk","source_ids":["EDUHK-LML-STAFF-2026"],"source_url":"https://www.eduhk.hk/lml/people","retrieved_date":"2026-11-15"},
+    {"staff_id":"LML-CHEN-REBECCA","name":"Dr CHEN, Hsueh Chu Rebecca","salutation":"Dr Chen","aliases":["Rebecca Chen"],"email":"hsuehchu@eduhk.hk","source_ids":["EDUHK-LML-STAFF-2026"],"source_url":"https://www.eduhk.hk/lml/people","retrieved_date":"2026-11-15"},
+    {"staff_id":"LML-YIP","name":"Dr YIP, Wai Chi Jesse","salutation":"Dr Yip","aliases":["Jesse Yip"],"email":"jwcyip@eduhk.hk","source_ids":["EDUHK-LML-STAFF-2026"],"source_url":"https://www.eduhk.hk/lml/people","retrieved_date":"2026-11-15"},
+    {"staff_id":"LML-MA","name":"Prof MA, Qing Angel","salutation":"Professor Ma","aliases":["Angel Ma"],"email":"maqing@eduhk.hk","source_ids":["EDUHK-LML-STAFF-2026"],"source_url":"https://www.eduhk.hk/lml/people","retrieved_date":"2026-11-15"},
+    {"staff_id":"LML-WANG","name":"Prof WANG, Lixun","salutation":"Professor Wang","aliases":["Lixun Wang"],"email":"lixun@eduhk.hk","source_ids":["EDUHK-LML-STAFF-2026"],"source_url":"https://www.eduhk.hk/lml/people","retrieved_date":"2026-11-15"},
+    {"staff_id":"LML-LEE","name":"Dr LEE, Kwing Lok Albert","salutation":"Dr Lee","aliases":["Albert Lee"],"email":"albertlee@eduhk.hk","source_ids":["EDUHK-LML-STAFF-2026"],"source_url":"https://www.eduhk.hk/lml/people","retrieved_date":"2026-11-15"},
+    {"staff_id":"LML-LIU","name":"Dr LIU, Fung Ming Christy","salutation":"Dr Liu","aliases":["Christy Liu"],"email":"liufm@eduhk.hk","source_ids":["EDUHK-LML-STAFF-2026"],"source_url":"https://www.eduhk.hk/lml/people","retrieved_date":"2026-11-15"},
+    {"staff_id":"LML-LAU","name":"Dr LAU, Chaak Ming","salutation":"Dr Lau","aliases":["Chaak Ming Lau","劉擇明","刘择明"],"email":"lchaakming@eduhk.hk","source_ids":["EDUHK-LML-STAFF-2026"],"source_url":"https://www.eduhk.hk/lml/people","retrieved_date":"2026-11-15"},
+    {"staff_id":"LML-LUK","name":"Dr LUK, Pei Sui Zoe","salutation":"Dr Luk","aliases":["Zoe Luk"],"email":"psluk@eduhk.hk","source_ids":["EDUHK-LML-STAFF-2026"],"source_url":"https://www.eduhk.hk/lml/people","retrieved_date":"2026-11-15"},
+    {"staff_id":"LML-SONG","name":"Dr SONG, Ge","salutation":"Dr Song","aliases":["Ge Song"],"email":"gsong@eduhk.hk","source_ids":["EDUHK-LML-STAFF-2026"],"source_url":"https://www.eduhk.hk/lml/people","retrieved_date":"2026-11-15"},
+    {"staff_id":"LML-TODOROVA","name":"Dr TODOROVA, Marija","salutation":"Dr Todorova","aliases":["Marija Todorova"],"email":"mtodorova@eduhk.hk","source_ids":["EDUHK-LML-STAFF-2026"],"source_url":"https://www.eduhk.hk/lml/people","retrieved_date":"2026-11-15"},
+    {"staff_id":"LML-XU","name":"Dr XU, Xiaoyu","salutation":"Dr Xu","aliases":["Xiaoyu Xu"],"email":"xux@eduhk.hk","source_ids":["EDUHK-LML-STAFF-2026"],"source_url":"https://www.eduhk.hk/lml/people","retrieved_date":"2026-11-15"},
+    {"staff_id":"LML-MAK","name":"Dr MAK, Ho Yan Sabina","salutation":"Dr Mak","aliases":["Sabina Mak"],"email":"shymak@eduhk.hk","source_ids":["EDUHK-LML-STAFF-2026"],"source_url":"https://www.eduhk.hk/lml/people","retrieved_date":"2026-11-15"},
+    {"staff_id":"LML-AU","name":"Dr AU, Ching Pong","salutation":"Dr Au","aliases":["Ching Pong Au"],"email":"achingpong@eduhk.hk","source_ids":["EDUHK-LML-STAFF-2026"],"source_url":"https://www.eduhk.hk/lml/people","retrieved_date":"2026-11-15"},
+    {"staff_id":"LML-KO","name":"Dr KO, Wing Shum Belinda","salutation":"Dr Ko","aliases":["Belinda Ko"],"email":"belindako@eduhk.hk","source_ids":["EDUHK-LML-STAFF-2026"],"source_url":"https://www.eduhk.hk/lml/people","retrieved_date":"2026-11-15"},
+    {"staff_id":"LML-MOULIMOIS","name":"Ms MOULIMOIS, Alice","salutation":"Ms Moulimois","aliases":["Alice Moulimois"],"email":"moulimoisal@eduhk.hk","source_ids":["EDUHK-LML-STAFF-2026"],"source_url":"https://www.eduhk.hk/lml/people","retrieved_date":"2026-11-15"},
+    {"staff_id":"LML-CHEN-CHARLES","name":"Mr CHEN, Charles Chun Jr","salutation":"Mr Chen","aliases":["Charles Chen"],"email":"charleschenjr@eduhk.hk","source_ids":["EDUHK-LML-STAFF-2026"],"source_url":"https://www.eduhk.hk/lml/people","retrieved_date":"2026-11-15"},
+    {"staff_id":"LML-YOON","name":"Ms YOON, Sung Hee","salutation":"Ms Yoon","aliases":["Sung Hee Yoon"],"email":"shyoon@eduhk.hk","source_ids":["EDUHK-LML-STAFF-2026"],"source_url":"https://www.eduhk.hk/lml/people","retrieved_date":"2026-11-15"}
+  ],
+  "course_staff_links": [
+    {"course_code":"LIN4049","staff_id":"LML-LAU","academic_year":"2025-26","term":"S2","group":"31E","source_id":"EDUHK-LIN4049-2025-26","source_url":"https://moodle.eduhk.hk/course/info.php?id=9482&lang=en","retrieved_date":"2026-11-15","current_teaching_confirmed":false}
+  ],
   "route_bindings": {
     "course": {
       "contacts": ["EDUHK-COURSE-LECTURER", "EDUHK-GENERAL-ENQUIRY"],

@@ -20,90 +20,84 @@
 */
 
 /*
-  Every sequence shares the same three opening steps. This matters because
+  Every sequence shares the same two opening steps. This matters because
   getSteps() is called before requestType is known (it falls back to the
   "unsure" list), and again after the student chooses a request type. A shared
   prefix keeps step indices aligned when the sequence changes mid-flow.
 
-  The intake order follows the student's request: course code, teacher name,
-  then a guided lookup for the teacher's address. Only afterwards do we ask
-  which regulations and which situation apply.
+  Programme comes first, then the request. Time-related requests reveal a
+  date step immediately afterwards. Identifiers then drive on-page matching
+  against a source-backed public staff index, without sending user input out.
 */
 const SEQUENCES = {
   extension: [
+    "programme",
+    "requestType",
+    "requestedDates",
     "courseCode",
     "teacherName",
     "teacherEmail",
-    "relationship",
-    "programme",
-    "requestType",
-    "timing",
-    "goal",
+    "relationship",    "goal",
     "situation",
     "reason",
     "disclosure",
-    "time",
     "tone"
   ],
   absence: [
+    "programme",
+    "requestType",
+    "requestedDates",
     "courseCode",
     "teacherName",
     "teacherEmail",
-    "relationship",
-    "programme",
-    "requestType",
-    "timing",
-    "goal",
+    "relationship",    "goal",
     "situation",
     "reason",
     "disclosure",
     "tone"
   ],
   exam: [
+    "programme",
+    "requestType",
+    "requestedDates",
     "courseCode",
     "teacherName",
     "teacherEmail",
-    "relationship",
-    "programme",
-    "requestType",
-    "timing",
-    "goal",
+    "relationship",    "goal",
     "situation",
     "reason",
     "disclosure",
     "tone"
   ],
   grade: [
+    "programme",
+    "requestType",
+    "requestedDates",
     "courseCode",
     "teacherName",
     "teacherEmail",
-    "relationship",
-    "programme",
-    "requestType",
-    "timing",
-    "goal",
+    "relationship",    "goal",
     "situation",
     "tone"
   ],
   review: [
+    "programme",
+    "requestType",
+    "requestedDates",
     "courseCode",
     "teacherName",
     "teacherEmail",
-    "relationship",
-    "programme",
-    "requestType",
-    "timing",
-    "goal",
+    "relationship",    "goal",
     "situation",
     "tone"
   ],
   unsure: [
+    "programme",
+    "requestType",
     "courseCode",
     "teacherName",
     "teacherEmail",
     "relationship",
-    "programme",
-    "requestType",
     "goal",
     "situation",
     "tone"
@@ -113,7 +107,7 @@ const SEQUENCES = {
 const CAPTIONS = {
   programme: "Which regulations apply",
   requestType: "Let's begin",
-  timing: "Checking the timing",
+  requestedDates: "Planning your dates",
   goal: "Choosing a direction",
   situation: "Understanding your situation",
   reason: "Choosing what to share",
@@ -207,122 +201,12 @@ const STEP_DEFS = {
     ]
   },
 
-  timing: {
-    id: "timing",
-    tag: "TIMING",
-    variants: {
-      extension: {
-        title: "Has the deadline passed?",
-        hint:
-          "This changes the answer completely, so it is worth being sure.",
-        options: [
-          {
-            value: "before_deadline",
-            title: "No — I still have time",
-            detail: "The due date has not arrived yet."
-          },
-          {
-            value: "after_deadline",
-            title: "Yes — it has already passed",
-            detail: "The due date has gone by."
-          },
-          {
-            value: "unknown",
-            title: "I am not sure",
-            detail: "I would need to check the course outline."
-          }
-        ]
-      },
-
-      absence: {
-        title: "When is the absence?",
-        hint: "Applying before it happens is a different procedure from reporting it after.",
-        options: [
-          {
-            value: "before_deadline",
-            title: "It has not happened yet",
-            detail: "The class or activity is still ahead."
-          },
-          {
-            value: "after_deadline",
-            title: "It is happening now, or has passed",
-            detail: "I am already absent, or was."
-          },
-          {
-            value: "unknown",
-            title: "I am not sure",
-            detail: "The dates are not clear to me yet."
-          }
-        ]
-      },
-
-      grade: {
-        title: "When did you receive the result?",
-        hint:
-          "A formal review has a 14 working day window, so the date matters.",
-        options: [
-          {
-            value: "before_deadline",
-            title: "Within the last two weeks",
-            detail: "The result is recent."
-          },
-          {
-            value: "after_deadline",
-            title: "More than two weeks ago",
-            detail: "Some time has passed."
-          },
-          {
-            value: "unknown",
-            title: "I am not sure",
-            detail: "I would need to check when it was released."
-          }
-        ]
-      },
-
-      review: {
-        title: "Has a formal decision been issued?",
-        hint: "An appeal is against a decision. Without one, there is nothing to appeal yet.",
-        options: [
-          {
-            value: "before_deadline",
-            title: "No decision yet",
-            detail: "I am still waiting, or the matter is unresolved."
-          },
-          {
-            value: "after_deadline",
-            title: "Yes, a decision has been made",
-            detail: "I have been notified of an outcome."
-          },
-          {
-            value: "unknown",
-            title: "I am not sure",
-            detail: "I do not know whether this counts as a decision."
-          }
-        ]
-      },
-
-      exam: {
-        title: "When is the examination?",
-        hint: "An examination that has not happened yet and one that has been missed are handled differently.",
-        options: [
-          {
-            value: "before_deadline",
-            title: "It has not happened yet",
-            detail: "The examination is still ahead."
-          },
-          {
-            value: "after_deadline",
-            title: "I have already missed it",
-            detail: "The examination date has passed."
-          },
-          {
-            value: "unknown",
-            title: "I am not sure",
-            detail: "I need to check the timetable."
-          }
-        ]
-      }
-    }
+  requestedDates: {
+    id: "requestedDates",
+    type: "dates",
+    tag: "YOUR DATES",
+    title: "When is it, and when would you prefer?",
+    hint: "The first date also tells MailStone whether the deadline has passed. The second is only your preference — not an approval, and not a policy deadline."
   },
 
   goal: {
@@ -492,7 +376,7 @@ const STEP_DEFS = {
     tag: "RECIPIENT",
     title: "What is your teacher's name?",
     hint:
-      "Use the form you would write in the email, for example \"Dr Chan\" or \"Professor Lau\". If you are not sure yet, choose \"Not clear yet\".",
+      "Enter a full name or surname, in English or Chinese. We will show possible published emails on the next screen. You do not need to open another website.",
     inputLabel: "Teacher's name",
     placeholder: "e.g. Dr Chan",
     maxLength: 60,
@@ -514,11 +398,11 @@ const STEP_DEFS = {
     tag: "FIND THE ADDRESS",
     title: "Find your teacher's university email",
     hint:
-      "Use the course code and teacher's name below to look up the address on the official EdUHK staff directory. MailStone will not guess it for you.",
-    addressLabel: "Paste the address you found (optional)",
+      "Possible matches appear below from officially published contacts. Choose the person you mean; their address will be ready for your final confirmation.",
+    addressLabel: "Or enter an address you already know (optional)",
     placeholder: "name@eduhk.hk",
-    unknownLabel: "Not clear yet — I will look it up later",
-    unknownDetail: "Skip this step. The draft keeps a blank for the recipient.",
+    unknownLabel: "Continue without an address",
+    unknownDetail: "You can still prepare your email. No address will be invented.",
     validationMessage: "That does not look like an email address. Check it, or choose \"Not clear yet\"."
   },
 
@@ -649,6 +533,7 @@ let lint = { findings: [], placeholders: [], blocking: false };
   on this page. Nothing is sent and no address is written into the draft body.
 */
 const confirmedRecipients = new Set();
+const activeRecipientIds = new Set();
 
 /*
   A teacher address the student found and pasted themselves is deliberately
@@ -750,6 +635,7 @@ function restartApp() {
   copyStatus.textContent = "";
 
   resetSelfCheck();
+  closeEdgePanels();
   setMascotPanel(false);
   utilityPanel.hidden = true;
 
@@ -829,6 +715,10 @@ function refreshAttributeText() {
 
   const contrast = document.querySelector("#contrast-toggle");
   const motion = document.querySelector("#motion-toggle");
+  const dark = document.querySelector("#dark-toggle");
+  if (dark) {
+    dark.textContent = i18n.t(document.body.classList.contains("dark-mode") ? "On" : "Off");
+  }
 
   if (contrast) {
     contrast.textContent = i18n.t(
@@ -999,6 +889,7 @@ function renderTextStep(step) {
   function setAnswer(value) {
     if (answers[step.id] !== value) {
       savedDraft = null;
+      invalidateTeacherContact();
     }
 
     answers[step.id] = value;
@@ -1060,8 +951,220 @@ function buildSearchPhrase() {
   return terms.join(" ");
 }
 
+/* Public staff matching is local: no answer is sent to a search service. */
+function normaliseStaffName(value) {
+  return String(value || "").normalize("NFKD").replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase().replace(/\b(dr|prof|professor|mr|ms|mrs)\.?\b/g, "")
+    .replace(/[^\p{L}\p{N}]+/gu, " ").trim();
+}
+
+function findStaffMatches(name, code, registry) {
+  const query = normaliseStaffName(name === "unknown" ? "" : name);
+  const course = String(code || "").toUpperCase().replace(/[^A-Z0-9]/g, "");
+  const associations = (registry && registry.course_staff_links || [])
+    .filter(link => link.course_code === course);
+  const staff = registry && registry.staff_directory || [];
+  return staff.map(person => {
+    const aliases = [person.name, ...(person.aliases || [])].map(normaliseStaffName);
+    const tokens = query.split(" ").filter(Boolean);
+    const exact = query && aliases.includes(query);
+    const nameMatch = query && aliases.some(alias => tokens.every(token =>
+      /[\u3400-\u9fff]/.test(token) ? alias.includes(token) :
+        alias.split(" ").some(part => part === token || (token.length >= 3 && part.startsWith(token)))
+    ));
+    const history = associations.filter(link => link.staff_id === person.staff_id);
+    // A conflicting supplied name must not be replaced by a course-only guess.
+    if (query ? !nameMatch : !history.length) { return null; }
+    return { person, history, score: (exact ? 100 : nameMatch ? 50 : 0) + (history.length ? 10 : 0) };
+  }).filter(Boolean).sort((a, b) => b.score - a.score || a.person.name.localeCompare(b.person.name));
+}
+
+function invalidateTeacherContact() {
+  confirmedRecipients.delete(STUDENT_TEACHER_CONTACT_ID);
+  delete answers.teacherEmail;
+  delete answers.teacherStaffId;
+}
+
+function selectedStaffContact() {
+  const person = (data.contacts && data.contacts.staff_directory || [])
+    .find(item => item.staff_id === answers.teacherStaffId);
+  return person && person.email === answers.teacherEmail ? person : null;
+}
+
 function isValidEmail(value) {
-  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+  return /^[^\s@]+@(?:[a-z0-9-]+\.)*eduhk\.hk$/i.test(value);
+}
+
+/* Date-only values are never interpreted as UTC timestamps. */
+function isValidDateOnly(value) {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(value || "")) { return false; }
+  const [year, month, day] = value.split("-").map(Number);
+  const check = new Date(year, month - 1, day);
+  return check.getFullYear() === year && check.getMonth() === month - 1 && check.getDate() === day;
+}
+
+function formatRequestDate(value, locale = "en-GB") {
+  if (!isValidDateOnly(value)) { return ""; }
+  const [year, month, day] = value.split("-").map(Number);
+  return new Intl.DateTimeFormat(locale, { day: "numeric", month: "long", year: "numeric" })
+    .format(new Date(year, month - 1, day));
+}
+
+function dateFieldsForRequest(type) {
+  const labels = {
+    extension: ["Original submission deadline", "Preferred new deadline"],
+    absence: ["First day of absence", "Last day of absence"],
+    exam: ["Scheduled examination date", "Preferred alternative date"],
+    grade: ["Result release date", "Preferred reply-by date"],
+    review: ["Decision notification date", "Preferred reply-by date"]
+  };
+  return labels[type] || labels.extension;
+}
+
+function datesInOrder(type, first, last) {
+  if (!isValidDateOnly(first) || !isValidDateOnly(last)) { return true; }
+  return type === "extension" ? last > first : type === "absence" ? last >= first : true;
+}
+
+/*
+  "Has the deadline passed?" used to be a separate question, asked after the
+  student had already typed that exact date. That was the same question twice,
+  and answering it twice invited contradictions. The date is the answer: a
+  date in the past closes the route, today or later leaves it open, and an
+  undecided date stays undecided. Preset states that carry no date keep the
+  timing they were built with.
+*/
+function todayDateOnly() {
+  const now = new Date();
+  return [
+    now.getFullYear(),
+    String(now.getMonth() + 1).padStart(2, "0"),
+    String(now.getDate()).padStart(2, "0")
+  ].join("-");
+}
+
+function syncTimingFromDates() {
+  if (isValidDateOnly(answers.eventDate)) {
+    answers.timing =
+      answers.eventDate < todayDateOnly() ? "after_deadline" : "before_deadline";
+  } else if (answers.eventDate === "unknown") {
+    answers.timing = "unknown";
+  }
+
+  return answers.timing;
+}
+
+function renderDatesStep() {
+  const i18n = window.MailStoneI18n;
+  const wrap = document.createElement("div");
+  wrap.className = "date-step";
+  const error = document.createElement("p");
+  error.className = "text-step-validation";
+  error.setAttribute("role", "status");
+  error.textContent = i18n.t("The end date must not be before the start; a new deadline must be later than the original.");
+  function update() {
+    const valid = datesInOrder(answers.requestType, answers.eventDate, answers.requestedDate);
+    const complete = Boolean(answers.eventDate && answers.requestedDate);
+    error.hidden = valid;
+    answers.requestedDates = valid && complete ? "provided" : "";
+    syncTimingFromDates();
+    nextButton.disabled = !answers.requestedDates;
+    savedDraft = null;
+  }
+  const labels = dateFieldsForRequest(answers.requestType);
+  ["eventDate", "requestedDate"].forEach((key, index) => {
+    const field = document.createElement("section");
+    field.className = "date-wheel-field";
+    const label = document.createElement("h3");
+    label.textContent = i18n.t(labels[index]);
+    const status = document.createElement("p");
+    status.className = "date-preview";
+    status.setAttribute("role", "status");
+    const show = document.createElement("button");
+    show.type = "button";
+    show.className = "date-toggle secondary-button";
+    show.textContent = i18n.t("Choose a date");
+    show.setAttribute("aria-expanded", "false");
+    show.setAttribute("aria-controls", `${key}-wheels`);
+    const picker = document.createElement("div");
+    picker.id = `${key}-wheels`;
+    picker.hidden = true;
+    const wheels = document.createElement("div");
+    wheels.className = "date-wheels";
+    const today = new Date();
+    const chosen = isValidDateOnly(answers[key]) ? answers[key].split("-").map(Number)
+      : [today.getFullYear(), today.getMonth() + 1, today.getDate()];
+    const selects = ["Year", "Month", "Day"].map((caption, part) => {
+      const holder = document.createElement("label");
+      holder.textContent = i18n.t(caption);
+      const select = document.createElement("select");
+      select.id = `${key}-${caption.toLowerCase()}`;
+      select.size = 5;
+      select.setAttribute("aria-label", i18n.t(caption));
+      select.className = "date-wheel";
+      const start = part === 0 ? Math.min(today.getFullYear() - 5, chosen[0]) : 1;
+      const end = part === 0 ? Math.max(today.getFullYear() + 5, chosen[0]) : part === 1 ? 12 : 31;
+      for (let value = start; value <= end; value += 1) {
+        const option = document.createElement("option");
+        option.value = String(value);
+        option.textContent = String(value).padStart(2, "0");
+        option.selected = value === chosen[part];
+        select.append(option);
+      }
+      holder.append(select);
+      wheels.append(holder);
+      return select;
+    });
+    function wheelValue() { return selects.map(select => select.value.padStart(2, "0")).join("-"); }
+    function adjustDays() {
+      const days = new Date(Number(selects[0].value), Number(selects[1].value), 0).getDate();
+      const last = Math.min(Number(selects[2].value), days);
+      [...selects[2].options].forEach(option => { option.disabled = Number(option.value) > days; });
+      selects[2].value = String(last);
+    }
+    const apply = document.createElement("button");
+    apply.type = "button";
+    apply.className = "secondary-button";
+    const preview = document.createElement("p");
+    preview.className = "date-preview";
+    function previewWheels() {
+      adjustDays();
+      preview.textContent = formatRequestDate(wheelValue(), i18n.getLanguage() === "en" ? "en-GB" : i18n.getLanguage());
+    }
+    selects.forEach(select => select.addEventListener("change", previewWheels));
+    apply.textContent = i18n.t("Use this date");
+    function refreshDate() {
+      status.textContent = isValidDateOnly(answers[key])
+        ? formatRequestDate(answers[key], i18n.getLanguage() === "en" ? "en-GB" : i18n.getLanguage())
+        : i18n.t("Not decided yet");
+    }
+    apply.addEventListener("click", () => {
+      answers[key] = wheelValue();
+      picker.hidden = true;
+      show.setAttribute("aria-expanded", "false");
+      refreshDate(); update(); show.focus();
+    });
+    show.addEventListener("click", () => {
+      picker.hidden = !picker.hidden;
+      show.setAttribute("aria-expanded", String(!picker.hidden));
+      if (!picker.hidden) { selects[0].focus(); }
+    });
+    const skip = document.createElement("button");
+    skip.type = "button";
+    skip.className = "inline-link-button";
+    skip.textContent = i18n.t("Leave this date undecided");
+    skip.addEventListener("click", () => {
+      answers[key] = "unknown"; picker.hidden = true;
+      show.setAttribute("aria-expanded", "false"); refreshDate(); update();
+    });
+    picker.append(wheels, preview, apply);
+    field.append(label, status, show, skip, picker);
+    wrap.append(field);
+    previewWheels(); refreshDate();
+  });
+  error.hidden = datesInOrder(answers.requestType, answers.eventDate, answers.requestedDate);
+  wrap.append(error);
+  choices.append(wrap);
 }
 
 function renderLookupStep(step) {
@@ -1152,7 +1255,7 @@ function renderLookupStep(step) {
   const principle = document.createElement("p");
   principle.className = "lookup-principle";
   principle.textContent =
-    "MailStone does not guess or store personal addresses. EdUHK publishes staff emails on its official directory and department pages. Find the address there, paste it below, and confirm it yourself before it goes into the To: line.";
+    "Matches use a verified public LML staff snapshot, not a live whole-University search. Course links are historical and do not confirm your current teacher. No names or answers leave this tab.";
 
   const addressLabel = document.createElement("label");
   addressLabel.className = "lookup-address-label";
@@ -1207,8 +1310,9 @@ function renderLookupStep(step) {
   function setAnswer(value) {
     if (answers[step.id] !== value) {
       savedDraft = null;
+      confirmedRecipients.delete(STUDENT_TEACHER_CONTACT_ID);
     }
-
+    delete answers.teacherStaffId;
     answers[step.id] = value;
     nextButton.disabled = !value;
   }
@@ -1235,16 +1339,68 @@ function renderLookupStep(step) {
     setAnswer("unknown");
   });
 
-  wrap.append(
-    summary,
-    copyRow,
-    links,
-    principle,
-    addressLabel,
-    input,
-    validation,
-    unknownChoice
-  );
+  const matches = findStaffMatches(answers.teacherName, answers.courseCode, data.contacts);
+  const candidates = document.createElement("div");
+  candidates.className = "staff-matches";
+  candidates.setAttribute("role", "group");
+  candidates.setAttribute("aria-label", i18n.t("Possible teacher matches"));
+  const heading = document.createElement("p");
+  heading.className = "staff-match-note";
+  heading.textContent = matches.length
+    ? i18n.t("Possible teacher matches")
+    : i18n.t("No match in the verified contact index yet. This does not mean your teacher has no email. You can continue without an address.");
+  candidates.append(heading);
+  matches.slice(0, 8).forEach(({ person, history }) => {
+    const card = document.createElement("div");
+    card.className = "staff-candidate";
+    card.classList.toggle("selected", person.staff_id === answers.teacherStaffId);
+    const title = document.createElement("strong");
+    title.className = "staff-candidate-head";
+    title.textContent = person.name;
+    title.setAttribute("data-no-i18n", "");
+    const email = document.createElement("p");
+    email.textContent = person.email;
+    email.setAttribute("data-no-i18n", "");
+    const source = document.createElement("a");
+    source.className = "staff-source";
+    source.href = person.source_url;
+    source.target = "_blank"; source.rel = "noopener";
+    source.textContent = i18n.t("Official contact source");
+    const date = document.createElement("span");
+    date.className = "staff-match-note";
+    date.textContent = `${i18n.t("Retrieved")} ${person.retrieved_date}`;
+    const basis = document.createElement("p");
+    basis.className = "staff-match-note";
+    basis.textContent = i18n.t(history.length ? "Name or course-history match — please confirm the person." : "Name match — course teaching not confirmed.");
+    history.forEach(link => {
+      const evidence = document.createElement("a");
+      evidence.className = "staff-source";
+      evidence.href = link.source_url; evidence.target = "_blank"; evidence.rel = "noopener";
+      evidence.textContent = `${i18n.t("Historical course link")}: ${link.course_code} · ${link.academic_year} · ${link.term} · ${link.group}`;
+      card.append(evidence);
+    });
+    const choose = document.createElement("button");
+    choose.type = "button"; choose.className = "staff-select secondary-button";
+    choose.textContent = i18n.t("Use this teacher's email");
+    choose.setAttribute("aria-pressed", String(person.staff_id === answers.teacherStaffId));
+    choose.addEventListener("click", () => {
+      setAnswer(person.email);
+      answers.teacherStaffId = person.staff_id;
+      input.disabled = false; input.value = person.email;
+      unknownRadio.checked = false; unknownChoice.classList.remove("selected");
+      validation.hidden = true;
+      candidates.querySelectorAll(".staff-candidate").forEach(item => item.classList.toggle("selected", item === card));
+      candidates.querySelectorAll(".staff-select").forEach(button => button.setAttribute("aria-pressed", String(button === choose)));
+    });
+    card.prepend(title, email, basis, source, date);
+    card.append(choose);
+    candidates.append(card);
+  });
+  const fallback = document.createElement("details");
+  const fallbackTitle = document.createElement("summary");
+  fallbackTitle.textContent = i18n.t("Other lookup options (optional)");
+  fallback.append(fallbackTitle, copyRow, links);
+  wrap.append(summary, candidates, principle, addressLabel, input, validation, unknownChoice, fallback);
   choices.append(wrap);
 }
 
@@ -1276,6 +1432,8 @@ function renderStep(moveFocus = true) {
     renderTextStep(step);
   } else if (step.type === "lookup") {
     renderLookupStep(step);
+  } else if (step.type === "dates") {
+    renderDatesStep(step);
   } else {
     step.options.forEach((option, index) => {
     const label = document.createElement("label");
@@ -1320,15 +1478,12 @@ function renderStep(moveFocus = true) {
         answers that no longer apply are cleared rather than carried over.
       */
       if (step.id === "requestType") {
-        const allowed = SEQUENCES[option.value] || SEQUENCES.unsure;
-
-        Object.keys(answers).forEach(key => {
-          if (!allowed.includes(key)) {
-            delete answers[key];
-          }
-        });
-
-        /* The routed contact changes with the request, so old ticks are stale. */
+        // Shared keys such as timing have different meanings across requests.
+        ["timing", "goal", "situation", "reason", "disclosure", "time", "tone",
+          "eventDate", "requestedDate", "requestedDates"].forEach(key => delete answers[key]);
+        confirmedRecipients.clear();
+      }
+      if (step.id === "programme" || step.id === "timing") {
         confirmedRecipients.clear();
       }
 
@@ -1472,6 +1627,19 @@ function getReasonText() {
     examination message it describes the wrong object, so the reason sentence
     is rephrased rather than reused.
   */
+  if (answers.requestType === "absence") {
+    const absenceTable = {
+      health: disclosure === "impact"
+        ? "A health issue may prevent me from attending and participating in the scheduled class or activity."
+        : "I may be unable to attend because of a health issue.",
+      personal: disclosure === "impact"
+        ? "Personal circumstances may prevent me from attending and participating in the scheduled class or activity."
+        : "I may be unable to attend because of personal circumstances.",
+      workload: "I have a conflicting academic commitment and would like to ask about the appropriate arrangements."
+    };
+    return absenceTable[reason] || "";
+  }
+
   if (answers.requestType === "exam") {
     const examTable = {
       health:
@@ -1523,8 +1691,9 @@ function buildExtensionDraft() {
       : "Could I please request an extension for [Assignment name] in [Course code], due on [Original deadline]?"
   };
 
-  const timing =
-    answers.time === "discuss"
+  const timing = isValidDateOnly(answers.requestedDate)
+    ? `Would it be possible for me to submit the work by ${formatRequestDate(answers.requestedDate)} instead?`
+    : !answers.time || answers.time === "discuss"
       ? "Would it be possible to discuss an alternative submission deadline?"
       : followup
         ? `If an extension is possible, my current preference would be ${getDurationText()} beyond the original deadline.`
@@ -1584,10 +1753,10 @@ function buildPostDeadlineDraft(reasonText, followup) {
     reasonText
   ];
 
-  if (answers.time !== "discuss") {
-    paragraphs.push(
-      `If any extension were possible, ${getDurationText()} would allow me to submit work I can stand behind. I understand this is not something you can decide in advance of seeing my situation.`
-    );
+  if (isValidDateOnly(answers.requestedDate)) {
+    paragraphs.push(`If a revised submission date is still possible, I would like to ask whether I could submit by ${formatRequestDate(answers.requestedDate)}. I understand that this would require your approval.`);
+  } else if (answers.time && answers.time !== "discuss") {
+    paragraphs.push(`If any extension were possible, my preference would be ${getDurationText()} beyond the original deadline, subject to your approval.`);
   }
 
   paragraphs.push(
@@ -1668,7 +1837,8 @@ function applyTeacherName(text) {
     return text;
   }
 
-  return text.replaceAll("[Recipient title and surname]", name);
+  const person = selectedStaffContact();
+  return text.replaceAll("[Recipient title and surname]", person ? person.salutation : name);
 }
 
 /*
@@ -1684,6 +1854,29 @@ function applyCourseCode(text) {
   }
 
   return text.replaceAll("[Course code]", code);
+}
+
+function applyRequestDates(text) {
+  const first = formatRequestDate(answers.eventDate);
+  const last = formatRequestDate(answers.requestedDate);
+  if (answers.requestType === "extension" && first) {
+    text = text.replaceAll("[Original deadline]", first);
+  }
+  if (answers.requestType === "absence" && first) {
+    text = text.replaceAll("on [Date]", last && last !== first ? `from ${first} to ${last}` : `on ${first}`);
+  }
+  const notes = [];
+  if (answers.requestType === "exam") {
+    if (first) { notes.push(`The examination is scheduled for ${first}.`); }
+    if (last) { notes.push(`If an alternative arrangement is possible, my preferred date would be ${last}, subject to approval.`); }
+  }
+  if (answers.requestType === "grade" && first) { notes.push(`I received the result on ${first}.`); }
+  if (answers.requestType === "review" && first) { notes.push(`The decision was notified to me on ${first}.`); }
+  if (["grade", "review"].includes(answers.requestType) && last) {
+    notes.push(`If possible, I would appreciate guidance by ${last}. I understand this is a preference, not an official deadline.`);
+  }
+  if (notes.length) { text = text.replace("\n\nKind regards,", `\n\n${notes.join(" ")}\n\nKind regards,`); }
+  return text;
 }
 
 function buildDraft() {
@@ -1704,7 +1897,8 @@ function buildDraft() {
     draft = buildGeneralDraft();
   }
 
-  /* Both substitutions are verbatim inserts, never inferred values. */
+  /* Dates and identifiers come only from answers or an explicitly selected contact. */
+  draft = applyRequestDates(draft);
   draft = applyTeacherName(draft);
   return applyCourseCode(draft);
 }
@@ -2119,11 +2313,14 @@ function buildRecipientRow(contact, why) {
   const box = document.createElement("input");
   box.type = "checkbox";
   box.checked = confirmedRecipients.has(contact.contact_id);
+  box.disabled = !contact.email;
 
   const confirmText = document.createElement("span");
   confirmText.textContent = contact.email
-    ? "I have checked this address on the official page"
-    : "I have found and checked the address myself";
+    ? contact.contact_id === STUDENT_TEACHER_CONTACT_ID
+      ? "This is the intended recipient; use this address"
+      : "I have checked this address on the official page"
+    : "No address selected";
 
   box.addEventListener("change", () => {
     if (box.checked) {
@@ -2148,6 +2345,7 @@ function renderRecipientTo() {
   const registry = data.contacts;
 
   const emails = [...confirmedRecipients]
+    .filter(id => activeRecipientIds.has(id))
     .map(id => {
       if (id === STUDENT_TEACHER_CONTACT_ID) {
         return answers.teacherEmail && answers.teacherEmail !== "unknown"
@@ -2173,7 +2371,7 @@ function renderRecipientTo() {
   const checklistBox = document.querySelector("#check-recipient");
 
   if (checklistBox) {
-    checklistBox.checked = confirmedRecipients.size > 0;
+    checklistBox.checked = emails.length > 0;
   }
 
   updateSelfCheck();
@@ -2185,22 +2383,21 @@ function renderRecipientTo() {
   enters contacts.json and is never described as "officially published".
 */
 function buildTeacherEmailRow() {
+  const person = selectedStaffContact();
   const pseudo = {
     contact_id: STUDENT_TEACHER_CONTACT_ID,
-    role: "Teacher's email (found by you)",
-    level: "student",
+    role: person ? "Teacher's email (officially published)" : "Teacher's email (found by you)",
+    level: person ? "course" : "student",
     email: answers.teacherEmail,
     phone: null,
-    source_ids: ["EDUHK-STAFF-DIRECTORY-2026"],
-    source_url: "https://www.eduhk.hk/en/directory",
-    retrieved_date: null,
-    verification_status: "student_confirmed"
+    source_ids: person ? person.source_ids : [],
+    source_url: person ? person.source_url : null,
+    retrieved_date: person ? person.retrieved_date : null,
+    verification_status: person ? "verified_primary" : "student_supplied"
   };
-
-  return buildRecipientRow(
-    pseudo,
-    "You entered this address in the lookup step. MailStone did not find or guess it — confirm it on the official page before sending."
-  );
+  return buildRecipientRow(pseudo, person
+    ? "Official contact selected by you. Check that this is the person you intend to contact; current teaching is not assumed."
+    : "You supplied this address. MailStone has not independently verified it.");
 }
 
 function renderRecipientPanel() {
@@ -2230,6 +2427,7 @@ function renderRecipientPanel() {
   }
 
   list.replaceChildren();
+  activeRecipientIds.clear();
 
   const seen = new Set();
 
@@ -2238,7 +2436,8 @@ function renderRecipientPanel() {
     the officially published office addresses below it by its "Found by you"
     badge and its own reason line.
   */
-  if (answers.teacherEmail && answers.teacherEmail !== "unknown") {
+  if ((!level || level === "course") && answers.teacherEmail && answers.teacherEmail !== "unknown") {
+    activeRecipientIds.add(STUDENT_TEACHER_CONTACT_ID);
     list.append(buildTeacherEmailRow());
   }
 
@@ -2251,6 +2450,8 @@ function renderRecipientPanel() {
       }
 
       seen.add(id);
+      if (contact.email) { activeRecipientIds.add(id); }
+      if (id === "EDUHK-COURSE-LECTURER" && activeRecipientIds.has(STUDENT_TEACHER_CONTACT_ID)) { return; }
 
       /* A fallback office needs its own reason, not the named contact's. */
       const why =
@@ -2310,7 +2511,8 @@ function renderFacts() {
       createFactRow("Main request", "Ask for more time"),
       createFactRow(
         "Requested duration",
-        answers.time === "discuss" ? "Not decided yet" : getDurationText()
+        isValidDateOnly(answers.requestedDate) ? "See preferred new deadline" :
+          answers.time && answers.time !== "discuss" ? getDurationText() : "Not decided yet"
       ),
       createFactRow(
         "Route open",
@@ -2330,11 +2532,28 @@ function renderFacts() {
     );
   }
 
-  unknown.append(
-    createFactRow("Course code", "Must be added"),
-    createFactRow("Original date", "Must be checked"),
-    createFactRow("Supporting document", "Not confirmed")
-  );
+  // Intake facts are distinct from official verification; never hard-code missing.
+  const addIdentifier = (label, value) => {
+    if (value && value !== "unknown") {
+      const row = createFactRow(label, value);
+      row.lastElementChild.setAttribute("data-no-i18n", "");
+      confirmed.append(row);
+    } else {
+      unknown.append(createFactRow(label, "Must be added"));
+    }
+  };
+  addIdentifier("Course code", answers.courseCode);
+  addIdentifier("Teacher's name", answers.teacherName);
+  addIdentifier("Teacher's email", answers.teacherEmail);
+  confirmed.append(createFactRow("Identifier source", "Provided by you / selected by you"));
+  if (answers.requestType !== "unsure") {
+    const fields = dateFieldsForRequest(answers.requestType);
+    ["eventDate", "requestedDate"].forEach((key, index) => {
+      const date = formatRequestDate(answers[key], window.MailStoneI18n.getLanguage() === "en" ? "en-GB" : window.MailStoneI18n.getLanguage());
+      (date ? request : unknown).append(createFactRow(fields[index], date || "Not decided yet"));
+    });
+  }
+  unknown.append(createFactRow("Supporting document", "Not confirmed"));
 }
 
 function renderLearningTips() {
@@ -2619,10 +2838,10 @@ function showResult(skipFocus = false) {
   questionCard.hidden = true;
   resultCard.hidden = false;
 
+  syncTimingFromDates();
   gate = window.MailStoneGatekeeper.decide(data.rules, answers, data);
 
-  if (savedDraft === null) {
-    savedDraft = buildDraft();
+  if (savedDraft === null) {    savedDraft = buildDraft();
   }
 
   draftEditor.value = savedDraft;
@@ -2896,6 +3115,7 @@ function bindPressedToggle(button, className) {
 
 bindPressedToggle(document.querySelector("#contrast-toggle"), "high-contrast");
 bindPressedToggle(document.querySelector("#motion-toggle"), "reduce-motion");
+bindPressedToggle(document.querySelector("#dark-toggle"), "dark-mode");
 
 form.addEventListener("submit", event => {
   event.preventDefault();
@@ -2943,24 +3163,27 @@ document.querySelector("#route-tab").addEventListener("click", event => {
 
 /* ---------- Notebook-edge tabs (result page) ---------- */
 
-/*
-  Each edge tab toggles its own panel. Clicking a different tab does NOT
-  close the first one — the student can have multiple panels open for
-  comparison. Clicking an open tab closes it.
-*/
+/* One drawer at a time: overlapping reference panels obscure the email. */
+function closeEdgePanels() {
+  document.querySelectorAll(".edge-tab").forEach(tab => {
+    tab.setAttribute("aria-expanded", "false");
+    const panel = document.getElementById(tab.getAttribute("aria-controls"));
+    if (panel) { panel.hidden = true; }
+  });
+}
+
 document.querySelectorAll(".edge-tab").forEach(tab => {
+  const panel = document.getElementById(tab.getAttribute("aria-controls"));
+  if (!panel) { return; }
+  const close = document.createElement("button");
+  close.type = "button"; close.className = "edge-panel-close";
+  close.textContent = window.MailStoneI18n.t("Close panel");
+  close.addEventListener("click", () => { closeEdgePanels(); tab.focus(); });
+  panel.prepend(close);
   tab.addEventListener("click", () => {
-    const panelId = tab.getAttribute("aria-controls");
-    const panel = document.querySelector(`#${panelId}`);
-
-    if (!panel) {
-      return;
-    }
-
     const isOpen = tab.getAttribute("aria-expanded") === "true";
-
-    tab.setAttribute("aria-expanded", String(!isOpen));
-    panel.hidden = isOpen;
+    closeEdgePanels();
+    if (!isOpen) { tab.setAttribute("aria-expanded", "true"); panel.hidden = false; }
   });
 });
 
@@ -3084,6 +3307,9 @@ document.addEventListener("keydown", event => {
   if (event.key === "Escape") {
     utilityPanel.hidden = true;
     setMascotPanel(false);
+    const activeTab = document.querySelector('.edge-tab[aria-expanded="true"]');
+    closeEdgePanels();
+    if (activeTab) { activeTab.focus(); }
   }
 });
 

@@ -1786,6 +1786,205 @@ console.log("\nStaff directory source");
   );
 }
 
+/* ---------- Intake facts, requested dates and sourced staff matching ---------- */
+console.log("\nIntake, dates and staff matching");
+{
+  const app = readFileSync(join(root, "js/app.js"), "utf8");
+  const html = readFileSync(join(root, "index.html"), "utf8");
+  const contacts = loadJson("data/policy/contacts.json");
+  function fn(name) {
+    const start = app.indexOf(`function ${name}(`);
+    if (start < 0) { throw new Error(`Missing function ${name}`); }
+    let depth = 0;
+    for (let i = app.indexOf("{", start); i < app.length; i += 1) {
+      if (app[i] === "{") { depth += 1; }
+      if (app[i] === "}" && --depth === 0) { return app.slice(start, i + 1); }
+    }
+    throw new Error(`Unterminated function ${name}`);
+  }
+  const sequence = new Function(`${app.slice(app.indexOf("const SEQUENCES"), app.indexOf("const CAPTIONS"))}; return SEQUENCES;`)();
+  check("programme is the first question for all six flows", Object.values(sequence).every(s => s[0] === "programme"));
+  check("request is the second question in every flow", Object.values(sequence).every(s => s[1] === "requestType"));
+  check("dates immediately follow every time-related request", Object.entries(sequence).filter(([type]) => type !== "unsure").every(([, s]) => s[2] === "requestedDates"));
+  check("unsure does not ask irrelevant dates", !sequence.unsure.includes("requestedDates"));
+  check("extension no longer asks redundant duration after exact date intake", !sequence.extension.includes("time"));
+
+  const match = new Function(`${fn("normaliseStaffName")}\n${fn("findStaffMatches")}\nreturn findStaffMatches;`)();
+  check("Dr Lau resolves to published email, not an invented pattern", match("Dr Lau", "LIN4049", contacts)[0]?.person.email === "lchaakming@eduhk.hk");
+  check("reversed full name resolves correctly", match("Chaak Ming Lau", "unknown", contacts)[0]?.person.staff_id === "LML-LAU");
+  check("Traditional Chinese name resolves correctly", match("劉擇明", "LIN4049", contacts)[0]?.person.staff_id === "LML-LAU");
+  check("Simplified Chinese name resolves correctly", match("刘择明", "LIN4049", contacts)[0]?.person.staff_id === "LML-LAU");
+  check("ambiguous Chen surname returns both people without auto-selection", match("Dr Chen", "unknown", contacts).length === 2);
+  check("unmatched teacher returns no guess", match("Dr Nonexistent", "LIN4049", contacts).length === 0);
+  check("no identifiers returns no arbitrary staff list", match("unknown", "unknown", contacts).length === 0);
+  check("course-only match is historical, never current confirmation", match("unknown", "LIN4049", contacts)[0]?.history.every(h => h.current_teaching_confirmed === false));
+  check("conflicting name is not replaced with course-only Lau", match("Dr Xu", "LIN4049", contacts)[0]?.person.staff_id === "LML-XU");
+  check("staff snapshot has 18 unique verified email records", contacts.staff_directory.length === 18 && new Set(contacts.staff_directory.map(p => p.email)).size === 18);
+  check("all staff records cite registered sources and retrieval dates", contacts.staff_directory.every(p => p.source_ids.every(id => sourceById[id]) && p.retrieved_date && /^https:\/\/www\.eduhk\.hk\//.test(p.source_url)));
+  const validEmail = new Function(`${fn("isValidEmail")}\nreturn isValidEmail;`)();
+  check("student-supplied external email is not mistaken for university email", !validEmail("someone@example.com"));
+  check("official subdomain address is allowed", validEmail("helpdesk@ocio.eduhk.hk"));
+  check("lookalike university domain is rejected", !validEmail("test@eduhk.hk.attacker.com"));
+
+  const date = new Function(`${fn("isValidDateOnly")}\n${fn("formatRequestDate")}\n${fn("datesInOrder")}\nreturn { valid:isValidDateOnly, format:formatRequestDate, order:datesInOrder };`)();
+  check("valid leap day is accepted", date.valid("2028-02-29"));
+  check("impossible non-leap day is rejected", !date.valid("2027-02-29"));
+  check("April 31 is rejected", !date.valid("2026-04-31"));
+  check("unknown date is not fabricated", date.format("unknown") === "");
+  check("English date has no timezone day shift", date.format("2026-11-20") === "20 November 2026");
+  check("extension date must be later", !date.order("extension", "2026-11-20", "2026-11-20"));
+  check("absence permits a single day", date.order("absence", "2026-11-20", "2026-11-20"));
+  check("reversed absence range is rejected", !date.order("absence", "2026-11-21", "2026-11-20"));
+  const makeDates = new Function("answers", `${fn("isValidDateOnly")}\n${fn("formatRequestDate")}\n${fn("applyRequestDates")}\nreturn applyRequestDates;`);
+  check("absence draft includes selected range", makeDates({requestType:"absence", eventDate:"2026-11-20", requestedDate:"2026-11-23"})("absent on [Date].").includes("from 20 November 2026 to 23 November 2026"));
+  check("extension original deadline is substituted", makeDates({requestType:"extension",eventDate:"2026-11-20"})("due on [Original deadline]") === "due on 20 November 2026");
+  check("unselected date leaves a visible placeholder", makeDates({requestType:"extension",eventDate:"unknown"})("due on [Original deadline]").includes("[Original deadline]"));
+  check("exam alternative is explicitly conditional", makeDates({requestType:"exam",requestedDate:"2026-11-23"})("Text\n\nKind regards,").includes("subject to approval"));
+  check("date wheels use accessible native list selects", app.includes("select.size = 5") && app.includes('select.setAttribute("aria-label"'));
+
+  const user = {courseCode:"LIN4049", teacherEmail:"lchaakming@eduhk.hk", teacherStaffId:"LML-LAU"};
+  const confirmations = new Set(["STUDENT-TEACHER-EMAIL"]);
+  new Function("answers", "confirmedRecipients", "STUDENT_TEACHER_CONTACT_ID", `${fn("invalidateTeacherContact")}\ninvalidateTeacherContact();`)(user, confirmations, "STUDENT-TEACHER-EMAIL");
+  check("changing identifiers clears both stale email and staff selection", !user.teacherEmail && !user.teacherStaffId);
+  check("changing identifiers revokes the old address confirmation", confirmations.size === 0);
+  check("recipient checklist depends on actual active emails, not tick count", app.includes("checklistBox.checked = emails.length > 0"));
+  check("role-only addresses cannot be confirmed without an email", app.includes("box.disabled = !contact.email"));
+
+  function node() { return { children:[], textContent:"", append(...items){this.children.push(...items);}, replaceChildren(){this.children=[];}, setAttribute(){}, get lastElementChild(){return this.children[this.children.length-1];} }; }
+  const nodes = new Map(["confirmed-facts","request-facts","unknown-facts"].map(id => [`#${id}`,node()]));
+  const fakeDoc = {createElement:node,querySelector:selector=>nodes.get(selector)};
+  const facts = new Function("answers","gate","routeMap","document","window","getDurationText","dateFieldsForRequest","formatRequestDate","isValidDateOnly",`${fn("createFactRow")}\n${fn("renderFacts")}\nrenderFacts();`);
+  facts({requestType:"extension",courseCode:"LIN4049",requestedDate:"2026-11-23"},null,{},fakeDoc,{MailStoneI18n:{getLanguage:()=>"en"}},()=>"three days",()=>["Original submission deadline","Preferred new deadline"],date.format,date.valid);
+  const rows = id => nodes.get(id).children.map(r => r.children.map(c=>c.textContent).join(": "));
+  check("Fact Lock shows the supplied course code", rows("#confirmed-facts").includes("Course code: LIN4049"));
+  check("Fact Lock no longer reports supplied course code as missing", !rows("#unknown-facts").some(r=>r.startsWith("Course code:")));
+  check("Fact Lock reports desired deadline without approval claim", rows("#request-facts").includes("Preferred new deadline: 23 November 2026"));
+  check("Fact Lock still states no approval has occurred", rows("#confirmed-facts").includes("Approval status: Not yet approved"));
+  check("Pebble offers a pressed-state dark-mode toggle", html.includes('id="dark-toggle"') && app.includes('bindPressedToggle(document.querySelector("#dark-toggle"), "dark-mode")'));
+  check("drawers close before a new one opens", app.includes("closeEdgePanels();\n    if (!isOpen)"));
+}
+
+console.log("\nOne question, not two");
+
+{
+  const appSource = readFileSync(join(root, "js/app.js"), "utf8");
+  const html = readFileSync(join(root, "index.html"), "utf8");
+  const css = readFileSync(join(root, "css/styles.css"), "utf8");
+
+  function extract(code, name) {
+    const marker = `function ${name}(`;
+    const start = code.indexOf(marker);
+
+    if (start === -1) {
+      return null;
+    }
+
+    let depth = 0;
+
+    for (let index = start; index < code.length; index += 1) {
+      if (code[index] === "{") {
+        depth += 1;
+      } else if (code[index] === "}") {
+        depth -= 1;
+
+        if (depth === 0) {
+          return code.slice(start, index + 1);
+        }
+      }
+    }
+
+    return null;
+  }
+
+  const sequenceBlock = appSource.slice(
+    appSource.indexOf("const SEQUENCES"),
+    appSource.indexOf("const CAPTIONS")
+  );
+
+  check(
+    "no sequence asks the timing question a second time",
+    !sequenceBlock.includes('"timing"'),
+    sequenceBlock.match(/"timing"/g)
+  );
+
+  check(
+    "the retired timing step definition is gone",
+    !appSource.includes('id: "timing"')
+  );
+
+  const runner = new Function(
+    "answers",
+    `${extract(appSource, "isValidDateOnly")}
+     ${extract(appSource, "todayDateOnly")}
+     ${extract(appSource, "syncTimingFromDates")}
+     return syncTimingFromDates;`
+  );
+
+  const sync = state => {
+    runner(state)();
+    return state;
+  };
+
+  const shift = days => {
+    const now = new Date();
+    now.setDate(now.getDate() + days);
+    return [
+      now.getFullYear(),
+      String(now.getMonth() + 1).padStart(2, "0"),
+      String(now.getDate()).padStart(2, "0")
+    ].join("-");
+  };
+
+  const past = { eventDate: shift(-3) };
+  const future = { eventDate: shift(4) };
+  const undecided = { eventDate: "unknown" };
+  const preset = { timing: "after_deadline" };
+
+  sync(past);
+  sync(future);
+  sync(undecided);
+  sync(preset);
+
+  check("a past date closes the route without asking again", past.timing === "after_deadline", past.timing);
+  check("a future date leaves the route open", future.timing === "before_deadline", future.timing);
+  check("an undecided date stays undecided", undecided.timing === "unknown", undecided.timing);
+  check("a preset with no date keeps its own timing", preset.timing === "after_deadline", preset.timing);
+
+  check(
+    "the date step says the first date also decides the route",
+    appSource.includes("The first date also tells MailStone whether the deadline has passed.")
+  );
+
+  check(
+    "the result page says the draft text is selectable",
+    html.includes("The text can be selected directly.")
+  );
+
+  check(
+    "the footer is a structured bar, not two loose spans",
+    html.includes('class="footer-line"') &&
+      html.includes('class="footer-note"') &&
+      css.includes(".app-footer {") &&
+      css.includes(".footer-note {")
+  );
+
+  check(
+    "the footer keeps its two exact sentences for translation",
+    html.includes("Made for the moments before you press send.") &&
+      html.includes("MailStone is not an official university service.")
+  );
+
+  check(
+    "the default root size is 17px, not 16px",
+    css.includes("font-size: calc(17px * var(--ui-scale, 1))")
+  );
+
+  check(
+    "small body copy is lifted to 0.9rem",
+    css.includes("Readability pass") && css.includes("font-size: 0.9rem;")
+  );
+}
+
 console.log(`\n${passed} passed, ${failed} failed\n`);
 
 process.exit(failed === 0 ? 0 : 1);

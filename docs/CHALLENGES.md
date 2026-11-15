@@ -3,7 +3,9 @@
 **Student:** LI Leer (11601718)
 **Course:** LIN4049, EdUHK
 **Date:** 9 November 2026
-**Last updated:** 15 November 2026 (third-iteration features B8–B12, A7, D6 added)
+**Last updated:** 15 November 2026 (latest local intake/contact/display changes; source, validation and publication claims corrected)
+
+**Current evidence boundary:** 214 automated assertions pass on the local files. The result page has since been re-measured in Chrome at 127.0.0.1 (17px root, 15.3px self-check text, one 53px footer row, no page-level overflow, `main.app-main` as the only scrolling region besides the draft textarea). A branch-by-branch click-through is still outstanding; earlier browser findings below are historical, not latest validation. `b5d8618` is the historical last pushed commit; latest changes are not pushed and the website is not live. GitHub Pages management authentication and one-time Settings > Pages → branch `main` → `/ (root)` setup remain pending. Publication final status will be added by the parent.
 **Repository:** https://github.com/LREE333/MailStone
 
 ---
@@ -42,7 +44,7 @@ This document records the difficulties I encountered while building MailStone, h
 
 **How I resolved it.** I modelled programme scope as a required field on every source document and every rule. The Gatekeeper checks scope *before* relevance — a rule is usable only if the student's programme level falls inside the rule's resolved scope. TPG and RPG regulations are registered as sources but marked `identified_not_retrieved`, so the Gatekeeper withholds rather than substituting undergraduate clauses.
 
-**Status:** Resolved for the covered levels (sub-degree, UG, PGDE). The TPG and RPG regulations are deliberately not collected — the scope gap is shown in the UI as a feature, not hidden as a failure.
+**Status:** Scope checking is implemented for the modelled levels (sub-degree, UG, PGDE), but the GAR and Procedures source records still mark their inferred applicability `needs_confirmation`. Do not call that institutional scope verification. TPG/RPG regulations remain identified but not retrieved; the scope gap is shown in the UI rather than hidden.
 
 ---
 
@@ -66,13 +68,13 @@ This document records the difficulties I encountered while building MailStone, h
 
 ---
 
-### A6. Official pages publish office addresses, but not personal ones
+### A6. Role addresses were absent from the collected regulations, not all official pages
 
-**Difficulty.** After testing the prototype I wanted the result page to show the correct office or department email address so the student would not have to hunt for it. The obvious failure mode is the one this whole project exists to prevent: guessing a personal address. The General Academic Regulations name roles — course lecturer, Faculty Dean, Programme Leader, Secretary of the Students' Appeal Committee — but print no address for any of them. A plausible-looking `firstname.lastname@eduhk.hk` would be a hallucination with real consequences.
+**Difficulty.** After testing the prototype I wanted the result page to show the correct office or department email address so the student would not have to hunt for it. The obvious failure mode is guessing a personal address. The General Academic Regulations name roles — course lecturer, Faculty Dean, Programme Leader, Secretary of the Students' Appeal Committee — but print no address for any of them. A plausible-looking `firstname.lastname@eduhk.hk` would be a hallucination with real consequences. This original finding applied to those collected pages, not every official EdUHK site: the later LML staff page does publish individual work addresses.
 
-**How I resolved it.** I separated a **contact directory** from a **policy source**. `data/policy/contacts.json` is explicitly not a source of rules: it says WHERE to send, never WHAT the rules say. It may only contain addresses printed on an official EdUHK page or in a document already registered in `sources.json`. I retrieved the official University Contact Us page (`https://www.eduhk.hk/en/contact-us`, registered as `EDUHK-CONTACT-US-2026`) and the SAO SEN Support Services page. Each address carries `source_ids`, `source_url` and `retrieved_date`. For the four role-only contacts, `email` is `null` and the row instead gives a `lookup_url` plus a plain-language note telling the student where to look. One attempted page (`/re/About-Registry/Contact-Us.html`) returned 404, so I did not use it — a missing page is not a licence to invent an address. Withholding the four addresses is itself a finding.
+**How I resolved it.** I separated a **contact directory** from a **policy source**. `data/policy/contacts.json` says WHERE to send, never WHAT the rules say. Source-backed leads must come from an official page or a document registered in `sources.json`, with `source_ids`, `source_url` and `retrieved_date`. The original University Contact Us (`EDUHK-CONTACT-US-2026`) and SAO retrieval supplied 6 office addresses. The 4 role-only rows still have `email: null` and optional lookup links; a public staff address alone does not resolve those route roles. One attempted page (`/re/About-Registry/Contact-Us.html`) returned 404, so I did not use it. The latest local `staff_directory` separately contains 18 LML name/work-email records sourced to `https://www.eduhk.hk/lml/people` (`EDUHK-LML-STAFF-2026`, 15 Nov), not a live whole-University lookup.
 
-**Status:** Resolved. 6 verified office addresses, 4 deliberately withheld role-only contacts, 6 route bindings. Role-only contacts now cite the staff directory (`https://www.eduhk.hk/en/directory`) as their lookup source.
+**Status:** Implemented locally: 10 route contacts (6 published office addresses + 4 withheld roles), 18 separate LML staff records, 24 unique published addresses, 6 route bindings and 1 historical LIN4049 → LAU association (2025-26 S2 group 31E; current teaching not confirmed). Explicit candidate selection and final student confirmation are required; manual entry/unknown fallback remains. Permission for wider reuse or a maintained public-contact feed has not been obtained (D7).
 
 ---
 
@@ -80,9 +82,9 @@ This document records the difficulties I encountered while building MailStone, h
 
 **Difficulty.** The user asked whether "academic email templates" from the Wofo website (wofo.cc) had been collected. Wofo is a Chinese study-abroad and TOEFL preparation platform. Its "email templates" are TOEFL "Write an Email" exam-task samples — timed (7-minute) responses to prompted scenarios, not real academic correspondence. Including them as if they were model academic emails would mislabel the corpus.
 
-**How I resolved it.** I collected three TOEFL "Write an Email" samples (the ETS official high-level sample and two model answers from Chinese test-prep sources) and added them to the corpus with `origin_class: "toefl_exam_sample"` and provenance caveats. They are a distinct genre, included for pedagogical comparison: students who have prepared for TOEFL may have internalised a semi-formal register that differs from the formal academic register MailStone teaches. The ETS TOEFL website was registered as a source (`ETS-TOEFL-2026`).
+**How I resolved it.** I separated exam-task genre from academic correspondence. Actual `corpus.json` has 3 `toefl_exam_sample`-tagged records: 2 retrieved full-text samples (EX-019, EX-020) and Wofo EX-021, a metadata-only consulted-platform record. EX-021's `text` is an access note, not an email; its empty/null annotation fields are not completed email annotation. EX-019 is attributed to ETS, but the recorded full-text retrieval is from the Zhihu reprint (`source_locator`), not direct ETS retrieval. ETS is listed in `corpus.json.sources_consulted`; checking actual `data/policy/sources.json` finds no `ETS-TOEFL-2026` source. The earlier registration claim was incorrect.
 
-**Status:** Resolved. 3 TOEFL exam-sample exemplars added as a distinct genre.
+**Status:** Genre separation implemented. Only 2 full-text TOEFL samples may be counted; Wofo full-text retrieval and independent primary-source provenance checking remain open. Do not count exam samples or platform metadata as real academic correspondence.
 
 ---
 
@@ -164,7 +166,7 @@ Each state has different UI copy and different writing tips. The states are driv
 
 **How I resolved it.** `js/i18n.js` holds a dictionary keyed by the exact (whitespace-normalised) English source string, plus a DOM text-node sweep. Two exclusions do the real work: `data-no-i18n` protects the draft textarea and the review preview, and `data-verbatim` protects quoted policy wording. Each text node stores its original English so switching back to English restores it exactly instead of translating a translation. Composite strings (counts, dates, interpolated messages) are translated at the call site with `t()` and `{n}` placeholders, because they cannot be dictionary keys. Language is held in memory, can be pinned with `?lang=`, and is never stored — the privacy promise is unchanged.
 
-**Status:** Resolved. Verified in a headless browser: in `zh-Hant` and `zh-Hans` the quoted GAR 9.6.1 wording and the draft remain English.
+**Status:** Resolved in the second iteration (14 Nov). Historical headless-browser checks found that in `zh-Hant` and `zh-Hans` the quoted GAR 9.6.1 wording and the draft remained English. Latest intake/contact/display changes still require browser revalidation; this earlier result is not a current browser sign-off.
 
 ---
 
@@ -172,7 +174,7 @@ Each state has different UI copy and different writing tips. The states are driv
 
 **Difficulty.** The sweep runs at the end of every full render, but several controls update their own labels in response to a click — the recipient confirmation checkboxes, the "Check this draft" toggle, the "Show source information" button, and the To: line status. Those assignments happened after the sweep, so in Chinese mode clicking them made English text reappear.
 
-**How I resolved it.** I wrapped every post-render text assignment in `window.MailStoneI18n.t()` and added dictionary entries for the labels that had been missing (`Source:`, `Retrieved:`, and four recipient-level badges). A headless-browser smoke test then clicked the checkboxes, switched language while a recipient was confirmed, and unchecked again: the status label stayed Chinese throughout, the To: line kept the confirmed addresses, and the draft stayed English.
+**How I resolved it.** I wrapped every post-render text assignment in `window.MailStoneI18n.t()` and added dictionary entries for the labels that had been missing (`Source:`, `Retrieved:`, and four recipient-level badges). In the historical second-iteration headless-browser smoke test (14 Nov), clicking the checkboxes, switching language while a recipient was confirmed and unchecking again kept the status label Chinese, the confirmed addresses in the To: line and the draft English. This records the earlier finding; browser checks of the latest local changes are still underway.
 
 **Status:** Resolved.
 
@@ -182,9 +184,9 @@ Each state has different UI copy and different writing tips. The states are driv
 
 **Difficulty.** After clicking "Check this draft", the two-column result grid caused layout overflow — fonts extended beyond the viewport. More fundamentally, the generated email — the central artefact — was squeezed into one column alongside route/policy/support information. The user's instruction was clear: "the focus should be the email generation result, displayed prominently in the centre-right; other functions should be collapsible bookmark/tab style elements."
 
-**How I resolved it.** I replaced the two-column `.result-grid` with a single-column email-centric `.result-layout`. The generated email, lint results, self-check, and action buttons now occupy the full main panel. Three notebook-edge tabs (Route, Fact Lock, "Why this structure?") slide out from the right edge via CSS `writing-mode: vertical-rl` and absolutely-positioned panels. Each tab toggles independently with `aria-expanded`. On narrow screens, the tabs switch to horizontal. The viewport is fixed: `html, body.app-mode { height: 100%; overflow: hidden; }` — only `.app-main` may scroll internally.
+**How I resolved it.** I replaced the two-column `.result-grid` with a single-column email-centric `.result-layout`. The generated email, lint results, self-check, and action buttons occupy the main panel. Three notebook-edge tabs (Route, Fact Lock, "Why this structure?") use vertical tabs on wide screens and horizontal tabs on narrow screens. The earlier independently toggled drawers were revised: only one drawer opens at a time, with `aria-expanded`, bounded panels, a close button and Escape; closing returns focus to its tab. The fixed viewport permits internal `.app-main` scrolling rather than page-level scrolling.
 
-**Status:** Resolved. No more horizontal overflow; email is the focal point; ancillary information is collapsible.
+**Status:** Layout redesign and exclusive drawer controls are implemented locally. The original overflow finding is preserved; do not assert that the latest responsive/browser layout has passed. Current browser checks are underway (D6).
 
 ---
 
@@ -202,9 +204,9 @@ Each state has different UI copy and different writing tips. The states are driv
 
 **Difficulty.** The Pebble mascot's feedback feature originally copied a feedback message to the clipboard for the user to paste into an email to the supervisor. The user wanted feedback sent directly to the backend: "I want users' feedback during use to be sent directly to our backend so we can improve the tool."
 
-**How I resolved it.** I rewrote the feedback handler to POST a JSON payload (`{ text, timestamp, page }`) to `window.MAILSTONE_FEEDBACK_URL`, a configurable endpoint. If the server is unavailable or no endpoint is configured, the note is copied to the clipboard instead so it is never lost. The HTML text and i18n entries were updated to explain this behaviour: "Your feedback is sent directly to the MailStone team so we can improve the tool. If the server is unavailable, your note is copied to the clipboard instead so it is never lost."
+**How I resolved it.** I implemented a configurable frontend: it attempts to POST a JSON payload (`{ text, timestamp, page }`) to `window.MAILSTONE_FEEDBACK_URL` when an endpoint is configured. No configured endpoint, a failed request or a non-success response falls back to clipboard copying; if clipboard access fails, manual-copy guidance is shown. The earlier UI wording about feedback being "sent directly" and "never lost" described an intention, not verified delivery or a guaranteed clipboard result.
 
-**Status:** Resolved. Feedback handler sends to backend with graceful clipboard fallback.
+**Status:** Configurable POST frontend and clipboard/manual-copy fallback implemented. No deployed backend, persistent storage or successful end-to-end receipt has been verified. Static/stub tests are not backend evidence.
 
 ---
 
@@ -214,7 +216,7 @@ Each state has different UI copy and different writing tips. The states are driv
 
 **How I resolved it.** I registered the EdUHK staff directory (`https://www.eduhk.hk/en/directory`) as `EDUHK-STAFF-DIRECTORY-2026` in `sources.json`, with `verification_status: "verified_primary"`. All four role-only contacts now cite this source in their `source_ids` and point their `lookup_url` at the staff directory. The `lookup_note` text was updated to reference the staff directory specifically.
 
-**Status:** Resolved. Staff directory registered as source; all role-only contacts updated.
+**Status:** Directory source and role-only lookup links updated. This is an optional manual lookup page, not a readable cross-origin JSON API used by MailStone. On-page matching is limited to the separate local 18-person LML snapshot; committee/route-role destinations are still unresolved (B13).
 
 ---
 
@@ -222,9 +224,39 @@ Each state has different UI copy and different writing tips. The states are driv
 
 **Difficulty.** The user asked whether Wofo (卧佛) email templates had been collected. Wofo is a TOEFL preparation platform; its "email templates" are TOEFL exam-task samples — timed responses to prompted scenarios in a semi-formal register. Including them as `public_model` exemplars would mislabel them as model academic correspondence.
 
-**How I resolved it.** I added a new `origin_class` value (`toefl_exam_sample`) to the exemplars schema and collected three samples: the ETS official high-level response and two model answers from Chinese test-prep sources. Each entry carries provenance caveats noting they are exam-task samples, not real academic correspondence. The ETS TOEFL website was registered as a source. The corpus status block was updated to report both academic and TOEFL exam-sample counts separately. These exemplars are included for pedagogical comparison — students who have prepared for TOEFL may have internalised a different register than what MailStone teaches.
+**How I resolved it.** I added `origin_class: "toefl_exam_sample"` to distinguish the exam genre, retaining the pedagogical comparison finding. The earlier "three collected samples / ETS source registered" description was inaccurate: actual records contain 2 retrieved full-text answers (EX-019, EX-020) and 1 metadata-only Wofo platform record (EX-021). EX-019's ETS attribution and official URL are recorded, but full text came through the Zhihu `source_locator`. A check of all 14 actual `sources.json` entries finds no ETS/TOEFL source ID, including `ETS-TOEFL-2026`; ETS appears only in `corpus.json.sources_consulted`.
 
-**Status:** Resolved. 3 TOEFL exam-sample exemplars added as a distinct genre; source registered; provenance clearly labelled.
+**Status:** Distinct genre implemented, with 2 full-text exam samples, not 3 annotated emails. Wofo full-text access and independent comparison against ETS primary material remain pending. The 21 records comprise 18 academic (13 public + 5 synthetic, including negative EX-018), 2 full-text TOEFL and 1 Wofo metadata record; 0 are double-coded.
+
+---
+
+### B13. Teacher matching must not become an invented or current-teaching claim
+
+**Difficulty.** A course code or partial teacher name is insufficient to infer an address or establish who currently teaches the student's course. The registered University directory is not a readable cross-origin JSON API; sending students there as a compulsory step also interrupts the writing flow.
+
+**How I resolved it.** On-page matching uses only `contacts.json.staff_directory`: 18 public LML work contacts from `https://www.eduhk.hk/lml/people`, retrieved 2026-11-15 and attributed to `EDUHK-LML-STAFF-2026`. The sole separately sourced course association is LIN4049 → LAU, **2025-26 S2 group 31E** (`EDUHK-LIN4049-2025-26`), with `current_teaching_confirmed: false`. It can rank a candidate when the name is absent or consistent, never replace a conflicting name. Students must explicitly select a candidate or supply their own university email; unknown/unmatched cases retain a manual/unknown fallback. Final confirmation is still required before the address enters To:. Course/name/email edits revoke stale teacher confirmation; programme/request/timing changes clear route confirmations.
+
+**Status:** Local matching and confirmation safeguards implemented; neither whole-University coverage, live freshness nor current teaching is confirmed. Wider feed permission remains pending (D7).
+
+---
+
+### B14. Intake order and Fact Lock contradicted supplied code/date facts
+
+**Difficulty.** The old flow did not establish programme scope first or immediately ask for dates after a time-related request. Fact Lock could still list a supplied course code as missing and a selected preferred deadline as an unresolved duration.
+
+**How I resolved it.** Every flow now begins programme → request. Extension, absence, exam, grade and review immediately ask for two request-specific dates using explicit Year/Month/Day native `<select size="5">` lists; `unsure` omits irrelevant dates. "Choose a date" opens the lists, "Use this date" saves the selection, and "Leave this date undecided" records an unknown rather than silently accepting the initial displayed date. Calendar validity and extension/absence ordering are checked. Fact Lock separates supplied course/name/email, selected dates, unresolved fields and approval: a provided course code no longer appears as missing, and a preferred new deadline no longer retains the obsolete missing-duration message. "Provided by you / selected by you" identifies provenance, not official verification; "Not yet approved" and unconfirmed supporting documents remain explicit. Preferred dates do not replace the formal 14-working-day review window.
+
+**Status:** Code/date display bug fixed locally, with regression assertions for supplied code and preferred deadline. The reported current suite is 214 passed, 0 failed; source/stub checks are not the latest browser validation (D6).
+
+---
+
+### B15. Display controls and reference drawers needed a consistent state
+
+**Difficulty.** The result page needed readable dark-mode styling and reference tabs that did not open overlapping drawers.
+
+**How I resolved it.** Pebble → Display → Dark mode toggles the display with pressed-state feedback. Colored notebook tabs use exclusive drawers: opening one closes another; clicking the active tab, its close button or Escape closes it, with focus returned to the relevant tab.
+
+**Status:** Dark mode and exclusive notebook tabs implemented locally. Latest light/dark, focus, Chinese-interface and responsive browser checks are underway, not signed off.
 
 ---
 
@@ -256,7 +288,7 @@ Each state has different UI copy and different writing tips. The states are driv
 
 **How I resolved it.** I retrieved the web page they linked to (`https://www.eduhk.hk/sao/en/info/counselling_services/sen/support_service`) and found that it contained far more detail than the leaflet. It explicitly lists "Extension of assignment deadlines" under Lecture/Assignment Arrangements — resolving the most important question. It also states that accommodations require "sufficient information (including but not limited to medical reports)," which resolves the registration question. The third question (retrospective application after a deadline) is not answered on the page and remains open.
 
-**Status:** Two of three questions resolved. The third (retrospective application) is still open but is not blocking — the tool states it as "Not established" and advises the student to ask.
+**Status:** The deadline-extension listing and request/supporting-information pathway are established. The earlier "two of three questions resolved" shorthand must not be treated as explicit TPG eligibility confirmation: the page has no programme restriction, but its source scope still says `needs_confirmation`. Retrospective availability is also still open; the tool states it as "Not established" and advises the student to ask.
 
 ---
 
@@ -264,9 +296,9 @@ Each state has different UI copy and different writing tips. The states are driv
 
 **Difficulty.** The SEN Support Services leaflet lists "Academic Accommodation" as a service but does not state what it covers, who is eligible, whether registration is required, or whether it can be applied retrospectively. These four questions were the biggest open items in the project.
 
-**How I resolved it.** This was resolved by C3 above — the SAO web page answered two of the four questions, and the SAO reply email is registered as a source that triggered the retrieval. The remaining question (retrospective application) is documented as an open item in the data.
+**How I resolved it.** C3's retrieved SAO page establishes the accommodation listing and request/supporting-information pathway. The SAO reply is registered as the retrieval trigger, not additional policy content. Retrospective application remains open; programme eligibility is not explicitly confirmed beyond the page's general wording.
 
-**Status:** Partially resolved. The "Not established" label in the UI has been replaced with "Confirmed" rows showing the resolved findings.
+**Status:** Partially resolved. "Confirmed" UI rows describe the established service findings, not approval of an individual request or explicit TPG eligibility; retrospective availability remains "Not established".
 
 ---
 
@@ -294,7 +326,7 @@ Each state has different UI copy and different writing tips. The states are driv
 
 ### D3. Corpus double-coding not yet done
 
-**What it is.** 18 exemplars have been annotated in a first pass by the author. Double coding (for inter-rater reliability, Cohen's kappa) requires a second coder.
+**What it is.** 18 academic exemplars have first-pass author annotations (13 public + 5 synthetic, including the negative EX-018). EX-019/EX-020 also carry exam-genre annotations; Wofo EX-021 is only metadata with empty/null annotation fields. These are not 21 completed academic annotations. The corpus records 0 double-coded items; inter-rater reliability (Cohen's kappa) requires a second coder.
 
 **Why it is not resolved.** The second coder has not been arranged yet.
 
@@ -322,16 +354,37 @@ Each state has different UI copy and different writing tips. The states are driv
 
 ---
 
+### D6. Latest browser validation and publication are not complete
+
+**What it is.** The local suite reports 202 passing assertions, but some UI tests inspect source or use stubs. Historical second-iteration headless-browser results remain useful findings, not proof of the latest intake/contact/display flow.
+
+**Why it is not resolved.** Actual latest browser checks are underway. `b5d8618` is the historical last pushed commit; latest changes are unpushed. GitHub Pages is not live, management authentication is missing and one-time branch `main` / `/ (root)` setup remains pending.
+
+**Plan:** Finish browser checks before reporting current validation. The parent handles authentication, push, Pages setup and verified publication status later; this documentation task performs none of them. Keep frontend feedback implementation separate from unverified backend deployment/delivery.
+
+---
+
+### D7. Permission and maintenance for a wider contact feed
+
+**What it is.** The 18-person LML snapshot contains attributed public name/work-email facts, not biographies, private contacts or a whole-University live feed. Its source retrieval date does not establish current teaching, role assignment or freshness on the day of sending.
+
+**Why it is not resolved.** Institutional permission for wider contact reuse or a maintained feed has not been obtained. Public availability alone is not permission for expanded reuse; the historical LIN4049 listing does not fill that gap.
+
+**Plan:** Keep the narrow snapshot and explicit selection/final confirmation boundary. Obtain the relevant permission and agree coverage, update cadence and correction handling before expanding or maintaining a wider feed. Do not imply that this permission is already granted.
+
+---
+
 ## Summary table
 
 | # | Difficulty | Category | Status |
 |---|---|---|---|
 | A1 | No central exam-absence procedure | Policy | Resolved as finding |
 | A2 | No extenuating circumstances policy | Policy | Resolved (supervisor confirmed) |
-| A3 | Separate regulations per programme type | Policy | Resolved for UG/PGDE; TPG/RPG pending |
+| A3 | Separate regulations per programme type | Policy | Scope checking implemented; inferred handbook scope unconfirmed; TPG/RPG not retrieved |
 | A4 | SEN leaflet is image-only PDF | Technical | Resolved |
 | A5 | SEN page URL redirected | Technical | Resolved |
-| A6 | Official pages publish office, not personal, addresses | Policy | Resolved (6 published, 4 withheld) |
+| A6 | Collected regulations lack role addresses; LML publishes individual work emails | Policy | 10 route contacts (6 office + 4 withheld), 18 LML staff, 24 unique addresses; selection/confirmation required |
+| A7 | Wofo templates belong to the TOEFL exam genre | Corpus | 2 full-text TOEFL samples + 1 metadata-only Wofo record; primary provenance checks pending |
 | B1 | AI hallucination risk | Design | Resolved (deterministic Gatekeeper + template baseline) |
 | B2 | Converting negative examples to checks | Design | Resolved for Tier 1 |
 | B3 | Three lint defects found by using the tool | Technical | V06/V09 resolved; V08 documented |
@@ -339,17 +392,22 @@ Each state has different UI copy and different writing tips. The states are driv
 | B5 | Course code is an identifier, not a category | Design | Resolved (text step + verbatim substitution) |
 | B6 | Three languages without corrupting the evidence | Design | Resolved (sweep + exclusions) |
 | B7 | Event handlers reintroduced English after a switch | Technical | Resolved (t() at every post-render assignment) |
-| B8 | Result page layout overflow and email buried | Design | Resolved (email-centric layout + notebook-edge tabs) |
+| B8 | Result page layout overflow and email buried | Design | Email-centric layout and exclusive drawers implemented; latest browser/layout checks underway |
 | B9 | Drafts lacked greeting and self-introduction | Design | Resolved (relationship step + helper functions) |
-| B10 | Feedback was clipboard-only | Design | Resolved (POST to backend with clipboard fallback) |
+| B10 | Feedback was clipboard-only | Design | Configurable POST frontend + clipboard/manual fallback; deployed backend/delivery unverified |
 | B11 | Role-only contacts pointed at generic Registry URL | Technical | Resolved (staff directory registered + contacts updated) |
-| B12 | Wofo/TOEFL templates are exam samples, not academic correspondence | Design | Resolved (distinct genre with provenance caveats) |
+| B12 | Wofo/TOEFL templates are not academic correspondence | Design | Genre separated; ETS consulted in corpus, not registered in policy sources |
+| B13 | Teacher matching could imply an invented/current destination | Design | Local 18-person snapshot; LIN4049 historical 2025-26 S2 group 31E only; no guesses |
+| B14 | Intake order and Fact Lock code/date contradiction | Technical | Programme → request → immediate dates; supplied-code/preferred-date display bug fixed locally |
+| B15 | Dark-mode display and overlapping reference drawers | Design | Dark mode and exclusive notebook tabs implemented; browser checks underway |
 | C1 | Identifying AI-tool procedure | Communication | Resolved (8 Nov) |
 | C2 | Identifying approved LLM service | Communication | Resolved (8 Nov) |
-| C3 | SAO did not answer specific questions | Communication | 2 of 3 resolved (9 Nov) |
+| C3 | SAO did not answer specific questions | Communication | Service/request findings established (9 Nov); explicit TPG eligibility and retrospective availability unconfirmed |
 | C4 | SEN leaflet lacked service scope detail | Communication | Partially resolved (9 Nov) |
 | D1 | TPG/RPG regulations not collected | Pending | Future work |
 | D2 | Model integration not implemented | Pending | Decision by 30 Nov |
 | D3 | Corpus double-coding not done | Pending | Evaluation phase |
 | D4 | Retrospective SAO accommodation | Pending | Follow-up if needed |
 | D5 | "Leave it blank" = empty string or visible placeholder? | Wording | Implemented as visible placeholder; confirm at next meeting |
+| D6 | Latest browser validation and publication | Pending | 214 automated assertions pass; browser checks underway; unpushed/not live; Pages auth missing |
+| D7 | Wider public-contact feed permission/maintenance | Pending | Permission not obtained; narrow snapshot and current-teaching limits retained |
